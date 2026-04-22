@@ -2,13 +2,10 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
-import { LogOut, User as UserIcon, LogIn, UserPlus } from "lucide-react";
 import { Hero } from "@/components/sections/Hero";
-import { Problem } from "@/components/sections/Problem";
 import { Solution } from "@/components/sections/Solution";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { CoreFeatures } from "@/components/sections/CoreFeatures";
-import { RecruiterDashboard } from "@/components/sections/RecruiterDashboard";
 import { SocialProof } from "@/components/sections/SocialProof";
 import { FAQ } from "@/components/sections/FAQ";
 import { CTA } from "@/components/sections/CTA";
@@ -26,13 +23,11 @@ export default function Home() {
 
   return (
     <>  
-      <main className="flex min-h-screen flex-col bg-[#f2f3ff] font-sans selection:bg-[#006d38]/20 selection:text-[#006d38]">
+      <main className="flex min-h-screen flex-col bg-background font-sans selection:bg-primary/20 selection:text-primary">
         <Hero />
-        <Problem />
         <Solution />
         <HowItWorks />
         <CoreFeatures />
-        <RecruiterDashboard />
         <SocialProof />
         <FAQ />
         <CTA />

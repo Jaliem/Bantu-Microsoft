@@ -7,7 +7,7 @@ import { mockups } from "@/lib/mockups";
 
 export function CTA() {
   return (
-    <section className="py-32 bg-background text-foreground overflow-hidden relative">
+    <section className="py-32 bg-brand-light text-brand-dark overflow-hidden relative">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent pointer-events-none" />
       
       <div className="container mx-auto px-6 relative z-10">
@@ -16,17 +16,17 @@ export function CTA() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-xs sm:text-sm font-semibold tracking-[0.24em] uppercase text-primary mb-4"
+            className="text-xs sm:text-sm font-semibold tracking-[0.24em] uppercase text-brand-dark/80 mb-4"
           >
-            Start Today
+            Mulai Hari Ini
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-[clamp(2.8rem,6vw,5.75rem)] font-semibold tracking-[-0.04em] leading-[0.98] font-display mb-8 text-balance"
+            className="text-[clamp(2.8rem,6vw,5.75rem)] font-semibold tracking-[-0.04em] leading-[0.98] font-display mb-8 text-balance text-brand-dark"
           >
-            Ready to Bridge the Gap?
+            Siap Menjembatani Kesenjangan?
           </motion.h2>
           
           <motion.p
@@ -34,9 +34,9 @@ export function CTA() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-lg md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed text-balance"
+            className="text-lg md:text-2xl text-brand-dark/80 mb-12 max-w-3xl mx-auto leading-relaxed text-balance"
           >
-            Join thousands of students building their careers, and MSMEs accelerating their growth with BANTU.
+            Bergabunglah dengan ribuan mahasiswa yang sedang membangun karier mereka, dan UMKM yang mempercepat pertumbuhan mereka bersama BANTU.
           </motion.p>
           
           <motion.div
@@ -46,12 +46,12 @@ export function CTA() {
             transition={{ delay: 0.2 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-24"
           >
-            <button className="h-14 px-8 rounded-full bg-accent text-accent-foreground font-semibold tracking-wide flex items-center justify-center gap-2 hover:bg-accent/90 transition-colors w-full sm:w-auto text-lg">
-              Get Started for Free
+            <button className="h-14 px-8 rounded-full bg-brand-mid text-white font-semibold tracking-wide flex items-center justify-center gap-2 hover:bg-brand-mid/90 transition-colors w-full sm:w-auto text-lg">
+              Mulai Secara Gratis
               <ArrowRight className="w-5 h-5" />
             </button>
-            <button className="h-14 px-8 rounded-full bg-transparent border border-border/70 text-foreground font-semibold tracking-wide flex items-center justify-center hover:bg-muted/40 transition-colors w-full sm:w-auto text-lg">
-              Book a Demo
+            <button className="h-14 px-8 rounded-full bg-transparent border border-brand-dark/70 text-brand-dark font-semibold tracking-wide flex items-center justify-center hover:bg-brand-dark/10 transition-colors w-full sm:w-auto text-lg">
+              Jadwalkan Demo
             </button>
           </motion.div>
 

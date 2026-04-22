@@ -1,51 +1,102 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Navbar() {
+  const { user, logout } = useAuth();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { scrollY } = useScroll();
+  
+  const navWidth = useTransform(scrollY, [0, 50], ["100%", "90%"]);
+  const navPadding = useTransform(scrollY, [0, 50], ["0rem", "1rem"]);
+  const navRadius = useTransform(scrollY, [0, 50], ["0rem", "1.5rem"]);
+
+  useEffect(() => {
+    const unsubscribe = scrollY.on("change", (latest) => {
+      setIsScrolled(latest > 50);
+    });
+    return () => unsubscribe();
+  }, [scrollY]);
+
   return (
     <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none px-4 sm:px-6 pt-4"
+      style={{ paddingLeft: navPadding, paddingRight: navPadding, paddingTop: navPadding }}
+      className="fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none"
     >
-      <nav
+      <motion.nav
+        style={{ 
+          width: navWidth,
+          borderRadius: navRadius,
+        }}
         className={cn(
-          "pointer-events-auto w-full flex items-center justify-between transition-colors duration-500",
-          "bg-[#ffffff]/80 backdrop-blur-[20px] shadow-[0_4px_20px_rgba(19,27,46,0.05)]",
-          "px-4 sm:px-6 lg:px-8 py-4 border-b border-white/20"
+          "pointer-events-auto flex items-center justify-between transition-all duration-500 ease-[0.22, 1, 0.36, 1]",
+          isScrolled 
+            ? "bg-brand-light/70 backdrop-blur-xl shadow-ambient px-6 py-4" 
+            : "bg-transparent px-8 py-8"
         )}
       >
-        <div className="flex items-center gap-2 text-[#006d38]">
+        <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-8 h-8 rounded-2xl bg-[#006d38] flex items-center justify-center transition-transform group-hover:scale-105">
-              <span className="text-[#ffffff] font-bold font-sans text-lg leading-none">B</span>
-            </div>
-            <span className="font-sans font-bold text-xl tracking-tighter text-[#131b2e]">BANTU</span>
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-10 h-10 rounded-xl bg-brand-mid flex items-center justify-center shadow-ambient"
+            >
+              <span className="text-white font-bold font-display text-xl leading-none">B</span>
+            </motion.div>
+            <span className="font-display font-bold text-xl tracking-tight text-brand-dark">BANTU</span>
           </Link>
         </div>
 
         <div className="hidden md:flex items-center gap-8">
-          <Link href="#" className="text-[0.875rem] font-medium text-[#3d4a3f] hover:text-[#131b2e] transition-colors font-sans">How it works</Link>
-          <Link href="#" className="text-[0.875rem] font-medium text-[#3d4a3f] hover:text-[#131b2e] transition-colors font-sans">Features</Link>
-          <Link href="#" className="text-[0.875rem] font-medium text-[#3d4a3f] hover:text-[#131b2e] transition-colors font-sans">For Recruiters</Link>
+          {[
+            { label: "How it works", href: "#how-it-works" },
+            { label: "Features", href: "#features" },
+            { label: "For Businesses", href: "#businesses" },
+          ].map((link) => (
+            <Link 
+              key={link.label}
+              href={link.href} 
+              className="text-sm font-medium text-brand-dark/60 hover:text-brand-dark transition-colors font-sans relative group"
+            >
+              {link.label}
+              <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-brand-mid transition-all duration-300 group-hover:w-full" />
+            </Link>
+          ))}
         </div>
 
-        <div className="flex items-center gap-5">
-          <Link href="/login" className="hidden md:inline-block text-[0.875rem] font-medium text-[#3d4a3f] hover:text-[#006d38] transition-colors font-sans">
-            Log in
-          </Link>
-          <Link 
-            href="/register" 
-            className="flex h-11 items-center justify-center px-6 rounded-2xl bg-[#006d38] text-[#ffffff] text-[0.875rem] font-medium transition-all hover:opacity-90 active:scale-95 shadow-[0_4px_20px_rgba(19,27,46,0.05)]"
-          >
-            Get Started
-          </Link>
+        <div className="flex items-center gap-4">
+          {user ? (
+            <>
+              <Link href="/dashboard" className="hidden md:inline-block text-sm font-medium text-brand-dark hover:text-brand-mid transition-colors px-4 py-2">
+                Dashboard
+              </Link>
+              <button 
+                onClick={() => logout()}
+                className="flex h-10 items-center justify-center px-5 rounded-lg bg-transparent text-brand-dark border border-brand-dark/10 text-sm font-medium transition-all hover:bg-black/5 active:scale-95"
+              >
+                Log out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="hidden md:inline-block text-sm font-medium text-brand-dark hover:text-brand-mid transition-colors px-4 py-2">
+                Log in
+              </Link>
+              <Link 
+                href="/register" 
+                className="flex h-10 items-center justify-center px-5 rounded-lg bg-brand-dark text-white text-sm font-medium transition-all hover:bg-brand-mid hover:shadow-ambient active:scale-95"
+              >
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
-      </nav>
+      </motion.nav>
     </motion.header>
   );
 }

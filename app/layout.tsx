@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SmoothScroll } from "../components/SmoothScroll";
 import { Navbar } from "../components/Navbar";
+import { Footer } from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +36,7 @@ export default function RootLayout({
           <SmoothScroll>
             <Navbar />
             {children}
+            <Footer />
           </SmoothScroll>
         </AuthProvider>
       </body>

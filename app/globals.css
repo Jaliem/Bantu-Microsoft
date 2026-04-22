@@ -1,33 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  /* Precision Architect Theme */
-  --background: #faf8ff;
-  --foreground: #131b2e;
+  /* 3 Shades of Green */
+  --brand-light: #eef5f0;
+  --brand-mid: #006d38;
+  --brand-dark: #0b1c14;
+
+  /* Map standard tokens */
+  --background: var(--brand-light);
+  --foreground: var(--brand-dark);
   
-  --surface: #faf8ff;
-  --surface-container-low: #f2f3ff;
-  --surface-container-highest: #dae2fd;
+  --surface: var(--brand-light);
+  --surface-container-low: #ffffff;
+  --surface-container-highest: var(--brand-dark);
   --surface-container-lowest: #ffffff;
 
-  --muted: #f2f3ff;
-  --muted-foreground: #3d4a3f;
+  --muted: #e0ece4;
+  --muted-foreground: #4a6654;
   
-  --border: #bccabc; /* Should be used at 15% opacity typically */
+  --border: #c2d6cb;
   
-  --primary: #006d38;
+  --primary: var(--brand-mid);
   --primary-foreground: #ffffff;
   
-  --primary-container: #00aa5b;
-  --on-primary-container: #ffffff;
-  
-  --accent: #006d38;
-  --accent-foreground: #ffffff;
-  
-  --radius: 1rem;
+  --radius: 1.5rem;
 }
 
 @theme inline {
+  --color-brand-light: var(--brand-light);
+  --color-brand-mid: var(--brand-mid);
+  --color-brand-dark: var(--brand-dark);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   
@@ -43,34 +46,61 @@
   
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-primary-container: var(--primary-container);
-  --color-on-primary-container: var(--on-primary-container);
+  --color-primary-container: var(--brand-dark);
+  --color-on-primary-container: var(--brand-light);
   
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
+  --color-on-surface: var(--foreground);
+  --color-on-surface-variant: var(--muted-foreground);
   
-  --radius-lg: 2rem;       /* Overridden for softer geometry */
-  --radius-md: 1.5rem;     /* 24px */
-  --radius-sm: var(--radius); /* 16px default */
+  --radius-lg: 2rem;
+  --radius-md: 1.5rem;
+  --radius-sm: 1rem;
   --radius-xl: 4rem;
   
-  --font-sans: var(--font-geist-sans), sans-serif;
-  --font-display: var(--font-geist-sans), sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
 }
 
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
 }
 
-/* Utilities */
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+  
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  .glass-dark {
+    background: rgba(11, 28, 20, 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  .shadow-ambient {
+    box-shadow: 0 12px 40px rgba(11, 28, 20, 0.08);
+  }
+
+  .ghost-border {
+    outline: 1px solid rgba(11, 28, 20, 0.08);
+  }
+
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
