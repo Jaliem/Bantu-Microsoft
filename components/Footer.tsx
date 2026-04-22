@@ -1,7 +1,17 @@
+"use client";
+
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export function Footer() {
+  const pathname = usePathname();
+  const hiddenRoutes = ["/profile", "/chat", "/wallet", "/dashboard"];
+  
+  if (hiddenRoutes.some(route => pathname?.startsWith(route))) {
+    return null;
+  }
+
   return (
     <footer className="w-full bg-brand-light py-16 mt-auto border-t border-brand-dark/10">
       <div className="max-w-6xl mx-auto px-6">

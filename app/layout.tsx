@@ -1,24 +1,24 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SmoothScroll } from "../components/SmoothScroll";
 import { Navbar } from "../components/Navbar";
-import { Footer } from "@/components/Footer";
+import { Footer } from "../components/Footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Bantu - IOFest",
-  description: "Bantu IOFest web application",
+  title: "Bantu - Connect Students & Local Businesses",
+  description: "Bantu is a marketplace connecting motivated students with local businesses for part-time jobs, freelance projects, and internships.",
 };
 
 export default function RootLayout({
@@ -29,14 +29,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${jakarta.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans bg-slate-50 text-slate-900">
+      <body className="min-h-full flex flex-col font-sans bg-brand-light text-brand-dark">
         <AuthProvider>
           <SmoothScroll>
-            <Navbar />
-            {children}
-            <Footer />
+            <div className="flex min-h-screen flex-col">
+              <Navbar />
+              <div className="flex-1">
+                {children}
+              </div>
+              <Footer />
+            </div>
           </SmoothScroll>
         </AuthProvider>
       </body>

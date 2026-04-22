@@ -7,7 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
-import Footer from "@/components/Footer";
+import { Footer } from "@/components/Footer";
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -38,8 +38,8 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#faf8ff]">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#006d38] border-t-transparent"></div>
+      <div className="flex min-h-screen items-center justify-center bg-brand-light">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-mid border-t-transparent"></div>
       </div>
     );
   }
@@ -51,41 +51,40 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#faf8ff] font-sans">
+    <div className="flex min-h-screen bg-brand-light font-sans">
       <Sidebar userData={userData} />
 
       <main className="flex-1 flex flex-col h-screen overflow-y-auto">
         <div className="flex-1 p-8 lg:p-12">
           <div className="max-w-5xl mx-auto">
-            <div className="mb-8">
-              <h1 className="text-4xl font-bold text-[#131b2e] font-display tracking-tight">Account Settings</h1>
-              <p className="text-[#3d4a3f] mt-2 text-sm">Manage your personal information, security, and preferences.</p>
+            <div className="mb-10">
+              <h1 className="text-4xl md:text-[3rem] font-medium text-brand-dark font-display tracking-tight leading-tight">Account Settings</h1>
+              <p className="text-brand-dark/60 mt-2 font-light text-lg">Manage your personal information, security, and preferences.</p>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-8 border-b border-[#bccabc]/20 mb-8">
+            <div className="flex gap-8 border-b border-brand-dark/10 mb-10">
               {tabs.map((tab) => {
                 const isActive = pathname === tab.path;
                 return (
                   <Link
                     key={tab.path}
                     href={tab.path}
-                    className={`pb-4 text-sm font-semibold cursor-pointer transition-colors ${
+                    className={`pb-4 text-sm tracking-wide font-medium cursor-pointer transition-colors relative ${
                       isActive
-                        ? "border-b-2 border-[#006d38] text-[#006d38]"
-                        : "text-[#3d4a3f]/70 hover:text-[#131b2e]"
+                        ? "text-brand-dark"
+                        : "text-brand-dark/40 hover:text-brand-dark/80"
                     }`}
                   >
                     {tab.name}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-0 w-full h-[2px] bg-brand-mid" />
+                    )}
                   </Link>
                 );
               })}
             </div>
 
-            {/* Children renders the active tab content */}
-            {/* Pass userData to children. In Next.js App Router, passing props to children in layout is tricky. 
-                Instead of passing as props, the child page components will fetch what they need or we use a context.
-                For simplicity, we let the children fetch or use auth context. */}
             {children}
           </div>
         </div>

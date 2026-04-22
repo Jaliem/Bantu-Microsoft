@@ -5,9 +5,11 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePathname } from "next/navigation";
 
 export function Navbar() {
   const { user, logout } = useAuth();
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
   
@@ -21,6 +23,11 @@ export function Navbar() {
     });
     return () => unsubscribe();
   }, [scrollY]);
+
+  const hiddenRoutes = ["/profile", "/chat", "/wallet", "/dashboard"];
+  if (hiddenRoutes.some(route => pathname?.startsWith(route))) {
+    return null;
+  }
 
   return (
     <motion.header
@@ -50,23 +57,6 @@ export function Navbar() {
             </motion.div>
             <span className="font-display font-bold text-xl tracking-tight text-brand-dark">BANTU</span>
           </Link>
-        </div>
-
-        <div className="hidden md:flex items-center gap-8">
-          {[
-            { label: "How it works", href: "#how-it-works" },
-            { label: "Features", href: "#features" },
-            { label: "For Businesses", href: "#businesses" },
-          ].map((link) => (
-            <Link 
-              key={link.label}
-              href={link.href} 
-              className="text-sm font-medium text-brand-dark/60 hover:text-brand-dark transition-colors font-sans relative group"
-            >
-              {link.label}
-              <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-brand-mid transition-all duration-300 group-hover:w-full" />
-            </Link>
-          ))}
         </div>
 
         <div className="flex items-center gap-4">
