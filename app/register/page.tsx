@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
-import { createUserWithEmailAndPassword, signInWithPopup, sendEmailVerification } from "firebase/auth";
+import React, { useState, useEffect } from "react";
+import { createUserWithEmailAndPassword, signInWithPopup, sendEmailVerification, signOut as firebaseSignOut } from "firebase/auth";
 import { auth, googleProvider, db } from "@/lib/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AlertCircle, Store, User, Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function RegisterPage() {
+  const { user: currentUser, userData: currentUserData } = useAuth();
   const [role, setRole] = useState<"UMKM" | "Mahasiswa">("UMKM");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -17,20 +20,24 @@ export default function RegisterPage() {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    if (currentUser && currentUserData?.verified === true) {
+      router.push("/dashboard");
+    }
+  }, [currentUser, currentUserData, router]);
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      toast.error("Passwords do not match.");
       return;
     }
     if (!agreeTerms) {
-      setError("You must agree to the Terms of Service and Privacy Policy.");
+      toast.error("You must agree to the Terms of Service and Privacy Policy.");
       return;
     }
 
@@ -39,13 +46,11 @@ export default function RegisterPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      // Send verification email automatically
-      await sendEmailVerification(user);
-      
       await setDoc(doc(db, "users", user.uid), {
         name,
         email,
         role,
+        verified: false,
         createdAt: new Date(),
       });
 
@@ -56,28 +61,31 @@ export default function RegisterPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             to: email,
-            subject: "Welcome to BANTU! 🎉",
+            subject: "Welcome to BANTU — Please Verify Your Email ✉️",
             html: `
-              <div style="font-family: 'Inter', sans-serif; color: #131b2e; max-w: 600px; margin: 0 auto; padding: 32px; border: 1px solid #bccabc; border-radius: 24px; background-color: #faf8ff;">
-                <div style="text-align: center; margin-bottom: 24px;">
-                  <h1 style="color: #006d38; font-size: 32px; margin: 0; letter-spacing: -0.5px;">BANTU</h1>
-                  <p style="color: #3d4a3f; font-size: 12px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Premium Ecosystem</p>
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+                <div style="background: linear-gradient(135deg, #006d38 0%, #00aa5b 100%); padding: 40px 32px; text-align: center; border-radius: 0 0 32px 32px;">
+                  <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 8px 0; letter-spacing: -0.5px;">BANTU</h1>
+                  <p style="color: rgba(255,255,255,0.8); font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Connecting UMKM × Mahasiswa</p>
                 </div>
-                <div style="background-color: #ffffff; padding: 32px; border-radius: 16px; border: 1px solid #bccabc;">
-                  <h2 style="margin-top: 0; color: #131b2e;">Welcome, ${name}!</h2>
-                  <p style="font-size: 15px; line-height: 1.6; color: #3d4a3f;">
-                    Thank you for joining the BANTU ecosystem as a <strong>${role}</strong>. We are thrilled to have you on board! You are now part of a growing community driving local innovation across Indonesia.
+                <div style="padding: 40px 32px;">
+                  <h2 style="color: #111827; margin: 0 0 16px 0; font-size: 22px;">Welcome aboard, ${name}! 🎉</h2>
+                  <p style="font-size: 15px; line-height: 1.7; color: #4b5563; margin: 0 0 16px 0;">
+                    Thank you for joining BANTU as a <strong style="color: #006d38;">${role}</strong>. You're now part of Indonesia's fastest-growing ecosystem connecting local businesses with talented students.
                   </p>
-                  <p style="font-size: 15px; line-height: 1.6; color: #3d4a3f;">
-                    To get the most out of your experience, please complete your profile and verify your email address. 
+                  <p style="font-size: 15px; line-height: 1.7; color: #4b5563; margin: 0 0 24px 0;">
+                    Before you can access the platform, please verify your email address by clicking the button below:
                   </p>
                   <div style="text-align: center; margin: 32px 0;">
-                    <a href="https://bantu.com/profile" style="background-color: #006d38; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 14px; display: inline-block;">Go to Dashboard</a>
+                    <a href="http://localhost:3000/verify/${user.uid}" style="background: linear-gradient(135deg, #006d38, #00aa5b); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 16px; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 4px 14px rgba(0,143,76,0.3);">Verify My Email Address</a>
+                  </div>
+                  <div style="background-color: #f8f9fe; border-radius: 16px; padding: 20px 24px; margin-top: 24px;">
+                    <p style="font-size: 13px; color: #6b7280; margin: 0; line-height: 1.6;">🔒 If you didn't create this account, you can safely ignore this email.</p>
                   </div>
                 </div>
-                <p style="font-size: 10px; font-weight: bold; color: #3d4a3f; text-align: center; margin-top: 32px; letter-spacing: 1px; text-transform: uppercase;">
-                  © 2024 BANTU INDONESIA. KARYA ANAK BANGSA.
-                </p>
+                <div style="border-top: 1px solid #f3f4f6; padding: 24px 32px; text-align: center;">
+                  <p style="font-size: 10px; font-weight: 700; color: #9ca3af; letter-spacing: 1.5px; text-transform: uppercase; margin: 0;">© 2024 BANTU INDONESIA • KARYA ANAK BANGSA</p>
+                </div>
               </div>
             `
           })
@@ -86,18 +94,21 @@ export default function RegisterPage() {
         console.error("Failed to send welcome email", e);
       }
 
-      router.push("/profile");
+      // Sign out immediately — user can't use the app until verified
+      await firebaseSignOut(auth);
+
+      router.push("/login");
+      toast.success("Account created! Please check your email to verify your account before logging in.");
     } catch (err: any) {
-      setError(err.message || "Failed to register.");
+      toast.error(err.message || "Failed to register.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignup = async () => {
-    setError("");
     if (!agreeTerms) {
-      setError("You must agree to the Terms of Service and Privacy Policy to sign up.");
+      toast.error("You must agree to the Terms of Service and Privacy Policy to sign up.");
       return;
     }
 
@@ -137,8 +148,9 @@ export default function RegisterPage() {
       await setDoc(userDocRef, {
         name: user.displayName || "User",
         email: user.email,
-        role, // Using the currently selected role
+        role,
         avatarUrl,
+        verified: false,
         createdAt: new Date(),
       }, { merge: true });
 
@@ -149,28 +161,28 @@ export default function RegisterPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               to: user.email,
-              subject: "Welcome to BANTU! 🎉",
+              subject: "Welcome to BANTU — Please Verify Your Email ✉️",
               html: `
-                <div style="font-family: 'Inter', sans-serif; color: #131b2e; max-w: 600px; margin: 0 auto; padding: 32px; border: 1px solid #bccabc; border-radius: 24px; background-color: #faf8ff;">
-                  <div style="text-align: center; margin-bottom: 24px;">
-                    <h1 style="color: #006d38; font-size: 32px; margin: 0; letter-spacing: -0.5px;">BANTU</h1>
-                    <p style="color: #3d4a3f; font-size: 12px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Premium Ecosystem</p>
+                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+                  <div style="background: linear-gradient(135deg, #006d38 0%, #00aa5b 100%); padding: 40px 32px; text-align: center; border-radius: 0 0 32px 32px;">
+                    <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 8px 0; letter-spacing: -0.5px;">BANTU</h1>
+                    <p style="color: rgba(255,255,255,0.8); font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Connecting UMKM × Mahasiswa</p>
                   </div>
-                  <div style="background-color: #ffffff; padding: 32px; border-radius: 16px; border: 1px solid #bccabc;">
-                    <h2 style="margin-top: 0; color: #131b2e;">Welcome, ${user.displayName || "User"}!</h2>
-                    <p style="font-size: 15px; line-height: 1.6; color: #3d4a3f;">
-                      Thank you for joining the BANTU ecosystem as a <strong>${role}</strong>. We are thrilled to have you on board! You are now part of a growing community driving local innovation across Indonesia.
-                    </p>
-                    <p style="font-size: 15px; line-height: 1.6; color: #3d4a3f;">
-                      To get the most out of your experience, please complete your profile. 
+                  <div style="padding: 40px 32px;">
+                    <h2 style="color: #111827; margin: 0 0 16px 0; font-size: 22px;">Welcome aboard, ${user.displayName || 'User'}! 🎉</h2>
+                    <p style="font-size: 15px; line-height: 1.7; color: #4b5563; margin: 0 0 16px 0;">
+                      Thank you for joining BANTU as a <strong style="color: #006d38;">${role}</strong>. Before you can log in, please verify your email address.
                     </p>
                     <div style="text-align: center; margin: 32px 0;">
-                      <a href="https://bantu.com/profile" style="background-color: #006d38; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 14px; display: inline-block;">Go to Dashboard</a>
+                      <a href=\"http://localhost:3000/verify/${user.uid}\" style="background: linear-gradient(135deg, #006d38, #00aa5b); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 16px; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 4px 14px rgba(0,143,76,0.3);">Verify My Email Address</a>
+                    </div>
+                    <div style="background-color: #f8f9fe; border-radius: 16px; padding: 20px 24px; margin-top: 24px;">
+                      <p style="font-size: 13px; color: #6b7280; margin: 0; line-height: 1.6;">🔒 If you didn't create this account, you can safely ignore this email.</p>
                     </div>
                   </div>
-                  <p style="font-size: 10px; font-weight: bold; color: #3d4a3f; text-align: center; margin-top: 32px; letter-spacing: 1px; text-transform: uppercase;">
-                    © 2024 BANTU INDONESIA. KARYA ANAK BANGSA.
-                  </p>
+                  <div style="border-top: 1px solid #f3f4f6; padding: 24px 32px; text-align: center;">
+                    <p style="font-size: 10px; font-weight: 700; color: #9ca3af; letter-spacing: 1.5px; text-transform: uppercase; margin: 0;">© 2024 BANTU INDONESIA • KARYA ANAK BANGSA</p>
+                  </div>
                 </div>
               `
             })
@@ -180,9 +192,13 @@ export default function RegisterPage() {
         }
       }
 
-      router.push("/profile");
+      // Sign out immediately — user must verify before logging in
+      await firebaseSignOut(auth);
+
+      router.push("/login");
+      toast.success("Account created! Please check your email to verify your account before logging in.");
     } catch (err: any) {
-      setError(err.message || "Failed to sign up with Google.");
+      toast.error(err.message || "Failed to sign up with Google.");
     } finally {
       setLoading(false);
     }
@@ -231,13 +247,6 @@ export default function RegisterPage() {
             <h2 className="text-[32px] font-bold text-[#111827]">Create Account</h2>
             <p className="mt-2 text-gray-600">Join the community driving local innovation.</p>
           </div>
-
-          {error && (
-            <div className="mb-6 flex items-center gap-2 rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-100">
-              <AlertCircle size={16} />
-              <p>{error}</p>
-            </div>
-          )}
 
           {/* Role Selection */}
           <div className="flex gap-4 mb-8">

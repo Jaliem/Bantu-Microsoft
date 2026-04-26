@@ -51,8 +51,8 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
   ];
 
   return (
-    <div className="flex min-h-screen bg-brand-light font-sans">
-      <Sidebar userData={userData} />
+    <div className="flex h-full flex-1 bg-brand-light font-sans">
+      <Sidebar />
 
       <main className="flex-1 flex flex-col h-screen overflow-y-auto">
         <div className="flex-1 p-8 lg:p-12">
@@ -88,8 +88,6 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
             {children}
           </div>
         </div>
-        
-        <Footer />
       </main>
     </div>
   );

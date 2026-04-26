@@ -8,14 +8,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePathname } from "next/navigation";
 
 export function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, userData, logout } = useAuth();
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
   
-  const navWidth = useTransform(scrollY, [0, 50], ["100%", "90%"]);
-  const navPadding = useTransform(scrollY, [0, 50], ["0rem", "1rem"]);
-  const navRadius = useTransform(scrollY, [0, 50], ["0rem", "1.5rem"]);
+  const navWidth = useTransform(scrollY, [0, 50], ["100%", "100%"]);
+  const navPadding = useTransform(scrollY, [0, 50], ["0rem", "0rem"]);
+  const navRadius = useTransform(scrollY, [0, 50], ["0rem", "0rem"]);
 
   useEffect(() => {
     const unsubscribe = scrollY.on("change", (latest) => {
@@ -24,7 +24,7 @@ export function Navbar() {
     return () => unsubscribe();
   }, [scrollY]);
 
-  const hiddenRoutes = ["/profile", "/chat", "/wallet", "/dashboard"];
+  const hiddenRoutes = ["/dashboard", "/profile", "/chat", "/wallet", "/portfolio", "/settings", "/verify", "/login", "/register"];
   if (hiddenRoutes.some(route => pathname?.startsWith(route))) {
     return null;
   }
@@ -40,48 +40,54 @@ export function Navbar() {
           borderRadius: navRadius,
         }}
         className={cn(
-          "pointer-events-auto flex items-center justify-between transition-all duration-500 ease-[0.22, 1, 0.36, 1]",
+          "pointer-events-auto flex items-center justify-between transition-all duration-300 ease-in-out border-b border-black/5",
           isScrolled 
-            ? "bg-brand-light/70 backdrop-blur-xl shadow-ambient px-6 py-4" 
-            : "bg-transparent px-8 py-8"
+            ? "bg-white/90 backdrop-blur-md shadow-sm px-6 py-4 md:px-12" 
+            : "bg-white px-6 py-5 md:px-12"
         )}
       >
-        <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-3 group">
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-10 h-10 rounded-xl bg-brand-mid flex items-center justify-center shadow-ambient"
-            >
-              <span className="text-white font-bold font-display text-xl leading-none">B</span>
-            </motion.div>
-            <span className="font-display font-bold text-xl tracking-tight text-brand-dark">BANTU</span>
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-2 group">
+            <span className="font-bold text-xl tracking-tight text-[#008f4c]">BANTU</span>
           </Link>
+          <div className="hidden md:flex items-center gap-6">
+            <Link href="/marketplace" className={cn("text-sm font-medium transition-colors hover:text-[#008f4c] cursor-pointer", pathname?.startsWith("/marketplace") ? "text-[#008f4c] border-b-2 border-[#008f4c] pb-1" : "text-gray-600")}>
+              Marketplace
+            </Link>
+            <Link href="/about" className={cn("text-sm font-medium transition-colors hover:text-[#008f4c] cursor-pointer", pathname?.startsWith("/about") ? "text-[#008f4c] border-b-2 border-[#008f4c] pb-1" : "text-gray-600")}>
+              About
+            </Link>
+          </div>
         </div>
 
         <div className="flex items-center gap-4">
           {user ? (
             <>
-              <Link href="/dashboard" className="hidden md:inline-block text-sm font-medium text-brand-dark hover:text-brand-mid transition-colors px-4 py-2">
+              {userData?.role === 'UMKM' && (
+                <Link href="/post-project" className="hidden md:inline-block text-sm font-bold text-[#008f4c] hover:text-[#007a41] transition-colors cursor-pointer mr-2">
+                  Post a Project
+                </Link>
+              )}
+              <Link href="/dashboard" className="hidden md:inline-block text-sm font-medium text-gray-700 hover:text-[#008f4c] transition-colors">
                 Dashboard
               </Link>
               <button 
                 onClick={() => logout()}
-                className="flex h-10 items-center justify-center px-5 rounded-lg bg-transparent text-brand-dark border border-brand-dark/10 text-sm font-medium transition-all hover:bg-black/5 active:scale-95"
+                className="flex h-9 items-center justify-center px-4 rounded-full bg-transparent text-gray-700 border border-gray-200 text-sm font-medium transition-all hover:bg-gray-50 active:scale-95"
               >
                 Log out
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className="hidden md:inline-block text-sm font-medium text-brand-dark hover:text-brand-mid transition-colors px-4 py-2">
-                Log in
+              <Link href="/login" className="hidden md:inline-block text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                Login
               </Link>
               <Link 
                 href="/register" 
-                className="flex h-10 items-center justify-center px-5 rounded-lg bg-brand-dark text-white text-sm font-medium transition-all hover:bg-brand-mid hover:shadow-ambient active:scale-95"
+                className="flex h-9 items-center justify-center px-5 rounded-full bg-[#008f4c] text-white text-sm font-medium transition-all hover:bg-[#007a41] active:scale-95"
               >
-                Get Started
+                Signup
               </Link>
             </>
           )}

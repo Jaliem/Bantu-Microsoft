@@ -1,50 +1,76 @@
 "use client";
 
-import React, { useState } from "react";
-import { signInWithEmailAndPassword, signInWithPopup, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase";
+import React, { useState, useEffect } from "react";
+import { signInWithEmailAndPassword, signInWithPopup, setPersistence, browserLocalPersistence, browserSessionPersistence, signOut as firebaseSignOut } from "firebase/auth";
+import { auth, googleProvider, db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 import Image from "next/image";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
+  const { user: currentUser, userData: currentUserData } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    if (currentUser && currentUserData?.verified === true) {
+      router.push("/dashboard");
+    }
+  }, [currentUser, currentUserData, router]);
+
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
     try {
-      // Set persistence based on "remember me"
       const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
       await setPersistence(auth, persistence);
       
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push("/profile");
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Check Firestore verified field
+      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
+      if (userDoc.exists() && userDoc.data().verified !== true) {
+        await firebaseSignOut(auth);
+        toast.error("Please verify your email before logging in. Check your inbox for the verification link.");
+        return;
+      }
+      
+      router.push("/dashboard");
+      toast.success("Logged in successfully!");
     } catch (err: any) {
-      setError(err.message || "Failed to log in.");
+      toast.error(err.message || "Failed to log in.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    setError("");
     setLoading(true);
     try {
       const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
       await setPersistence(auth, persistence);
       
-      await signInWithPopup(auth, googleProvider);
-      router.push("/profile");
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      
+      // Check Firestore verified field
+      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
+      if (userDoc.exists() && userDoc.data().verified !== true) {
+        await firebaseSignOut(auth);
+        toast.error("Please verify your email before logging in. Check your inbox for the verification link.");
+        return;
+      }
+      
+      router.push("/dashboard");
+      toast.success("Successfully logged in!");
     } catch (err: any) {
-      setError(err.message || "Failed to log in with Google.");
+      toast.error(err.message || "Failed to log in with Google.");
     } finally {
       setLoading(false);
     }
@@ -89,13 +115,6 @@ export default function LoginPage() {
             <h2 className="text-[32px] font-bold text-[#111827]">Welcome Back</h2>
             <p className="mt-2 text-gray-600">Masuk ke akun BANTU Anda untuk melanjutkan.</p>
           </div>
-
-          {error && (
-            <div className="mb-6 flex items-center gap-2 rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-100">
-              <AlertCircle size={16} />
-              <p>{error}</p>
-            </div>
-          )}
 
           <form onSubmit={handleEmailLogin} className="space-y-5">
             <div>

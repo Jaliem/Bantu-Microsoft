@@ -5,6 +5,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { SmoothScroll } from "../components/SmoothScroll";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
+import { Toaster } from "sonner";
+import ChatSupport from "@/components/ChatSupport";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -36,13 +38,15 @@ export default function RootLayout({
           <SmoothScroll>
             <div className="flex min-h-screen flex-col">
               <Navbar />
-              <div className="flex-1">
+              <div className="flex-1 flex flex-col">
                 {children}
               </div>
               <Footer />
             </div>
           </SmoothScroll>
+          <ChatSupport />
         </AuthProvider>
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );
