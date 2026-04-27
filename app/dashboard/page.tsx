@@ -122,23 +122,35 @@ export default function DashboardPage() {
                   <Wallet size={20} />
                 </div>
               </div>
-              <div className="text-4xl font-black text-gray-900 mb-3">Rp 0</div>
+              <div className="text-4xl font-black text-gray-900 mb-3">
+                {userData?.totalEarnings
+                  ? `Rp ${userData.totalEarnings.toLocaleString("id-ID")}`
+                  : "Rp 0"}
+              </div>
               <div className="flex items-center gap-2 text-sm font-bold text-[#16a34a]">
-                <TrendingUp size={16} /> New Account
+                <TrendingUp size={16} />
+                {userData?.totalEarnings ? "Total Earned" : "New Account"}
               </div>
             </div>
 
             {userData?.role !== 'UMKM' && (
               <div className="bg-white rounded-[32px] p-8 shadow-[0_4px_24px_rgba(19,27,46,0.03)] border border-gray-100">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-sm font-bold text-gray-500">Portfolio Score</h3>
-                  <span className="bg-[#e6f4ea] text-[#008f4c] font-bold text-xs px-2 py-1 rounded-md">New</span>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-bold text-gray-500">Rank & Portfolio Score</h3>
+                  <RankBadge rank={userData?.rank || 'D'} />
+                </div>
+                <div className="flex items-end gap-2 mb-4">
+                  <span className="text-4xl font-black text-gray-900">{userData?.completedTasks || 0}</span>
+                  <span className="text-sm text-gray-400 mb-1">tasks completed</span>
                 </div>
                 <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden mb-4">
-                  <div className="w-[10%] h-full bg-[#008f4c] rounded-full" />
+                  <div
+                    className="h-full bg-[#008f4c] rounded-full transition-all duration-700"
+                    style={{ width: `${getRankProgress(userData?.completedTasks || 0, userData?.rank || 'D')}%` }}
+                  />
                 </div>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  Start applying for tasks to build your portfolio score!
+                  {getRankNextStep(userData?.rank || 'D', userData?.completedTasks || 0)}
                 </p>
               </div>
             )}
@@ -224,4 +236,36 @@ export default function DashboardPage() {
       </main>
     </div>
   );
+}
+
+function RankBadge({ rank }: { rank: string }) {
+  const config: Record<string, { color: string; bg: string }> = {
+    S: { color: "text-yellow-700", bg: "bg-yellow-100" },
+    A: { color: "text-green-700", bg: "bg-green-100" },
+    B: { color: "text-blue-700", bg: "bg-blue-100" },
+    C: { color: "text-orange-700", bg: "bg-orange-100" },
+    D: { color: "text-gray-600", bg: "bg-gray-100" },
+  };
+  const { color, bg } = config[rank] || config.D;
+  return (
+    <span className={`font-black text-2xl w-10 h-10 rounded-xl flex items-center justify-center ${color} ${bg}`}>
+      {rank}
+    </span>
+  );
+}
+
+function getRankProgress(completed: number, rank: string): number {
+  if (rank === "S") return 100;
+  if (rank === "A") return Math.min(99, 50 + (completed - 15) * 2);
+  if (rank === "B") return Math.min(49, 20 + (completed - 5) * 3);
+  if (rank === "C") return Math.min(19, completed * 4);
+  return Math.min(5, completed);
+}
+
+function getRankNextStep(rank: string, completed: number): string {
+  if (rank === "S") return "Maximum rank achieved. You are a BANTU legend!";
+  if (rank === "A") return `${30 - completed} more tasks + 4.8 avg rating to reach Rank S`;
+  if (rank === "B") return `${15 - completed} more tasks to reach Rank A`;
+  if (rank === "C") return `${5 - completed} more tasks to reach Rank B`;
+  return "Complete your first task to reach Rank C!";
 }

@@ -10,6 +10,15 @@ interface UserData {
   name: string;
   email: string;
   avatarUrl?: string;
+  verified?: boolean;
+  rank?: "S" | "A" | "B" | "C" | "D";
+  completedTasks?: number;
+  avgRating?: number;
+  ratingCount?: number;
+  totalEarnings?: number;
+  university?: string;
+  skills?: string[];
+  bio?: string;
 }
 
 interface AuthContextType {
