@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { collection, query, where, getDocs, doc, getDoc, updateDoc, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { ClipboardList, Clock, CheckCircle2, AlertCircle, ExternalLink, Loader2 } from "lucide-react";
+import { ClipboardList, Clock, CheckCircle2, AlertCircle, ExternalLink, Loader2, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
@@ -209,11 +209,20 @@ export default function MyTasksPage() {
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
                         <div className="text-right">
                           <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Budget</p>
                           <p className="text-sm font-bold text-gray-900">{task.projectBudget}</p>
                         </div>
+                        {(task.status === "accepted" || task.status === "in_progress") && (
+                          <Link
+                            href={`/submit-work/${task.id}`}
+                            className="flex items-center gap-2 bg-[#008f4c] text-white text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-[#007a41] transition-all cursor-pointer shadow-sm"
+                          >
+                            <UploadCloud size={14} />
+                            {task.status === "in_progress" ? "View Submission" : "Submit Work"}
+                          </Link>
+                        )}
                         <Link
                           href={`/marketplace/${task.projectId}`}
                           className="w-10 h-10 bg-[#f8f9fe] rounded-xl flex items-center justify-center text-gray-500 hover:bg-[#008f4c] hover:text-white transition-all cursor-pointer"
