@@ -29,7 +29,7 @@ export default function JobDetailPage() {
         const docSnap = await getDoc(docRef);
         
         if (docSnap.exists()) {
-          const projectData = { id: docSnap.id, ...docSnap.data() };
+          const projectData: any = { id: docSnap.id, ...docSnap.data() };
           setProject(projectData);
           
           // Fetch similar projects

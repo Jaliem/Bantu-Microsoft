@@ -126,7 +126,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen bg-[#faf8ff] font-sans overflow-hidden">
-      <Sidebar userData={{ name: user.displayName || "User", role: "UMKM", avatarUrl: user.photoURL }} />
+      <Sidebar />
 
       {/* Messages List Column */}
       <div className="w-[320px] bg-[#faf8ff] border-r border-[#bccabc]/15 flex flex-col shrink-0">
