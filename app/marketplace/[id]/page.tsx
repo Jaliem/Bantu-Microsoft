@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Clock, Wallet, MapPin, CheckCircle2, ShieldCheck, Sparkles, ChevronRight, Share2, Bookmark } from 'lucide-react';
+import { ChevronLeft, Clock, Wallet, MapPin, CheckCircle2, ShieldCheck, Sparkles, ChevronRight, Share2, Bookmark, Star } from 'lucide-react';
 import { doc, getDoc, collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useParams, useRouter } from 'next/navigation';
