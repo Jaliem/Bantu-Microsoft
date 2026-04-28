@@ -127,7 +127,6 @@ export default function WalletPage() {
                     <p className="text-white/80 font-display font-bold">{userData?.name}</p>
                   </div>
                 </div>
-                <CreditCard size={24} className="text-white/20" />
               </div>
 
               <div className="mt-auto">

@@ -7,6 +7,7 @@ import { db } from '@/lib/firebase';
 import { formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, SlidersHorizontal, ArrowRight, Star, CheckCircle2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 export default function MarketplacePage() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -161,9 +162,11 @@ export default function MarketplacePage() {
                           {project.title}
                         </h2>
                         
-                        <p className="text-brand-dark/50 text-base leading-relaxed mb-8 line-clamp-2 font-light">
-                          {project.description}
-                        </p>
+                        <div className="text-brand-dark/50 text-base leading-relaxed mb-8 line-clamp-2 font-light prose-sm prose-brand">
+                          <ReactMarkdown>
+                            {project.description}
+                          </ReactMarkdown>
+                        </div>
                         
                         <div className="flex flex-wrap items-center gap-8 md:gap-12 pt-8 border-t border-brand-dark/5">
                           <div>

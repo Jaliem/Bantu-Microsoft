@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { Lock, Eye, EyeOff } from "lucide-react";
+import { Lock, Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
+import { motion } from "framer-motion";
 
 export default function KeamananPage() {
   const { user } = useAuth();
@@ -36,11 +37,8 @@ export default function KeamananPage() {
     setLoading(true);
 
     try {
-      // Re-authenticate user
       const credential = EmailAuthProvider.credential(user.email, currentPassword);
       await reauthenticateWithCredential(user, credential);
-      
-      // Update password
       await updatePassword(user, newPassword);
       
       setSuccess("Password updated successfully!");
@@ -59,33 +57,43 @@ export default function KeamananPage() {
   };
 
   return (
-    <div className="bg-white rounded-[32px] p-8 shadow-[0_4px_20px_rgba(19,27,46,0.02)] border border-[#bccabc]/15 max-w-2xl">
-      <div className="flex items-center gap-3 mb-8 text-[#131b2e]">
-        <Lock size={24} className="text-[#006d38]" />
+    <div className="bg-white rounded-[2.5rem] p-10 md:p-12 shadow-ambient border border-brand-dark/5 max-w-2xl">
+      <div className="flex items-center gap-5 mb-12">
+        <div className="w-14 h-14 rounded-2xl bg-brand-mid/10 flex items-center justify-center text-brand-mid shrink-0">
+          <Lock size={24} />
+        </div>
         <div>
-          <h2 className="text-xl font-bold font-display">Change Password</h2>
-          <p className="text-sm text-[#3d4a3f] mt-1">Ensure your account is using a long, random password to stay secure.</p>
+          <h2 className="text-2xl font-display font-bold text-brand-dark tracking-tight">Change Password</h2>
+          <p className="text-sm text-brand-dark/40 mt-1 font-sans font-light">Ensure your account is using a long, random password to stay secure.</p>
         </div>
       </div>
 
-      <form onSubmit={handleUpdatePassword} className="space-y-6">
-        {error && <div className="p-4 bg-red-50 text-red-600 rounded-[16px] text-sm font-semibold border border-red-100">{error}</div>}
-        {success && <div className="p-4 bg-green-50 text-[#006d38] rounded-[16px] text-sm font-semibold border border-green-100">{success}</div>}
+      <form onSubmit={handleUpdatePassword} className="space-y-8">
+        {error && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-5 bg-red-50 text-red-600 rounded-2xl text-xs font-bold uppercase tracking-widest border border-red-100 flex items-center gap-3">
+            <ShieldCheck size={16} className="rotate-180" /> {error}
+          </motion.div>
+        )}
+        {success && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-5 bg-brand-mid/5 text-brand-mid rounded-2xl text-xs font-bold uppercase tracking-widest border border-brand-mid/10 flex items-center gap-3">
+            <ShieldCheck size={16} /> {success}
+          </motion.div>
+        )}
 
-        <div>
-          <label className="block text-[10px] uppercase font-bold text-[#3d4a3f] mb-2 tracking-wider">Current Password</label>
-          <div className="relative">
+        <div className="space-y-2">
+          <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-brand-dark/30 ml-1">Current Password</label>
+          <div className="relative group">
             <input
               type={showCurrent ? "text" : "password"}
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
-              className="w-full p-3.5 rounded-[16px] text-sm text-[#131b2e] bg-[#f2f3ff] border border-transparent focus:bg-white focus:border-[#006d38] focus:ring-1 focus:ring-[#006d38] focus:outline-none transition-colors"
+              className="w-full p-4 rounded-2xl text-sm text-brand-dark bg-brand-light/50 border-2 border-transparent focus:bg-white focus:border-brand-mid focus:ring-4 focus:ring-brand-mid/5 transition-all outline-none"
               placeholder="••••••••"
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#3d4a3f] hover:text-[#131b2e] cursor-pointer"
+              className="absolute inset-y-0 right-0 flex items-center pr-5 text-brand-dark/20 hover:text-brand-mid transition-colors cursor-pointer"
               onClick={() => setShowCurrent(!showCurrent)}
             >
               {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -93,21 +101,21 @@ export default function KeamananPage() {
           </div>
         </div>
 
-        <div>
-          <label className="block text-[10px] uppercase font-bold text-[#3d4a3f] mb-2 tracking-wider">New Password</label>
-          <div className="relative">
+        <div className="space-y-2">
+          <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-brand-dark/30 ml-1">New Password</label>
+          <div className="relative group">
             <input
               type={showNew ? "text" : "password"}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full p-3.5 rounded-[16px] text-sm text-[#131b2e] bg-[#f2f3ff] border border-transparent focus:bg-white focus:border-[#006d38] focus:ring-1 focus:ring-[#006d38] focus:outline-none transition-colors"
+              className="w-full p-4 rounded-2xl text-sm text-brand-dark bg-brand-light/50 border-2 border-transparent focus:bg-white focus:border-brand-mid focus:ring-4 focus:ring-brand-mid/5 transition-all outline-none"
               placeholder="••••••••"
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 flex items-center pr-4 text-[#3d4a3f] hover:text-[#131b2e] cursor-pointer"
+              className="absolute inset-y-0 right-0 flex items-center pr-5 text-brand-dark/20 hover:text-brand-mid transition-colors cursor-pointer"
               onClick={() => setShowNew(!showNew)}
             >
               {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -115,11 +123,11 @@ export default function KeamananPage() {
           </div>
         </div>
 
-        <div className="pt-4 flex justify-end">
+        <div className="pt-6 flex justify-end">
           <button 
             type="submit"
             disabled={loading}
-            className="bg-[#006d38] text-white font-semibold px-8 py-3.5 rounded-[16px] hover:bg-[#00aa5b] transition-colors shadow-[0_4px_20px_rgba(19,27,46,0.05)] cursor-pointer disabled:opacity-70 flex items-center gap-2"
+            className="bg-brand-mid hover:bg-brand-dark text-white font-display font-bold py-4 px-10 rounded-full text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-brand-mid/20 disabled:opacity-70 flex items-center gap-3 active:scale-95"
           >
             {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
             Update Password

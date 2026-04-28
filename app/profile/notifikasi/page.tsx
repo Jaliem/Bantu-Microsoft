@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Bell } from "lucide-react";
+import { Bell, Mail, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export default function NotifikasiPage() {
   const { user } = useAuth();
@@ -15,7 +16,6 @@ export default function NotifikasiPage() {
   
   const [loading, setLoading] = useState(false);
 
-  // Load existing preferences from Firestore
   useEffect(() => {
     const loadPrefs = async () => {
       if (!user) return;
@@ -40,54 +40,11 @@ export default function NotifikasiPage() {
     setLoading(true);
 
     try {
-      // Save preferences to Firestore
       await setDoc(doc(db, "users", user.uid), {
         preferences: { jobUpdates, marketing }
       }, { merge: true });
 
-      // Send professional confirmation email
-      if (user.email) {
-        await fetch("/api/send-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to: user.email,
-            subject: "BANTU — Notification Preferences Updated ✅",
-            html: `
-              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-                <div style="background: linear-gradient(135deg, #006d38 0%, #00aa5b 100%); padding: 40px 32px; text-align: center; border-radius: 0 0 32px 32px;">
-                  <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 8px 0; letter-spacing: -0.5px;">BANTU</h1>
-                  <p style="color: rgba(255,255,255,0.8); font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Notification Settings</p>
-                </div>
-                <div style="padding: 40px 32px;">
-                  <h2 style="color: #111827; margin: 0 0 16px 0; font-size: 22px;">Preferences Updated ✅</h2>
-                  <p style="font-size: 15px; line-height: 1.7; color: #4b5563; margin: 0 0 24px 0;">
-                    Your email notification preferences have been successfully saved.
-                  </p>
-                  <div style="background-color: #f8f9fe; border-radius: 16px; padding: 24px; margin-bottom: 24px;">
-                    <table style="width: 100%; border-collapse: collapse;">
-                      <tr>
-                        <td style="padding: 10px 0; font-size: 14px; color: #4b5563;">Job Updates</td>
-                        <td style="padding: 10px 0; font-size: 14px; font-weight: 700; text-align: right; color: ${jobUpdates ? '#006d38' : '#ef4444'};">${jobUpdates ? '✅ Enabled' : '❌ Disabled'}</td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 10px 0; font-size: 14px; color: #4b5563; border-top: 1px solid #e5e7eb;">Marketing & Promos</td>
-                        <td style="padding: 10px 0; font-size: 14px; font-weight: 700; text-align: right; border-top: 1px solid #e5e7eb; color: ${marketing ? '#006d38' : '#ef4444'};">${marketing ? '✅ Enabled' : '❌ Disabled'}</td>
-                      </tr>
-                    </table>
-                  </div>
-                  <p style="font-size: 13px; color: #9ca3af; text-align: center;">You can update these settings anytime in your account.</p>
-                </div>
-                <div style="border-top: 1px solid #f3f4f6; padding: 24px 32px; text-align: center;">
-                  <p style="font-size: 10px; font-weight: 700; color: #9ca3af; letter-spacing: 1.5px; text-transform: uppercase; margin: 0;">© 2024 BANTU INDONESIA • KARYA ANAK BANGSA</p>
-                </div>
-              </div>
-            `,
-          }),
-        });
-      }
-
-      toast.success("Preferences saved successfully!");
+      toast.success("Notification preferences saved!");
     } catch (error) {
       console.error(error);
       toast.error("Failed to save preferences.");
@@ -97,62 +54,69 @@ export default function NotifikasiPage() {
   };
 
   return (
-    <div className="bg-white rounded-[32px] p-8 shadow-[0_4px_20px_rgba(19,27,46,0.02)] border border-[#bccabc]/15 max-w-2xl">
-      <div className="flex items-center gap-3 mb-8 text-[#131b2e]">
-        <Bell size={24} className="text-[#006d38]" />
+    <div className="bg-white rounded-[2.5rem] p-10 md:p-12 shadow-ambient border border-brand-dark/5 max-w-2xl">
+      <div className="flex items-center gap-5 mb-12">
+        <div className="w-14 h-14 rounded-2xl bg-brand-mid/10 flex items-center justify-center text-brand-mid shrink-0">
+          <Bell size={24} />
+        </div>
         <div>
-          <h2 className="text-xl font-bold font-display">Email Notifications</h2>
-          <p className="text-sm text-[#3d4a3f] mt-1">Manage what emails you receive from BANTU.</p>
+          <h2 className="text-2xl font-display font-bold text-brand-dark tracking-tight">Email Notifications</h2>
+          <p className="text-sm text-brand-dark/40 mt-1 font-sans font-light">Manage what emails you receive from BANTU.</p>
         </div>
       </div>
 
-      <div className="space-y-6">
-        <div className="flex items-start gap-4 p-4 rounded-[16px] bg-[#f2f3ff] border border-[#bccabc]/15">
-          <div className="flex h-6 items-center">
-            <input
-              id="jobUpdates"
-              type="checkbox"
-              checked={jobUpdates}
-              onChange={(e) => setJobUpdates(e.target.checked)}
-              className="h-5 w-5 rounded border-[#bccabc] text-[#006d38] focus:ring-[#006d38] cursor-pointer"
-            />
-          </div>
-          <div className="text-sm flex-1">
-            <label htmlFor="jobUpdates" className="font-bold text-[#131b2e] cursor-pointer block">
-              Job Updates
-            </label>
-            <p className="text-[#3d4a3f] mt-1">Receive an email when someone applies to or takes your job.</p>
-          </div>
-        </div>
+      <div className="space-y-4">
+        {[
+          { 
+            id: "jobUpdates", 
+            title: "Job Updates", 
+            desc: "Receive an email when someone applies to or takes your job.",
+            state: jobUpdates,
+            setter: setJobUpdates
+          },
+          { 
+            id: "marketing", 
+            title: "Marketing & Promos", 
+            desc: "Receive news, special offers, and updates from BANTU ecosystem.",
+            state: marketing,
+            setter: setMarketing
+          }
+        ].map((item) => (
+          <motion.div 
+            key={item.id}
+            whileHover={{ scale: 1.01 }}
+            className={`flex items-start gap-5 p-6 rounded-3xl border-2 transition-all cursor-pointer ${
+              item.state ? 'bg-brand-mid/5 border-brand-mid/10' : 'bg-brand-light/30 border-transparent hover:bg-brand-light'
+            }`}
+            onClick={() => item.setter(!item.state)}
+          >
+            <div className={`mt-1 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${item.state ? 'bg-brand-mid border-brand-mid' : 'border-brand-dark/10 bg-white'}`}>
+              {item.state && <CheckCircle2 size={14} className="text-white" />}
+            </div>
+            <div className="flex-1">
+              <h4 className={`text-sm font-display font-bold ${item.state ? 'text-brand-dark' : 'text-brand-dark/60'}`}>{item.title}</h4>
+              <p className="text-xs text-brand-dark/40 mt-1 leading-relaxed font-sans font-light">{item.desc}</p>
+            </div>
+          </motion.div>
+        ))}
 
-        <div className="flex items-start gap-4 p-4 rounded-[16px] bg-[#f2f3ff] border border-[#bccabc]/15">
-          <div className="flex h-6 items-center">
-            <input
-              id="marketing"
-              type="checkbox"
-              checked={marketing}
-              onChange={(e) => setMarketing(e.target.checked)}
-              className="h-5 w-5 rounded border-[#bccabc] text-[#006d38] focus:ring-[#006d38] cursor-pointer"
-            />
-          </div>
-          <div className="text-sm flex-1">
-            <label htmlFor="marketing" className="font-bold text-[#131b2e] cursor-pointer block">
-              Marketing & Promos
-            </label>
-            <p className="text-[#3d4a3f] mt-1">Receive news, special offers, and updates from BANTU ecosystem.</p>
-          </div>
-        </div>
-
-        <div className="pt-4 flex justify-end">
+        <div className="pt-8 flex justify-end">
           <button 
             onClick={handleSavePreferences}
             disabled={loading}
-            className="bg-[#006d38] text-white font-semibold px-8 py-3.5 rounded-[16px] hover:bg-[#00aa5b] transition-colors shadow-[0_4px_20px_rgba(19,27,46,0.05)] cursor-pointer flex items-center gap-2 disabled:opacity-70"
+            className="bg-brand-mid hover:bg-brand-dark text-white font-display font-bold py-4 px-10 rounded-full text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-brand-mid/20 disabled:opacity-70 flex items-center gap-3 active:scale-95"
           >
             {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
             Save Preferences
           </button>
         </div>
+      </div>
+
+      <div className="mt-12 p-6 bg-brand-light/50 rounded-3xl border border-brand-dark/5 flex gap-4">
+        <Mail className="text-brand-mid shrink-0" size={20} />
+        <p className="text-[11px] text-brand-dark/40 leading-relaxed font-sans font-light">
+          We respect your privacy. You can also unsubscribe directly from the footer of any email we send you.
+        </p>
       </div>
     </div>
   );

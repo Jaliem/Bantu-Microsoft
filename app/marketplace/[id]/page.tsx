@@ -16,9 +16,10 @@ export default function JobDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const router = useRouter();
-  const { userData, user } = useAuth();
+  const { userData, user, loading: authLoading } = useAuth();
   
   const [project, setProject] = useState<any>(null);
+  const [umkmData, setUmkmData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [similarProjects, setSimilarProjects] = useState<any[]>([]);
   const [applying, setApplying] = useState(false);
@@ -33,6 +34,14 @@ export default function JobDetailPage() {
           const projectData: any = { id: docSnap.id, ...docSnap.data() };
           setProject(projectData);
           
+          // Fetch UMKM Data
+          if (projectData.umkmId) {
+            const umkmSnap = await getDoc(doc(db, "users", projectData.umkmId));
+            if (umkmSnap.exists()) {
+              setUmkmData(umkmSnap.data());
+            }
+          }
+
           if (projectData.category) {
             const q = query(
               collection(db, "projects"),
@@ -98,13 +107,13 @@ export default function JobDetailPage() {
       if (project.umkmId) {
         const umkmDoc = await getDoc(doc(db, "users", project.umkmId));
         if (umkmDoc.exists()) {
-          const umkmData = umkmDoc.data();
-          if (umkmData.email) {
+          const umkmDataRes = umkmDoc.data();
+          if (umkmDataRes.email) {
             await fetch("/api/send-email", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                to: umkmData.email,
+                to: umkmDataRes.email,
                 subject: `New Application for ${project.title} 🚀`,
                 html: `
                   <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
@@ -112,7 +121,7 @@ export default function JobDetailPage() {
                       <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 8px 0; letter-spacing: -0.5px;">BANTU</h1>
                     </div>
                     <div style="padding: 40px 32px;">
-                      <h2 style="color: #111827; margin: 0 0 16px 0; font-size: 22px;">Hello ${umkmData.name || 'UMKM'}! 🎉</h2>
+                      <h2 style="color: #111827; margin: 0 0 16px 0; font-size: 22px;">Hello ${umkmDataRes.name || 'UMKM'}! 🎉</h2>
                       <p>New application received for ${project.title}.</p>
                     </div>
                   </div>
@@ -215,49 +224,26 @@ export default function JobDetailPage() {
                   ))}
                 </ul>
               </div>
-
-              <div className="rounded-[2.5rem] overflow-hidden bg-brand-light aspect-video relative shadow-ambient border border-brand-dark/5">
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/10 to-transparent z-10" />
-                <div className="w-full h-full bg-brand-dark/5 flex items-center justify-center">
-                  <span className="font-display font-bold text-brand-dark/10 text-4xl tracking-tighter uppercase">Project Preview</span>
-                </div>
-              </div>
             </motion.div>
           </div>
 
           {/* Right Column - Apply actions */}
           <div className="w-full lg:w-[400px] shrink-0 flex flex-col gap-8">
             
-            {/* AI Matching Engine Card */}
-            <div className="bg-brand-mid rounded-[2.5rem] p-10 text-white shadow-xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-1000" />
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 text-white/70 text-[10px] font-bold tracking-[0.2em] uppercase mb-6">
-                  AI MATCHING ENGINE
-                </div>
-                <div className="text-7xl font-display font-black tracking-tighter mb-4">98%</div>
-                <p className="text-white/80 text-sm leading-relaxed mb-8 font-light">
-                  Highly Recommended based on your verified skills in Creative Design.
-                </p>
-                <div className="w-full h-2 bg-black/10 rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: '98%' }}
-                    transition={{ duration: 1, delay: 0.5 }}
-                    className="h-full bg-white rounded-full" 
-                  />
-                </div>
-              </div>
-            </div>
-
             {/* UMKM Profile Card */}
             <div className="bg-white rounded-[2.5rem] p-10 shadow-ambient border border-brand-dark/5">
               <div className="flex items-center gap-5 mb-10">
-                <div className="w-20 h-20 rounded-[1.5rem] bg-brand-light flex items-center justify-center text-3xl shadow-sm border border-brand-dark/5">
-                  ☕
+                <div className="w-20 h-20 rounded-[1.5rem] bg-brand-light flex items-center justify-center text-3xl shadow-sm border border-brand-dark/5 overflow-hidden">
+                  {umkmData?.avatarUrl ? (
+                    <img src={umkmData.avatarUrl} className="w-full h-full object-cover" alt="avatar" />
+                  ) : (
+                    <div className="text-brand-mid font-display font-bold">
+                      {umkmData?.name?.[0] || 'U'}
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <h3 className="font-display font-bold text-brand-dark text-xl leading-tight">Warung Kopi Jaya</h3>
+                  <h3 className="font-display font-bold text-brand-dark text-xl leading-tight">{umkmData?.name || "BANTU UMKM"}</h3>
                   <div className="inline-flex items-center gap-2 bg-brand-mid/10 text-brand-mid px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest mt-2">
                     <CheckCircle2 size={12} /> Verified UMKM
                   </div>
@@ -267,15 +253,19 @@ export default function JobDetailPage() {
               <div className="space-y-5 mb-10">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-brand-dark/40 font-bold uppercase tracking-tighter text-[10px]">Member Since</span>
-                  <span className="font-display font-bold text-brand-dark">Oct 2022</span>
+                  <span className="font-display font-bold text-brand-dark">
+                    {umkmData?.createdAt?.toDate 
+                      ? new Intl.DateTimeFormat('id-ID', { month: 'short', year: 'numeric' }).format(umkmData.createdAt.toDate())
+                      : 'Baru saja'}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-brand-dark/40 font-bold uppercase tracking-tighter text-[10px]">Rating</span>
-                  <span className="font-display font-bold text-brand-dark flex items-center gap-1.5">4.9 <Star size={14} className="fill-brand-mid text-brand-mid" /></span>
+                  <span className="font-display font-bold text-brand-dark flex items-center gap-1.5">{umkmData?.avgRating?.toFixed(1) || '5.0'} <Star size={14} className="fill-brand-mid text-brand-mid" /></span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-brand-dark/40 font-bold uppercase tracking-tighter text-[10px]">Projects Completed</span>
-                  <span className="font-display font-bold text-brand-dark">12</span>
+                  <span className="text-brand-dark/40 font-bold uppercase tracking-tighter text-[10px]">Projects Posted</span>
+                  <span className="font-display font-bold text-brand-dark">{umkmData?.completedTasks || '0'}</span>
                 </div>
               </div>
 
@@ -295,10 +285,10 @@ export default function JobDetailPage() {
               
               <div className="flex items-center justify-center gap-4 mt-6">
                 <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-brand-dark/40 hover:text-brand-dark transition-colors">
-                  <Share2 size={14} /> Share
+                   Share
                 </button>
                 <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-brand-dark/40 hover:text-brand-dark transition-colors">
-                  <Bookmark size={14} /> Save
+                   Save
                 </button>
               </div>
             </div>

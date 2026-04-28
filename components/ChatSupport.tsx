@@ -116,9 +116,6 @@ export default function ChatSupport() {
               {/* Welcome message */}
               {messages.length === 0 && (
                 <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-white rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 shadow-sm border border-brand-mid/10">
-                    <span className="text-brand-mid font-display font-bold text-xl">B</span>
-                  </div>
                   <h4 className="font-display font-bold text-brand-dark text-xl mb-4 tracking-tight">Pusat Bantuan</h4>
                   <p className="text-sm text-brand-dark/40 leading-relaxed max-w-[280px] mx-auto font-sans font-light">
                     Halo! Tanyakan apa saja seputar layanan BANTU. Kami siap membantu operasional Anda.
@@ -191,11 +188,6 @@ export default function ChatSupport() {
                 >
                   <Send size={18} />
                 </button>
-              </div>
-              <div className="flex justify-center mt-6">
-                <p className="text-[8px] text-brand-dark/15 font-bold uppercase tracking-[0.3em]">
-                  Powered by Advanced AI System
-                </p>
               </div>
             </div>
           </motion.div>

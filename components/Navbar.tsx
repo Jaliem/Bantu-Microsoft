@@ -13,6 +13,10 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
 
+  // Force compact style on non-home pages
+  const isHomePage = pathname === "/";
+  const shouldBeCompact = isScrolled || !isHomePage;
+
   useEffect(() => {
     const unsubscribe = scrollY.on("change", (latest) => {
       setIsScrolled(latest > 20);
@@ -23,18 +27,18 @@ export function Navbar() {
   return (
     <motion.header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-[0.16,1,0.3,1]",
-        isScrolled 
-          ? "bg-brand-light/90 backdrop-blur-xl border-b border-brand-dark/10 py-4" 
-          : "bg-transparent py-8"
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out",
+        shouldBeCompact 
+          ? "bg-brand-light/90 backdrop-blur-xl border-b border-brand-dark/10 h-20" 
+          : "bg-transparent h-28"
       )}
     >
-      <nav className="container mx-auto px-6 md:px-12 flex items-center justify-between">
+      <nav className="container mx-auto px-6 md:px-12 flex items-center justify-between h-full">
         
         {/* Logo - Using Brand Dark and Font Display */}
         <div className="flex items-center gap-12">
-          <Link href="/" className="group">
-            <span className="font-display font-bold text-2xl tracking-tighter text-brand-dark">
+          <Link href="/" className="flex items-center">
+            <span className="font-display font-bold text-2xl tracking-tighter text-brand-dark leading-none">
               BANTU<span className="text-brand-mid">.</span>
             </span>
           </Link>
@@ -48,7 +52,7 @@ export function Navbar() {
               <Link 
                 key={item}
                 href={item === "Tasks" ? "/dashboard/my-tasks" : `/${item.toLowerCase()}`} 
-                className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-brand-dark/50 hover:text-brand-dark transition-colors relative group font-display"
+                className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-brand-dark/50 hover:text-brand-dark transition-colors relative group font-display flex items-center h-full"
               >
                 {item}
                 {(pathname === `/${item.toLowerCase()}` || (item === "Tasks" && pathname === "/dashboard/my-tasks")) && (
@@ -63,35 +67,35 @@ export function Navbar() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-8 h-full">
           {user ? (
             <>
               {userData?.role === 'UMKM' && (
-                <Link href="/post-project" className="hidden md:inline-block text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-mid hover:opacity-70 transition-opacity font-display">
+                <Link href="/post-project" className="hidden md:flex items-center text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-mid hover:opacity-70 transition-opacity font-display">
                   + Post Project
                 </Link>
               )}
-              <Link href="/profile" className="hidden md:inline-block text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-dark/60 hover:text-brand-dark transition-colors font-display">
+              <Link href="/profile" className="hidden md:flex items-center text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-dark/60 hover:text-brand-dark transition-colors font-display">
                 Profile
               </Link>
-              <Link href="/dashboard" className="hidden md:inline-block text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-dark/60 hover:text-brand-dark transition-colors font-display">
+              <Link href="/dashboard" className="hidden md:flex items-center text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-dark/60 hover:text-brand-dark transition-colors font-display">
                 Dashboard
               </Link>
               <button 
                 onClick={() => logout()}
-                className="text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-dark border-b border-brand-dark/20 hover:border-brand-dark transition-all pb-0.5 font-display"
+                className="text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-dark border-b border-brand-dark/20 hover:border-brand-dark transition-all font-display flex items-center h-fit pb-0.5"
               >
                 Log out
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className="hidden md:inline-block text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-dark/50 hover:text-brand-dark transition-colors font-display">
+              <Link href="/login" className="hidden md:flex items-center text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-dark/50 hover:text-brand-dark transition-colors font-display h-full">
                 Login
               </Link>
               <Link 
                 href="/register" 
-                className="bg-brand-mid text-brand-light px-8 py-3 text-[0.7rem] font-bold uppercase tracking-[0.2em] transition-all hover:bg-brand-dark active:scale-95 rounded-full font-display shadow-lg shadow-brand-mid/20"
+                className="bg-brand-mid text-brand-light px-8 py-3.5 rounded-full font-display font-bold text-[0.7rem] uppercase tracking-[0.2em] shadow-lg shadow-brand-mid/20 hover:bg-brand-dark transition-all active:scale-95 flex items-center h-fit"
               >
                 Join Now
               </Link>

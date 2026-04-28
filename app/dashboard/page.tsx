@@ -19,19 +19,29 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!authLoading && !user) {
+      // 1. Wait for auth to initialize
+      if (authLoading) return;
+
+      // 2. If no user, redirect to login
+      if (!user) {
         router.push("/login");
         return;
       }
 
-      if (authLoading || !userData || !user) return;
+      // 3. If auth is finished but no userData found in Firestore
+      if (!userData) {
+        setLoading(false); // Stop showing the spinner
+        return;
+      }
 
+      // 4. Check verification
       if (userData.verified !== true) {
         router.push("/login");
         toast.error("Please verify your email before accessing the dashboard.");
         return;
       }
 
+      // 5. Fetch dashboard-specific data
       try {
         if (userData.role === 'UMKM') {
           const q = query(
@@ -45,6 +55,7 @@ export default function DashboardPage() {
           snap.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
           setData(docs);
         } else {
+          // For Mahasiswa: show recent available projects
           const q = query(
             collection(db, "projects"),
             orderBy("createdAt", "desc"),
@@ -62,7 +73,7 @@ export default function DashboardPage() {
       }
     };
     fetchData();
-  }, [user, userData, router]);
+  }, [user, userData, authLoading, router]);
 
   if (loading) {
     return (
@@ -85,11 +96,6 @@ export default function DashboardPage() {
             <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-brand-dark mb-3">
               Halo, {userData?.name?.split(' ')[0] || 'User'}!
             </h1>
-            <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-2 bg-brand-mid/10 text-brand-mid px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-brand-mid/20">
-                <CheckCircle2 size={12} /> Verified {userData?.role}
-              </span>
-            </div>
           </motion.div>
           
           <motion.div 
@@ -97,10 +103,7 @@ export default function DashboardPage() {
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-4"
           >
-            <button className="w-14 h-14 rounded-2xl bg-white shadow-ambient flex items-center justify-center relative hover:bg-brand-light transition-all border border-brand-dark/5 cursor-pointer group">
-              <Bell size={22} className="text-brand-dark/40 group-hover:text-brand-dark transition-colors" />
-              <span className="absolute top-4 right-4 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white shadow-sm" />
-            </button>
+            
             <Link href="/profile" className="flex items-center gap-4 bg-white p-2 pr-6 rounded-2xl shadow-ambient border border-brand-dark/5 hover:border-brand-mid/30 transition-all group">
               <div className="w-10 h-10 bg-brand-dark rounded-xl overflow-hidden flex items-center justify-center text-white font-display font-bold shadow-lg">
                 {userData?.avatarUrl ? <img src={userData.avatarUrl} alt="avatar" className="w-full h-full object-cover" /> : userData?.name?.[0] || 'U'}
@@ -240,38 +243,6 @@ export default function DashboardPage() {
                 </AnimatePresence>
               </div>
             </div>
-
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="bg-white rounded-[2.5rem] p-10 md:p-12 shadow-ambient border border-brand-dark/5 relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-64 h-64 bg-brand-mid/5 rounded-full blur-3xl" />
-              <div className="relative z-10">
-                <div className="flex items-center gap-6 mb-10">
-                  <div>
-                    <h3 className="text-2xl font-display font-bold text-brand-dark tracking-tight">Boost Your Stats</h3>
-                    <p className="text-brand-dark/40 text-sm font-sans mt-1">Dapatkan feedback lebih baik dan tingkatkan rank kamu.</p>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-4">
-                  <div className="bg-brand-light/50 px-6 py-4 rounded-2xl flex items-center gap-4 border border-brand-dark/5 shadow-sm">
-                    <div className="bg-brand-mid/10 text-brand-mid p-1.5 rounded-full"><CheckCircle2 size={16} /></div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-dark/60">Fast Response</span>
-                  </div>
-                  <div className="bg-brand-light/50 px-6 py-4 rounded-2xl flex items-center gap-4 border border-brand-dark/5 shadow-sm">
-                    <div className="bg-brand-mid/10 text-brand-mid p-1.5 rounded-full"><Star size={16} className="fill-brand-mid" /></div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-dark/60">High Rating</span>
-                  </div>
-                  <div className="bg-brand-light/50 px-6 py-4 rounded-2xl flex items-center gap-4 border border-brand-dark/5 shadow-sm">
-                    <div className="bg-brand-mid/10 text-brand-mid p-1.5 rounded-full"><ShieldCheck size={16} /></div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-dark/60">Verified ID</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
 
           </div>
         </div>

@@ -234,7 +234,7 @@ export default function ProfilePersonalInfoPage() {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  className="bg-white/10 px-3 py-1.5 rounded-xl text-[11px] font-bold text-white/80 border border-white/5 flex items-center gap-2 group/skill"
+                  className="bg-white/10 px-4 py-2 rounded-full text-[11px] font-bold text-white/80 border border-white/5 flex items-center gap-2 group/skill"
                 >
                   {skill}
                   {isEditing && (
@@ -248,21 +248,25 @@ export default function ProfilePersonalInfoPage() {
             
             {isEditing && (
               addingSkill ? (
-                <div className="flex items-center bg-white rounded-xl shadow-sm overflow-hidden">
-                  <input 
-                    type="text" 
-                    value={newSkill} 
-                    onChange={e => setNewSkill(e.target.value)} 
-                    onKeyDown={e => e.key === 'Enter' && handleAddSkill()}
-                    autoFocus
-                    className="px-3 py-1.5 text-[11px] text-brand-dark outline-none w-24 bg-transparent font-bold"
-                    placeholder="..."
-                  />
-                  <button onClick={handleAddSkill} className="bg-brand-mid text-white px-2 py-1.5 hover:bg-brand-dark cursor-pointer text-[10px] font-bold transition-colors">Add</button>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center bg-white rounded-full shadow-sm overflow-hidden border border-brand-mid/20">
+                    <input 
+                      type="text" 
+                      value={newSkill} 
+                      onChange={e => setNewSkill(e.target.value)} 
+                      onKeyDown={e => e.key === 'Enter' && handleAddSkill()}
+                      autoFocus
+                      className="px-4 py-2 text-[11px] text-brand-dark outline-none w-28 bg-transparent font-bold"
+                      placeholder="..."
+                    />
+                  </div>
+                  <button onClick={handleAddSkill} className="bg-brand-mid text-white px-5 py-2 rounded-full hover:bg-brand-dark cursor-pointer text-[10px] font-bold transition-all shadow-lg shadow-brand-mid/20">
+                    Add
+                  </button>
                 </div>
               ) : (
-                <button onClick={() => setAddingSkill(true)} className="bg-brand-mid text-white px-3 py-1.5 rounded-xl text-[10px] font-bold flex items-center gap-1 hover:bg-white hover:text-brand-dark transition-all cursor-pointer shadow-lg shadow-brand-mid/20">
-                  <Plus size={12} /> Add
+                <button onClick={() => setAddingSkill(true)} className="bg-brand-mid text-white px-5 py-2 rounded-full text-[10px] font-bold flex items-center gap-2 hover:bg-white hover:text-brand-dark transition-all cursor-pointer shadow-lg shadow-brand-mid/20">
+                  <Plus size={14} /> Add Skill
                 </button>
               )
             )}
@@ -407,17 +411,21 @@ export default function ProfilePersonalInfoPage() {
           <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-12">
             <div>
               <p className="text-[10px] font-bold text-brand-mid uppercase tracking-[0.2em] mb-4">Member Status</p>
-              <h3 className="text-xl font-display font-bold text-brand-dark mb-1">Sejak 12 Maret 2021</h3>
+              <h3 className="text-xl font-display font-bold text-brand-dark mb-1">
+                Sejak {userData?.createdAt?.toDate ? new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(userData.createdAt.toDate()) : 'Baru Bergabung'}
+              </h3>
               <p className="text-xs text-brand-dark/40 font-sans">Active contributor since registration.</p>
             </div>
             
             <div className="flex gap-16">
               <div>
-                <div className="text-5xl font-display font-black tracking-tighter text-brand-dark">152</div>
-                <div className="text-[9px] uppercase font-bold text-brand-dark/30 mt-2 tracking-widest">Tasks Done</div>
+                <div className="text-5xl font-display font-black tracking-tighter text-brand-dark">{userData?.completedTasks || 0}</div>
+                <div className="text-[9px] uppercase font-bold text-brand-dark/30 mt-2 tracking-widest">{userData?.role === 'UMKM' ? 'Projects Posted' : 'Tasks Done'}</div>
               </div>
               <div>
-                <div className="text-5xl font-display font-black tracking-tighter text-brand-dark">4.9<span className="text-xl text-brand-dark/20 font-bold">/5</span></div>
+                <div className="text-5xl font-display font-black tracking-tighter text-brand-dark">
+                  {userData?.avgRating?.toFixed(1) || '0.0'}<span className="text-xl text-brand-dark/20 font-bold">/5</span>
+                </div>
                 <div className="text-[9px] uppercase font-bold text-brand-dark/30 mt-2 tracking-widest">Avg Rating</div>
               </div>
             </div>
