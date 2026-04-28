@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Paperclip, Image as ImageIcon, Smile, Send, Info, Download, AlertCircle, MessageSquare, CheckCircle2 } from "lucide-react";
+import { Search, Paperclip, Image as ImageIcon, Smile, Send, Info, Download, AlertCircle, MessageSquare, CheckCircle2, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
@@ -9,6 +9,7 @@ import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, where,
 import EmojiPicker from 'emoji-picker-react';
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
 
 interface Chat {
   id: string;
@@ -18,6 +19,14 @@ interface Chat {
   lastMessageTime?: any;
   participants: string[];
   unreadCount?: number;
+}
+
+interface ParticipantInfo {
+  uid: string;
+  name: string;
+  avatarUrl?: string;
+  role?: string;
+  university?: string;
 }
 
 export default function ChatPage() {
@@ -30,6 +39,9 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState("");
   const [loadingMessages, setLoadingMessages] = useState(false);
+  
+  const [otherParticipant, setOtherParticipant] = useState<ParticipantInfo | null>(null);
+  const [participantsCache, setParticipantsCache] = useState<Record<string, ParticipantInfo>>({});
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -74,6 +86,86 @@ export default function ChatPage() {
 
     return () => unsubscribe();
   }, [user]);
+
+  // Fetch Other Participant Info for Selected Chat
+  useEffect(() => {
+    if (!selectedChatId || !user || chats.length === 0) return;
+    
+    const currentChat = chats.find(c => c.id === selectedChatId);
+    if (!currentChat) return;
+
+    const otherId = currentChat.participants.find(p => p !== user.uid);
+    if (!otherId) return;
+
+    if (participantsCache[otherId]) {
+      setOtherParticipant(participantsCache[otherId]);
+      return;
+    }
+
+    const fetchOther = async () => {
+      try {
+        const docRef = doc(db, "users", otherId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const info = {
+            uid: otherId,
+            name: data.name || "User",
+            avatarUrl: data.avatarUrl || "",
+            role: data.role,
+            university: data.university
+          };
+          setOtherParticipant(info);
+          setParticipantsCache(prev => ({ ...prev, [otherId]: info }));
+        }
+      } catch (error) {
+        console.error("Error fetching other participant:", error);
+      }
+    };
+
+    fetchOther();
+  }, [selectedChatId, user, chats, participantsCache]);
+
+  // Fetch info for all participants in the chat list
+  useEffect(() => {
+    if (!user || chats.length === 0) return;
+
+    const fetchAllParticipants = async () => {
+      const missingIds = chats
+        .map(c => c.participants.find(p => p !== user.uid))
+        .filter((id): id is string => !!id && !participantsCache[id]);
+
+      if (missingIds.length === 0) return;
+
+      const uniqueIds = Array.from(new Set(missingIds));
+      const newCacheEntries: Record<string, ParticipantInfo> = {};
+      
+      try {
+        await Promise.all(uniqueIds.map(async (id) => {
+          const docRef = doc(db, "users", id);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            newCacheEntries[id] = {
+              uid: id,
+              name: data.name || "User",
+              avatarUrl: data.avatarUrl || "",
+              role: data.role,
+              university: data.university
+            };
+          }
+        }));
+
+        if (Object.keys(newCacheEntries).length > 0) {
+          setParticipantsCache(prev => ({ ...prev, ...newCacheEntries }));
+        }
+      } catch (error) {
+        console.error("Error fetching all participants:", error);
+      }
+    };
+
+    fetchAllParticipants();
+  }, [chats, user]);
 
   // Fetch Messages for Selected Chat
   useEffect(() => {
@@ -122,9 +214,6 @@ export default function ChatPage() {
         senderName: user.displayName || "User",
         createdAt: serverTimestamp()
       });
-      
-      // Update last message in chat document
-      // (Optional: Implement a Firebase Cloud Function for this or update here)
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -204,31 +293,38 @@ export default function ChatPage() {
 
         <div className="flex-1 overflow-y-auto px-4 space-y-2 hide-scrollbar">
           {chats.length > 0 ? (
-            chats.map((chat) => (
-              <motion.div 
-                key={chat.id} 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={() => setSelectedChatId(chat.id)}
-                className={`flex items-center gap-4 p-4 rounded-3xl cursor-pointer transition-all duration-300 ${selectedChatId === chat.id ? 'bg-white shadow-ambient border border-brand-dark/5' : 'hover:bg-white/40 border border-transparent'}`}
-              >
-                <div className="relative">
-                  <img src={chat.avatar || "https://i.pravatar.cc/150?u=" + chat.id} alt={chat.name} className="w-12 h-12 rounded-2xl object-cover shadow-sm" />
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-brand-mid border-2 border-white rounded-full"></div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-baseline mb-1">
-                    <h3 className="font-display font-bold text-brand-dark text-sm truncate">{chat.name || "Conversation"}</h3>
-                    <span className="text-[10px] text-brand-dark/30 font-bold uppercase">
-                      {chat.lastMessageTime?.toDate ? formatDistanceToNow(chat.lastMessageTime.toDate(), { addSuffix: false }) : ""}
-                    </span>
+            chats.map((chat) => {
+              const otherId = chat.participants.find(p => p !== user.uid);
+              const cachedInfo = otherId ? participantsCache[otherId] : null;
+              const displayName = cachedInfo?.name || chat.name || "Conversation";
+              const displayAvatar = cachedInfo?.avatarUrl || chat.avatar || "https://i.pravatar.cc/150?u=" + chat.id;
+
+              return (
+                <motion.div 
+                  key={chat.id} 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => setSelectedChatId(chat.id)}
+                  className={`flex items-center gap-4 p-4 rounded-3xl cursor-pointer transition-all duration-300 ${selectedChatId === chat.id ? 'bg-white shadow-ambient border border-brand-dark/5' : 'hover:bg-white/40 border border-transparent'}`}
+                >
+                  <div className="relative">
+                    <img src={displayAvatar} alt={displayName} className="w-12 h-12 rounded-2xl object-cover shadow-sm" />
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-brand-mid border-2 border-white rounded-full"></div>
                   </div>
-                  <p className={`text-xs truncate ${selectedChatId === chat.id ? 'text-brand-mid font-semibold' : 'text-brand-dark/50'}`}>
-                    {chat.lastMessage || "No messages yet"}
-                  </p>
-                </div>
-              </motion.div>
-            ))
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-baseline mb-1">
+                      <h3 className="font-display font-bold text-brand-dark text-sm truncate">{displayName}</h3>
+                      <span className="text-[10px] text-brand-dark/30 font-bold uppercase">
+                        {chat.lastMessageTime?.toDate ? formatDistanceToNow(chat.lastMessageTime.toDate(), { addSuffix: false }) : ""}
+                      </span>
+                    </div>
+                    <p className={`text-xs truncate ${selectedChatId === chat.id ? 'text-brand-mid font-semibold' : 'text-brand-dark/50'}`}>
+                      {chat.lastMessage || "No messages yet"}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })
           ) : (
             <div className="flex flex-col items-center justify-center py-20 text-center px-6">
               <div className="w-16 h-16 bg-brand-dark/5 rounded-3xl flex items-center justify-center text-brand-dark/10 mb-4">
@@ -247,11 +343,11 @@ export default function ChatPage() {
             <div className="h-[80px] border-b border-brand-dark/5 flex items-center justify-between px-10 shrink-0">
               <div className="flex items-center gap-5">
                 <div className="relative">
-                  <img src={selectedChat?.avatar || "https://i.pravatar.cc/150?u=" + selectedChatId} alt="Avatar" className="w-12 h-12 rounded-2xl object-cover shadow-sm" />
+                  <img src={otherParticipant?.avatarUrl || selectedChat?.avatar || "https://i.pravatar.cc/150?u=" + selectedChatId} alt="Avatar" className="w-12 h-12 rounded-2xl object-cover shadow-sm" />
                   <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-brand-mid border-2 border-white rounded-full"></div>
                 </div>
                 <div>
-                  <h2 className="font-display font-bold text-brand-dark text-lg leading-tight">{selectedChat?.name || "Loading..."}</h2>
+                  <h2 className="font-display font-bold text-brand-dark text-lg leading-tight">{otherParticipant?.name || selectedChat?.name || "Loading..."}</h2>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="w-2 h-2 rounded-full bg-brand-mid animate-pulse"></span>
                     <p className="text-[9px] text-brand-dark/40 font-bold tracking-[0.15em] uppercase">
@@ -275,6 +371,9 @@ export default function ChatPage() {
                 {messages.length > 0 ? (
                   messages.map((msg: any, idx: number) => {
                     const isMe = msg.senderId === user.uid;
+                    const avatar = isMe 
+                      ? (user.photoURL || "https://i.pravatar.cc/150?u=" + user.uid) 
+                      : (otherParticipant?.avatarUrl || selectedChat?.avatar || "https://i.pravatar.cc/150?u=" + selectedChatId);
                     
                     return (
                       <motion.div 
@@ -284,7 +383,7 @@ export default function ChatPage() {
                         className={`flex gap-4 ${isMe ? 'flex-row-reverse' : ''}`}
                       >
                         <img 
-                          src={isMe ? (user.photoURL || "https://i.pravatar.cc/150?u=" + user.uid) : (selectedChat?.avatar || "https://i.pravatar.cc/150?u=" + selectedChatId)} 
+                          src={avatar} 
                           alt="Avatar" 
                           className="w-9 h-9 rounded-xl object-cover shrink-0 mt-auto shadow-sm" 
                         />
@@ -421,13 +520,29 @@ export default function ChatPage() {
           >
             <div className="p-10 flex flex-col items-center border-b border-brand-dark/5">
               <div className="relative mb-6">
-                <img src={selectedChat?.avatar || "https://i.pravatar.cc/150?u=" + selectedChatId} alt="Avatar" className="w-24 h-24 rounded-[2rem] object-cover shadow-ambient border-4 border-white" />
+                <img src={otherParticipant?.avatarUrl || selectedChat?.avatar || "https://i.pravatar.cc/150?u=" + selectedChatId} alt="Avatar" className="w-24 h-24 rounded-[2rem] object-cover shadow-ambient border-4 border-white" />
                 <div className="absolute -bottom-1 -right-1 bg-brand-mid text-white p-1.5 rounded-xl shadow-lg">
                   <CheckCircle2 size={12} />
                 </div>
               </div>
-              <h2 className="text-xl font-display font-bold text-brand-dark">{selectedChat?.name || "Participant"}</h2>
-              <p className="text-[10px] text-brand-dark/40 mt-1 font-sans font-bold uppercase tracking-widest">Verified User</p>
+              <h2 className="text-xl font-display font-bold text-brand-dark text-center">{otherParticipant?.name || selectedChat?.name || "Participant"}</h2>
+              <p className="text-[10px] text-brand-dark/40 mt-1 font-sans font-bold uppercase tracking-widest">{otherParticipant?.role || "Verified User"}</p>
+              
+              {otherParticipant?.uid && (
+                <button 
+                  onClick={() => {
+                    if (otherParticipant.role === "Mahasiswa") {
+                      router.push(`/portfolio/${otherParticipant.uid}`);
+                    } else {
+                      // Optionally handle UMKM profile view if we had one
+                      toast.info("Profil UMKM akan segera hadir");
+                    }
+                  }}
+                  className="mt-6 bg-white border border-brand-dark/10 text-brand-dark text-[10px] font-bold uppercase tracking-widest px-6 py-3 rounded-xl hover:bg-brand-mid hover:text-white hover:border-brand-mid transition-all shadow-sm"
+                >
+                  Lihat Profil
+                </button>
+              )}
             </div>
 
             <div className="p-10 flex-1">
@@ -442,6 +557,18 @@ export default function ChatPage() {
                     <p className="text-xs font-display font-bold text-brand-dark">Kolaborasi Aktif</p>
                   </div>
                 </div>
+
+                {otherParticipant?.university && (
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-white border border-brand-dark/5 rounded-xl flex items-center justify-center text-brand-mid shadow-sm">
+                      <Star size={18} />
+                    </div>
+                    <div>
+                      <h4 className="text-[10px] font-bold text-brand-dark/30 uppercase tracking-widest">Instansi</h4>
+                      <p className="text-xs font-display font-bold text-brand-dark">{otherParticipant.university}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

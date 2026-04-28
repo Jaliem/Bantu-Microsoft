@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Clock, Wallet, MapPin, CheckCircle2, ShieldCheck, ChevronRight, Share2, Bookmark, Star } from 'lucide-react';
-import { doc, getDoc, collection, query, where, limit, getDocs } from 'firebase/firestore';
+import { ChevronLeft, Clock, Wallet, MapPin, CheckCircle2, ShieldCheck, ChevronRight, Share2, Bookmark, Star, MessageSquare, Loader2 } from 'lucide-react';
+import { doc, getDoc, collection, query, where, limit, getDocs, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useParams, useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
@@ -23,6 +23,8 @@ export default function JobDetailPage() {
   const [loading, setLoading] = useState(true);
   const [similarProjects, setSimilarProjects] = useState<any[]>([]);
   const [applying, setApplying] = useState(false);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
 
   useEffect(() => {
     const fetchProjectAndSimilar = async () => {
@@ -33,6 +35,11 @@ export default function JobDetailPage() {
         if (docSnap.exists()) {
           const projectData: any = { id: docSnap.id, ...docSnap.data() };
           setProject(projectData);
+
+          // Check if already applied
+          if (user && projectData.applicants?.includes(user.uid)) {
+            setHasApplied(true);
+          }
           
           // Fetch UMKM Data
           if (projectData.umkmId) {
@@ -70,7 +77,7 @@ export default function JobDetailPage() {
     if (id) {
       fetchProjectAndSimilar();
     }
-  }, [id]);
+  }, [id, user]);
 
   if (loading) {
     return (
@@ -101,9 +108,36 @@ export default function JobDetailPage() {
       router.push("/login");
       return;
     }
+
+    if (hasApplied) {
+      toast.error("You have already applied for this project.");
+      return;
+    }
     
     setApplying(true);
     try {
+      // 1. Create Application document
+      const appRef = await addDoc(collection(db, "applications"), {
+        projectId: id,
+        projectTitle: project.title,
+        projectCategory: project.category,
+        projectBudget: project.budget,
+        umkmId: project.umkmId,
+        umkmName: umkmData?.name || "BANTU UMKM",
+        studentId: user.uid,
+        studentName: userData.name,
+        status: "applied",
+        appliedAt: serverTimestamp(),
+      });
+
+      // 2. Update Project's applicants array
+      const currentApplicants = project.applicants || [];
+      await updateDoc(doc(db, "projects", id), {
+        applicants: [...currentApplicants, user.uid]
+      });
+
+      setHasApplied(true);
+
       if (project.umkmId) {
         const umkmDoc = await getDoc(doc(db, "users", project.umkmId));
         if (umkmDoc.exists()) {
@@ -114,15 +148,19 @@ export default function JobDetailPage() {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 to: umkmDataRes.email,
-                subject: `New Application for ${project.title} 🚀`,
+                subject: `Lamaran Baru untuk ${project.title} 🚀`,
                 html: `
                   <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
                     <div style="background: linear-gradient(135deg, #006d38 0%, #00aa5b 100%); padding: 40px 32px; text-align: center; border-radius: 0 0 32px 32px;">
                       <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 8px 0; letter-spacing: -0.5px;">BANTU</h1>
                     </div>
                     <div style="padding: 40px 32px;">
-                      <h2 style="color: #111827; margin: 0 0 16px 0; font-size: 22px;">Hello ${umkmDataRes.name || 'UMKM'}! 🎉</h2>
-                      <p>New application received for ${project.title}.</p>
+                      <h2 style="color: #111827; margin: 0 0 16px 0; font-size: 22px;">Halo ${umkmDataRes.name || 'UMKM'}! 🎉</h2>
+                      <p>Ada lamaran baru dari <b>${userData.name}</b> untuk proyek <b>${project.title}</b>.</p>
+                      <p>Silakan cek dashboard Anda untuk meninjau lamaran ini.</p>
+                      <div style="margin-top: 32px;">
+                        <a href="https://bantu.io/dashboard/my-posts" style="background-color: #006d38; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">Cek Dashboard</a>
+                      </div>
                     </div>
                   </div>
                 `
@@ -131,12 +169,71 @@ export default function JobDetailPage() {
           }
         }
       }
-      toast.success("Successfully applied for this project!");
+      toast.success("Berhasil melamar proyek ini!");
     } catch (error) {
       console.error("Failed to send application", error);
-      toast.error("Applied, but failed to send email notification.");
+      toast.error("Terjadi kesalahan saat melamar.");
     } finally {
       setApplying(false);
+    }
+  };
+
+  const handleChat = async () => {
+    if (!userData || !user) {
+      toast.error("You must be logged in to chat.");
+      router.push("/login");
+      return;
+    }
+
+    if (user.uid === project.umkmId) {
+      toast.error("You cannot chat with yourself.");
+      return;
+    }
+
+    setChatLoading(true);
+    try {
+      const chatsRef = collection(db, "chats");
+      const q = query(
+        chatsRef,
+        where("participants", "array-contains", user.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      
+      let existingChatId = null;
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.participants.includes(project.umkmId)) {
+          existingChatId = doc.id;
+        }
+      });
+
+      if (existingChatId) {
+        router.push(`/chat?id=${existingChatId}`);
+      } else {
+        const newChatRef = await addDoc(collection(db, "chats"), {
+          participants: [user.uid, project.umkmId],
+          name: umkmData?.name || "UMKM",
+          avatar: umkmData?.avatarUrl || "",
+          lastMessage: "Halo, saya tertarik dengan proyek Anda.",
+          lastMessageTime: serverTimestamp(),
+          createdAt: serverTimestamp()
+        });
+        
+        // Add initial message
+        await addDoc(collection(db, "chats", newChatRef.id, "messages"), {
+          text: "Halo, saya tertarik dengan proyek Anda.",
+          senderId: user.uid,
+          senderName: userData.name,
+          createdAt: serverTimestamp()
+        });
+
+        router.push(`/chat?id=${newChatRef.id}`);
+      }
+    } catch (error) {
+      console.error("Error starting chat:", error);
+      toast.error("Gagal memulai percakapan.");
+    } finally {
+      setChatLoading(false);
     }
   };
 
@@ -270,13 +367,23 @@ export default function JobDetailPage() {
               </div>
 
               {userData?.role !== 'UMKM' ? (
-                <button 
-                  onClick={handleApply}
-                  disabled={applying}
-                  className="w-full bg-brand-mid hover:bg-brand-dark text-white font-display font-bold py-5 rounded-[1.25rem] text-[10px] uppercase tracking-[0.2em] transition-all shadow-lg shadow-brand-mid/20 hover:-translate-y-0.5 active:translate-y-0 mb-4 cursor-pointer disabled:opacity-70 disabled:translate-y-0"
-                >
-                  {applying ? "Applying..." : "Apply for this Task"}
-                </button>
+                <>
+                  <button 
+                    onClick={handleApply}
+                    disabled={applying || hasApplied}
+                    className="w-full bg-brand-mid hover:bg-brand-dark text-white font-display font-bold py-5 rounded-[1.25rem] text-[10px] uppercase tracking-[0.2em] transition-all shadow-lg shadow-brand-mid/20 hover:-translate-y-0.5 active:translate-y-0 mb-4 cursor-pointer disabled:opacity-70 disabled:translate-y-0"
+                  >
+                    {applying ? "Applying..." : hasApplied ? "Applied" : "Apply for this Task"}
+                  </button>
+                  <button 
+                    onClick={handleChat}
+                    disabled={chatLoading}
+                    className="w-full bg-white border border-brand-dark/10 hover:border-brand-mid text-brand-dark hover:text-brand-mid font-display font-bold py-5 rounded-[1.25rem] text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-70"
+                  >
+                    {chatLoading ? <Loader2 size={16} className="animate-spin" /> : <MessageSquare size={16} />}
+                    Chat with UMKM
+                  </button>
+                </>
               ) : (
                 <div className="bg-brand-light/50 text-brand-dark/30 font-display font-bold py-5 rounded-[1.25rem] text-[10px] uppercase tracking-[0.2em] text-center mb-4">
                   UMKM cannot apply

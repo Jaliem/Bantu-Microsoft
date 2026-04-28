@@ -8,6 +8,7 @@ import { sendEmailVerification } from "firebase/auth";
 import { Camera, MapPin, Pencil, X, Plus, CheckCircle2, ShieldAlert } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export default function ProfilePersonalInfoPage() {
   const { user } = useAuth();
@@ -221,6 +222,18 @@ export default function ProfilePersonalInfoPage() {
           <p className="text-sm text-brand-dark/50 leading-relaxed font-sans font-light">
             {formData.bio || "Focused on helping local businesses grow through digital transformation and strategic planning."}
           </p>
+
+          {userData?.role === "Mahasiswa" && user?.uid && (
+            <div className="w-full mt-8">
+              <Link 
+                href={`/portfolio/${user.uid}`}
+                className="w-full bg-brand-light text-brand-mid font-display font-bold flex items-center justify-center gap-2 hover:bg-brand-mid hover:text-white px-6 py-4 rounded-2xl transition-all cursor-pointer text-[10px] uppercase tracking-widest shadow-sm"
+              >
+                <CheckCircle2 size={14} />
+                Lihat Portofolio Saya
+              </Link>
+            </div>
+          )}
         </div>
 
         <div className="bg-brand-dark rounded-[2.5rem] p-10 text-white shadow-xl relative overflow-hidden group">

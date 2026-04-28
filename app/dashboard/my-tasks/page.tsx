@@ -52,7 +52,7 @@ export default function MyTasksPage() {
         for (const docSnap of snapshot.docs) {
           const data = docSnap.data();
           taskList.push({
-            id: docSnap.id,
+            id: docSnap.id, // This is the application ID
             projectId: data.projectId,
             projectTitle: data.projectTitle || "Untitled Project",
             projectCategory: data.projectCategory || "General",
@@ -63,36 +63,11 @@ export default function MyTasksPage() {
           });
         }
 
-        if (taskList.length === 0) {
-          const projectsQ = query(collection(db, "projects"));
-          const projectsSnap = await getDocs(projectsQ);
-          for (const pDoc of projectsSnap.docs) {
-            const pData = pDoc.data();
-            if (pData.applicants && pData.applicants.includes(user.uid)) {
-              let umkmName = "Unknown UMKM";
-              if (pData.umkmId) {
-                try {
-                  const umkmDoc = await getDoc(doc(db, "users", pData.umkmId));
-                  if (umkmDoc.exists()) umkmName = umkmDoc.data().name || "Unknown UMKM";
-                } catch (e) {}
-              }
-              taskList.push({
-                id: pDoc.id,
-                projectId: pDoc.id,
-                projectTitle: pData.title || "Untitled Project",
-                projectCategory: pData.category || "General",
-                projectBudget: pData.budget || "N/A",
-                umkmName,
-                status: pData.acceptedStudent === user.uid ? "accepted" : "applied",
-                appliedAt: pData.createdAt,
-              });
-            }
-          }
-        }
-
         setTasks(taskList);
       } catch (error) {
         console.error("Error fetching tasks:", error);
+        // Fallback if index is not ready or other error
+        setTasks([]);
       } finally {
         setLoading(false);
       }
@@ -212,10 +187,15 @@ export default function MyTasksPage() {
                         <h3 className="text-xl md:text-2xl font-display font-bold text-brand-dark mb-2 group-hover:text-brand-mid transition-colors">{task.projectTitle}</h3>
                         <p className="text-[11px] font-bold text-brand-dark/30 uppercase tracking-widest flex items-center gap-3">
                           By <span className="text-brand-dark/60">{task.umkmName}</span>
-                          {task.appliedAt && (
+                          {task.appliedAt ? (
                             <>
                               <span className="w-1 h-1 rounded-full bg-brand-dark/10" />
                               <span>Applied {formatDistanceToNow(task.appliedAt?.toDate ? task.appliedAt.toDate() : new Date(task.appliedAt), { addSuffix: true })}</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="w-1 h-1 rounded-full bg-brand-dark/10" />
+                              <span>Applied just now</span>
                             </>
                           )}
                         </p>
