@@ -188,7 +188,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden pt-20 font-sans bg-white">
+    <div className="flex h-screen overflow-y-auto pt-20 font-sans bg-white">
       {/* Left Panel */}
       <div className="hidden lg:flex w-1/2 flex-col justify-between bg-brand-light p-16 relative overflow-hidden h-full">
         <div className="relative z-10 mt-8">

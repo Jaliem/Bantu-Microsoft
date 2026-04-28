@@ -110,22 +110,6 @@ export default function MarketplacePage() {
               </div>
             </div>
           </div>
-
-          <div className="bg-brand-dark rounded-[2.5rem] p-8 text-white overflow-hidden relative group">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-brand-mid/20 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
-            <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 bg-brand-mid/20 text-brand-mid text-[9px] font-bold px-3 py-1.5 rounded-full mb-6 uppercase tracking-[0.2em] border border-brand-mid/20">
-                PRO TIP
-              </div>
-              <h3 className="text-xl font-display font-bold mb-3">Tingkatkan Profil Anda</h3>
-              <p className="text-sm text-white/50 mb-8 leading-relaxed font-light">
-                Lengkapi portofolio untuk mendapatkan 2x lebih banyak undangan proyek.
-              </p>
-              <button className="w-full bg-white text-brand-dark font-display font-bold py-4 rounded-full text-[10px] uppercase tracking-widest hover:bg-brand-mid hover:text-white transition-all active:scale-95 shadow-lg">
-                Perbarui Profil
-              </button>
-            </div>
-          </div>
         </aside>
 
         {/* Main Content - Project List */}

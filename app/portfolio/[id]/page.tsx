@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { doc, getDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { CheckCircle2, Download, ArrowRight, Star, Sparkles, Loader2, Trophy } from 'lucide-react';
+import { CheckCircle2, Download, ArrowRight, Star, Loader2, Trophy } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface PortfolioEntry {
@@ -209,7 +209,7 @@ export default function PortfolioPage() {
           <div className="flex justify-between items-end mb-8">
             <div>
               <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#008f4c] to-[#00aa5b] text-white px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest mb-3">
-                <Sparkles size={10} /> Live Ledger — Proof of Action
+                Live Ledger — Proof of Action
               </div>
               <h2 className="text-3xl font-extrabold text-gray-900">Verified Work History</h2>
               <p className="text-gray-500 mt-1">Every entry is auto-generated and verified by BANTU upon client approval.</p>
@@ -244,7 +244,6 @@ export default function PortfolioPage() {
                       </span>
                       {entry.aiGrade && (
                         <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-md border ${gradeColor[entry.aiGrade] || "bg-gray-50 text-gray-500 border-gray-200"}`}>
-                          <Sparkles size={8} /> {entry.aiGrade}
                         </span>
                       )}
                     </div>

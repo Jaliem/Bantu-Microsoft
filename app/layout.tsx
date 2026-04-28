@@ -31,9 +31,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jakarta.variable} h-full antialiased`}
+      className={`${inter.variable} ${jakarta.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans bg-brand-light text-brand-dark">
+      <body className="bg-brand-light text-brand-dark">
         <AuthProvider>
           <SmoothScroll>
             <div className="flex min-h-screen flex-col">

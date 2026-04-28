@@ -1,20 +1,21 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Sparkles, PenTool, Code, Megaphone, CheckCircle2, ShieldCheck, Lightbulb } from 'lucide-react';
+import {PenTool, Code, Megaphone, CheckCircle2, ShieldCheck, Lightbulb, ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import ReactMarkdown from 'react-markdown';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PostProjectPage() {
   const router = useRouter();
-  const { user, userData, loading } = useAuth();
+  const { user, userData, loading: authLoading } = useAuth();
   
   useEffect(() => {
-    if (!loading) {
+    if (!authLoading) {
       if (!user) {
         toast.error("You must be logged in to post a project.");
         router.push("/login");
@@ -23,7 +24,7 @@ export default function PostProjectPage() {
         router.push("/dashboard");
       }
     }
-  }, [user, userData, loading, router]);
+  }, [user, userData, authLoading, router]);
 
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Design & Creative');
@@ -57,7 +58,7 @@ export default function PostProjectPage() {
       toast.success("SOP generated successfully!");
     } catch (error) {
       console.error(error);
-      toast.error("Failed to generate SOP. Make sure you have GEMINI_API_KEY set in .env.local.");
+      toast.error("Failed to generate SOP.");
     } finally {
       setIsGenerating(false);
     }
@@ -89,7 +90,7 @@ export default function PostProjectPage() {
         ]
       });
 
-      toast.success("Project Posted successfully!");
+      toast.success("Project Published!");
       router.push("/marketplace");
     } catch (error) {
       console.error("Error adding document: ", error);
@@ -99,161 +100,166 @@ export default function PostProjectPage() {
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="bg-brand-light min-h-screen flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-brand-mid border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-[#f8f9fe] flex flex-col font-sans text-gray-900 w-full h-full flex-1">
-      <main className="flex-grow pt-24 pb-16 px-6 max-w-5xl mx-auto w-full">
+    <div className="bg-brand-light font-sans text-brand-dark min-h-screen pt-28 pb-20 px-6">
+      <main className="max-w-6xl mx-auto w-full">
         
-        <div className="mb-10">
-          <div className="inline-flex items-center gap-1 bg-[#dcfce7] text-[#16a34a] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-4">
-            <CheckCircle2 size={12} /> PREMIUM UMKM FLOW
-          </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#111827] mb-4">
+        <div className="mb-16">
+          <motion.h1 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl md:text-6xl font-display font-bold tracking-tight text-brand-dark mb-4"
+          >
             Post a Project
-          </h1>
-          <p className="text-gray-500 text-lg max-w-2xl">
-            Let's find the best Indonesian talent for your business. Provide the details below to attract top-tier professionals.
-          </p>
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-brand-dark/40 text-lg max-w-2xl font-sans font-light"
+          >
+            Temukan talenta mahasiswa terbaik untuk bisnis Anda. Berikan detail proyek untuk menarik profesional berkualitas.
+          </motion.p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-12">
           {/* Left Column - Progress */}
-          <div className="w-full lg:w-48 shrink-0 flex flex-col gap-8">
-            <div className="space-y-6 relative before:absolute before:inset-0 before:ml-3.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
+          <div className="w-full lg:w-56 shrink-0">
+            <div className="space-y-8 relative sticky top-32">
               {['Basics', 'Description', 'Budget'].map((item, idx) => {
                 const stepNum = idx + 1;
                 const isActive = step === stepNum;
                 const isPast = step > stepNum;
                 return (
-                  <div key={item} className="relative flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold z-10 transition-colors ${
-                      isActive || isPast ? 'bg-[#008f4c] text-white shadow-md' : 'bg-white text-gray-400 border border-gray-200'
+                  <div key={item} className="relative flex items-center gap-5 group">
+                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xs font-black z-10 transition-all duration-500 ${
+                      isActive ? 'bg-brand-mid text-white shadow-lg shadow-brand-mid/30 scale-110' : 
+                      isPast ? 'bg-brand-dark text-white' : 'bg-white text-brand-dark/20 border border-brand-dark/5 shadow-sm'
                     }`}>
-                      {isPast ? <CheckCircle2 size={16} /> : stepNum}
+                      {isPast ? <CheckCircle2 size={18} /> : `0${stepNum}`}
                     </div>
-                    <span className={`font-semibold ${isActive ? 'text-[#008f4c]' : 'text-gray-400'}`}>
+                    <span className={`font-display font-bold text-[10px] uppercase tracking-[0.2em] transition-colors duration-500 ${isActive ? 'text-brand-mid' : 'text-brand-dark/30'}`}>
                       {item}
                     </span>
+                    {idx < 2 && (
+                      <div className="absolute left-5 top-10 w-px h-8 bg-brand-dark/5" />
+                    )}
                   </div>
                 );
               })}
-            </div>
 
-            <div className="bg-[#f0f2ff] rounded-[24px] p-6 mt-8">
-              <h4 className="text-[10px] font-bold tracking-widest text-gray-500 uppercase mb-2">COMPLETION</h4>
-              <div className="w-full h-2 bg-[#dce1ff] rounded-full mb-3 overflow-hidden">
-                <div className="h-full bg-[#008f4c] transition-all duration-500" style={{ width: step === 1 ? '33%' : step === 2 ? '66%' : '100%' }} />
+              <div className="bg-white rounded-3xl p-6 mt-12 shadow-ambient border border-brand-dark/5">
+                <h4 className="text-[9px] font-bold tracking-[0.2em] text-brand-dark/20 uppercase mb-4">Completion</h4>
+                <div className="w-full h-1.5 bg-brand-light rounded-full mb-3 overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: step === 1 ? '33%' : step === 2 ? '66%' : '100%' }}
+                    className="h-full bg-brand-mid shadow-[0_0_10px_rgba(0,109,56,0.3)]" 
+                  />
+                </div>
+                <p className="text-[10px] text-brand-dark/40 font-bold uppercase tracking-wider">
+                  Step {step} of 3
+                </p>
               </div>
-              <p className="text-xs text-gray-500 font-medium">
-                Step {step} of 3: {step === 1 ? 'Define your vision' : step === 2 ? 'Detail the work' : 'Set the reward'}
-              </p>
             </div>
           </div>
 
           {/* Right Column - Form */}
-          <div className="flex-1 flex flex-col gap-6">
+          <div className="flex-1 flex flex-col gap-8">
             
-            {/* Main Form Card */}
-            <div className="bg-white rounded-[32px] p-8 shadow-[0_4px_24px_rgba(19,27,46,0.03)] border border-gray-100">
+            <motion.div 
+              key={step}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-[2.5rem] p-10 md:p-14 shadow-ambient border border-brand-dark/5"
+            >
               
               {step === 1 && (
-                <>
-                  <div className="mb-8">
-                    <label className="block text-xs font-bold tracking-widest text-gray-900 uppercase mb-3">
-                      PROJECT TITLE
-                    </label>
+                <div className="space-y-12">
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.25em] text-brand-dark/30 ml-1">Project Title</label>
                     <input 
                       type="text" 
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="e.g. Logo Design for Organic Coffee Brand"
-                      className="w-full bg-[#f8f9fe] border-none rounded-2xl px-6 py-4 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-[#008f4c] transition-all outline-none"
+                      className="w-full bg-brand-light/50 border-2 border-transparent rounded-2xl px-8 py-5 text-brand-dark placeholder:text-brand-dark/20 focus:bg-white focus:border-brand-mid focus:ring-4 focus:ring-brand-mid/5 transition-all outline-none font-display font-bold text-lg"
                     />
-                    <p className="text-xs text-gray-500 mt-3 font-medium">
-                      Keep it concise. Mention the industry and specific output.
-                    </p>
                   </div>
 
-                  <div className="mb-10">
-                    <label className="block text-xs font-bold tracking-widest text-gray-900 uppercase mb-3">
-                      SELECT CATEGORY
-                    </label>
+                  <div className="space-y-6">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.25em] text-brand-dark/30 ml-1">Select Category</label>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {[
-                        { id: 'Design & Creative', icon: <PenTool size={18} /> },
-                        { id: 'Tech & Dev', icon: <Code size={18} /> },
-                        { id: 'Marketing', icon: <Megaphone size={18} /> }
+                        { id: 'Design & Creative', icon: <PenTool size={20} /> },
+                        { id: 'Tech & Dev', icon: <Code size={20} /> },
+                        { id: 'Marketing', icon: <Megaphone size={20} /> }
                       ].map(cat => (
-                        <div 
+                        <button 
                           key={cat.id}
                           onClick={() => setCategory(cat.id)}
-                          className={`cursor-pointer rounded-2xl p-4 flex flex-col gap-3 transition-all ${
+                          className={`rounded-2xl p-6 flex flex-col items-start gap-4 transition-all text-left cursor-pointer border-2 ${
                             category === cat.id 
-                              ? 'bg-[#008f4c] text-white shadow-lg scale-[1.02]' 
-                              : 'bg-[#f8f9fe] text-gray-600 hover:bg-gray-100'
+                              ? 'bg-brand-mid border-brand-mid text-white shadow-xl shadow-brand-mid/20' 
+                              : 'bg-brand-light/30 border-transparent text-brand-dark/40 hover:bg-brand-light'
                           }`}
                         >
-                          <div className={category === cat.id ? 'text-white' : 'text-[#008f4c]'}>
+                          <div className={category === cat.id ? 'text-white' : 'text-brand-mid'}>
                             {cat.icon}
                           </div>
-                          <span className="font-semibold text-sm">{cat.id}</span>
-                        </div>
+                          <span className="font-display font-bold text-[11px] uppercase tracking-widest">{cat.id}</span>
+                        </button>
                       ))}
                     </div>
                   </div>
 
-                  <div className="mb-10">
-                    <label className="block text-xs font-bold tracking-widest text-gray-900 uppercase mb-3">
-                      SKILL LEVEL REQUIRED
-                    </label>
+                  <div className="space-y-6">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.25em] text-brand-dark/30 ml-1">Required Expertise</label>
                     <div className="grid grid-cols-3 gap-4">
                       {['Beginner', 'Intermediate', 'Expert'].map(level => (
-                        <div 
+                        <button 
                           key={level}
                           onClick={() => setSkill(level)}
-                          className={`cursor-pointer rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all text-center ${
+                          className={`rounded-2xl py-5 font-display font-bold text-[10px] uppercase tracking-[0.2em] transition-all cursor-pointer border-2 ${
                             skill === level 
-                              ? 'bg-[#008f4c] text-white shadow-lg scale-[1.02]' 
-                              : 'bg-[#f8f9fe] text-gray-600 hover:bg-gray-100'
+                              ? 'bg-brand-dark border-brand-dark text-white shadow-xl' 
+                              : 'bg-brand-light/30 border-transparent text-brand-dark/40 hover:bg-brand-light'
                           }`}
                         >
-                          <span className="font-semibold text-sm">{level}</span>
-                        </div>
+                          {level}
+                        </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* AI Banner */}
-                  <div className="bg-[#1e2336] rounded-3xl p-8 text-white relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-                    
-                    <div className="relative z-10 max-w-md">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-xl font-bold">Struggling with the brief?</h3>
-                        <Sparkles className="text-[#00ff88]" size={20} />
+                  <div className="bg-brand-dark rounded-[2rem] p-10 text-white relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-80 h-80 bg-brand-mid/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-1000" />
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-3 mb-4">
+                        <h3 className="text-xl font-display font-bold">Struggling with the brief?</h3>
                       </div>
-                      <p className="text-sm text-gray-400 leading-relaxed">
-                        Our AI can draft a professional SOP and task requirement list based on your title.
+                      <p className="text-white/50 text-sm leading-relaxed mb-10 max-w-sm font-sans font-light">
+                        Biarkan AI kami menyusun SOP dan daftar kebutuhan proyek secara profesional berdasarkan judul Anda.
                       </p>
+                      <button 
+                        onClick={handleGenerateSop}
+                        disabled={isGenerating}
+                        className="bg-brand-mid hover:bg-white hover:text-brand-dark text-white font-display font-bold py-4 px-8 rounded-full text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-brand-mid/20 disabled:opacity-50"
+                      >
+                        {isGenerating ? "Generating..." : "Generate SOP with AI"}
+                      </button>
                     </div>
-
-                    <button 
-                      onClick={handleGenerateSop}
-                      disabled={isGenerating}
-                      className="relative z-10 shrink-0 bg-[#00ff88] hover:bg-[#00e67a] text-[#006d38] font-bold py-3 px-6 rounded-full transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                    >
-                      {isGenerating ? (
-                        <>
-                           <div className="w-4 h-4 border-2 border-[#006d38] border-t-transparent rounded-full animate-spin" />
-                           Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles size={16} /> Generate SOP with AI
-                        </>
-                      )}
-                    </button>
                   </div>
-                </>
+                </div>
               )}
 
               {step === 2 && (
@@ -303,105 +309,83 @@ export default function PostProjectPage() {
                     />
                   )}
                   
-                  <div className="flex items-center gap-2 mt-4 bg-blue-50 text-blue-700 px-4 py-3 rounded-xl text-sm">
-                    <Sparkles size={16} className="text-blue-500 shrink-0" />
-                    <span>You can freely edit the generated text before proceeding.</span>
+                  <div className="flex items-center gap-4 bg-brand-mid/5 text-brand-mid px-6 py-4 rounded-2xl border border-brand-mid/10">
+                    <p className="text-[11px] font-bold uppercase tracking-wider">You can freely edit the generated text before proceeding.</p>
                   </div>
                 </div>
               )}
 
               {step === 3 && (
-                <div className="mb-8">
-                  <label className="block text-xs font-bold tracking-widest text-gray-900 uppercase mb-3">
-                    PROJECT BUDGET
-                  </label>
-                  <div className="relative">
-                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 font-bold">
-                      Rp
+                <div className="space-y-8">
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.25em] text-brand-dark/30 ml-1">Set Project Budget</label>
+                    <div className="relative group">
+                      <div className="absolute left-8 top-1/2 -translate-y-1/2 text-brand-dark/30 font-display font-black text-2xl group-focus-within:text-brand-mid transition-colors">
+                        Rp
+                      </div>
+                      <input 
+                        type="text" 
+                        value={budget}
+                        onChange={(e) => setBudget(e.target.value)}
+                        placeholder="500.000"
+                        className="w-full bg-brand-light/50 border-2 border-transparent rounded-[2rem] pl-20 pr-8 py-8 text-brand-dark placeholder:text-brand-dark/20 focus:bg-white focus:border-brand-mid focus:ring-4 focus:ring-brand-mid/5 transition-all outline-none font-display font-black text-4xl tracking-tighter"
+                      />
                     </div>
-                    <input 
-                      type="text" 
-                      value={budget}
-                      onChange={(e) => setBudget(e.target.value)}
-                      placeholder="e.g. 500.000"
-                      className="w-full bg-[#f8f9fe] border-none rounded-2xl pl-14 pr-6 py-4 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-[#008f4c] transition-all outline-none text-xl font-bold"
-                    />
+                    <p className="text-[11px] text-brand-dark/40 font-sans leading-relaxed px-2">
+                      Berikan harga yang adil. Mahasiswa akan melakukan bid di sekitar jumlah ini.
+                    </p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-3 font-medium">
-                    Set a fair price for the task. Students can bid around this amount.
-                  </p>
                 </div>
               )}
 
-              <div className="mt-10 flex justify-end items-center gap-4 pt-6 border-t border-gray-100">
-                {step === 1 ? (
-                  <>
-                    <button className="text-sm font-semibold text-gray-500 hover:text-gray-900 px-4 py-2 transition-colors">
-                      Save as Draft
-                    </button>
-                    <button 
-                      onClick={() => setStep(2)}
-                      className="bg-[#008f4c] hover:bg-[#007a41] text-white font-semibold py-3 px-8 rounded-full transition-all shadow-[0_4px_14px_rgba(0,143,76,0.3)] hover:-translate-y-0.5 active:translate-y-0"
-                    >
-                      Next: Description
-                    </button>
-                  </>
-                ) : step === 2 ? (
-                  <>
-                    <button 
-                      onClick={() => setStep(1)}
-                      className="text-sm font-semibold text-gray-500 hover:text-gray-900 px-4 py-2 transition-colors"
-                    >
-                      Back
-                    </button>
-                    <button 
-                      onClick={() => setStep(3)}
-                      className="bg-[#008f4c] hover:bg-[#007a41] text-white font-semibold py-3 px-8 rounded-full transition-all shadow-[0_4px_14px_rgba(0,143,76,0.3)]"
-                    >
-                      Next: Budget
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button 
-                      onClick={() => setStep(2)}
-                      className="text-sm font-semibold text-gray-500 hover:text-gray-900 px-4 py-2 transition-colors"
-                    >
-                      Back
-                    </button>
-                    <button 
-                      onClick={() => handlePublish()}
-                      className="bg-[#008f4c] hover:bg-[#007a41] text-white font-semibold py-3 px-8 rounded-full transition-all shadow-[0_4px_14px_rgba(0,143,76,0.3)]"
-                    >
-                      Publish Project
-                    </button>
-                  </>
+              <div className="mt-16 flex justify-between items-center pt-10 border-t border-brand-dark/5">
+                {step > 1 && (
+                  <button 
+                    onClick={() => setStep(prev => prev - 1)}
+                    className="flex items-center gap-2 text-brand-dark/40 font-display font-bold text-[10px] uppercase tracking-widest hover:text-brand-dark transition-colors"
+                  >
+                    <ArrowLeft size={14} /> Back
+                  </button>
                 )}
+                <div className="flex items-center gap-4 ml-auto">
+                  {step === 1 && (
+                    <button className="text-[10px] font-display font-bold uppercase tracking-widest text-brand-dark/20 hover:text-brand-dark transition-colors px-6">
+                      Save Draft
+                    </button>
+                  )}
+                  <button 
+                    onClick={step === 3 ? handlePublish : () => setStep(prev => prev + 1)}
+                    disabled={isPublishing}
+                    className="bg-brand-mid hover:bg-brand-dark text-white font-display font-bold py-5 px-12 rounded-full text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-brand-mid/20 flex items-center gap-3 active:scale-95"
+                  >
+                    {isPublishing ? "Publishing..." : step === 3 ? "Publish Project" : "Next Step"}
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Bottom Panels */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-              <div className="bg-[#f0f2ff] rounded-[24px] p-6 flex gap-4">
-                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
-                  <Lightbulb size={20} className="text-[#008f4c]" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-[2rem] p-8 border border-brand-dark/5 shadow-ambient flex gap-6">
+                <div className="w-14 h-14 rounded-2xl bg-brand-light flex items-center justify-center shrink-0 border border-brand-dark/5">
+                  <Lightbulb size={24} className="text-brand-mid" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-gray-900 mb-1">Writing Tip</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed">
+                  <h4 className="font-display font-bold text-sm text-brand-dark mb-1">Writing Tip</h4>
+                  <p className="text-[11px] text-brand-dark/40 leading-relaxed font-sans font-light">
                     Be specific about the deliverables you expect by the end of the project.
                   </p>
                 </div>
               </div>
               
-              <div className="bg-[#f0f2ff] rounded-[24px] p-6 flex gap-4">
-                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
-                  <ShieldCheck size={20} className="text-[#008f4c]" />
+              <div className="bg-white rounded-[2rem] p-8 border border-brand-dark/5 shadow-ambient flex gap-6">
+                <div className="w-14 h-14 rounded-2xl bg-brand-light flex items-center justify-center shrink-0 border border-brand-dark/5">
+                  <ShieldCheck size={24} className="text-brand-mid" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-gray-900 mb-1">BANTU Guarantee</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    Your funds are held securely and only released when you approve the work.
+                  <h4 className="font-display font-bold text-sm text-brand-dark mb-1">BANTU Guarantee</h4>
+                  <p className="text-[11px] text-brand-dark/40 leading-relaxed font-sans font-light">
+                    Dana Anda dipegang aman dan hanya dicairkan saat Anda menyetujui hasil kerja.
                   </p>
                 </div>
               </div>

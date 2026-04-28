@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Search, Paperclip, Image as ImageIcon, Smile, Send, Info, Download, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
 import EmojiPicker from 'emoji-picker-react';
@@ -15,7 +16,8 @@ const MOCK_CHATS = [
 ];
 
 export default function ChatPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  const router = useRouter();
   
   const [messages, setMessages] = useState<any[]>([]);
   const [inputText, setInputText] = useState("");
@@ -27,6 +29,12 @@ export default function ChatPage() {
   const [uploading, setUploading] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login");
+    }
+  }, [user, loading, router]);
 
   useEffect(() => {
     if (!user) return;
@@ -122,7 +130,7 @@ export default function ChatPage() {
   if (!user) return null;
 
   return (
-    <div className="flex h-screen bg-brand-light font-sans overflow-hidden pt-20">
+    <div className="flex h-screen bg-brand-light font-sans overflow-y-auto pt-20">
       
       {/* Messages List Column */}
       <div className="w-[320px] bg-brand-light border-r border-brand-dark/5 flex flex-col shrink-0 h-full">

@@ -8,7 +8,7 @@ import { db } from "@/lib/firebase";
 import { toast } from "sonner";
 import Link from "next/link";
 import {
-  ChevronLeft, Sparkles, CheckCircle2, AlertCircle, Loader2,
+  ChevronLeft, CheckCircle2, AlertCircle, Loader2,
   UploadCloud, Send, ShieldCheck, Star, TrendingUp, XCircle
 } from "lucide-react";
 
@@ -210,9 +210,6 @@ export default function SubmitWorkPage() {
 
         {/* AI Quality Gate banner */}
         <div className="bg-gradient-to-br from-[#00b050] to-[#008f4c] rounded-[24px] p-6 text-white mb-8 flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
-            <Sparkles size={24} />
-          </div>
           <div>
             <h3 className="font-bold text-lg mb-1">AI Quality Gate Active</h3>
             <p className="text-white/85 text-sm leading-relaxed">
@@ -255,7 +252,6 @@ export default function SubmitWorkPage() {
             disabled={reviewing || !submissionText.trim()}
             className="w-full flex items-center justify-center gap-3 bg-[#f0f2ff] text-[#006d38] hover:bg-[#e4e7ff] font-bold py-4 rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            {reviewing ? <Loader2 size={20} className="animate-spin" /> : <Sparkles size={20} />}
             {reviewing ? "AI is reviewing your work…" : "Run AI Quality Check"}
           </button>
         </div>

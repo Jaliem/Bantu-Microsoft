@@ -3,9 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Globe, Share2 } from 'lucide-react';
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Footer() {
+  const { user, userData } = useAuth();
   const pathname = usePathname();
   const hiddenRoutes = ["/dashboard", "/profile", "/chat", "/wallet", "/portfolio", "/settings", "/verify", "/login", "/register"];
   
@@ -14,53 +15,72 @@ export function Footer() {
   }
 
   return (
-    <footer className="w-full bg-[#f8f9fe] py-16 mt-auto border-t border-gray-100">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-          <div className="col-span-1">
-            <div className="flex items-center gap-2 mb-6">
-              <span className="font-bold text-xl tracking-tight text-[#008f4c]">BANTU</span>
+    <footer className="w-full bg-brand-mid py-24 mt-auto relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-16">
+          
+          {/* Brand & Description */}
+          <div className="max-w-md">
+            <div className="mb-10">
+              <span className="font-display font-bold text-3xl tracking-tighter text-white">
+                BANTU<span className="text-brand-light">.</span>
+              </span>
             </div>
-            <p className="text-gray-500 text-sm leading-relaxed max-w-[250px]">
-              Pusat pemberdayaan UMKM dan Freelancer Indonesia dengan teknologi modern.
+            <p className="text-brand-light/70 text-lg leading-relaxed font-sans font-light text-balance">
+              Pemberdayaan UMKM Indonesia melalui kolaborasi dengan talenta mahasiswa terbaik. 
+              Membangun ekonomi lokal, satu proyek sekaligus.
             </p>
           </div>
           
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-6 text-sm">Platform</h4>
-            <ul className="space-y-4">
-              <li><Link href="/marketplace" className="text-gray-500 hover:text-[#008f4c] transition-colors text-xs font-semibold tracking-wider uppercase">Marketplace</Link></li>
-              <li><Link href="/guide" className="text-gray-500 hover:text-[#008f4c] transition-colors text-xs font-semibold tracking-wider uppercase">UMKM Guide</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-6 text-sm">Bantuan</h4>
-            <ul className="space-y-4">
-              <li><Link href="/help" className="text-gray-500 hover:text-[#008f4c] transition-colors text-xs font-semibold tracking-wider uppercase">Help Center</Link></li>
-              <li><Link href="/privacy" className="text-gray-500 hover:text-[#008f4c] transition-colors text-xs font-semibold tracking-wider uppercase">Privacy Policy</Link></li>
-            </ul>
-          </div>
-
-          <div>
-             <h4 className="font-semibold text-gray-900 mb-6 text-sm">Syarat & Ketentuan</h4>
-             <ul className="space-y-4">
-               <li><Link href="/terms" className="text-gray-500 hover:text-[#008f4c] transition-colors text-xs font-semibold tracking-wider uppercase">Terms of Service</Link></li>
-             </ul>
+          {/* Navigations */}
+          <div className="flex flex-col gap-8">
+            <h4 className="font-display font-bold text-white text-[10px] uppercase tracking-[0.25em]">Navigasi</h4>
+            <div className="flex flex-col gap-4">
+              {(user 
+                ? ["Marketplace", "Tasks", "Chat", "Wallet"] 
+                : ["Marketplace"]
+              ).map((item) => (
+                <Link 
+                  key={item}
+                  href={item === "Tasks" ? "/dashboard/my-tasks" : `/${item.toLowerCase()}`} 
+                  className="text-brand-light/60 hover:text-white transition-all text-[11px] font-bold uppercase tracking-widest"
+                >
+                  {item}
+                </Link>
+              ))}
+              
+              {user ? (
+                <>
+                  {userData?.role === 'UMKM' && (
+                    <Link href="/post-project" className="text-brand-light/60 hover:text-white transition-all text-[11px] font-bold uppercase tracking-widest">
+                      Post Project
+                    </Link>
+                  )}
+                  <Link href="/profile" className="text-brand-light/60 hover:text-white transition-all text-[11px] font-bold uppercase tracking-widest">
+                    Profile
+                  </Link>
+                  <Link href="/dashboard" className="text-brand-light/60 hover:text-white transition-all text-[11px] font-bold uppercase tracking-widest">
+                    Dashboard
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="text-brand-light/60 hover:text-white transition-all text-[11px] font-bold uppercase tracking-widest">
+                    Login
+                  </Link>
+                  <Link href="/register" className="text-brand-light/60 hover:text-white transition-all text-[11px] font-bold uppercase tracking-widest">
+                    Register
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="text-xs text-gray-400 font-medium uppercase tracking-widest">
+        {/* Bottom Area */}
+        <div className="mt-24 pt-10 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="text-[10px] font-bold tracking-[0.3em] text-brand-light/30 uppercase">
             © 2024 BANTU INDONESIA. KARYA ANAK BANGSA.
-          </div>
-          <div className="flex gap-4">
-             <button className="text-gray-400 hover:text-[#008f4c] transition-colors">
-               <Globe size={18} />
-             </button>
-             <button className="text-gray-400 hover:text-[#008f4c] transition-colors">
-               <Share2 size={18} />
-             </button>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Clock, Wallet, MapPin, CheckCircle2, ShieldCheck, Sparkles, ChevronRight, Share2, Bookmark, Star } from 'lucide-react';
+import { ChevronLeft, Clock, Wallet, MapPin, CheckCircle2, ShieldCheck, ChevronRight, Share2, Bookmark, Star } from 'lucide-react';
 import { doc, getDoc, collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useParams, useRouter } from 'next/navigation';
@@ -233,7 +233,7 @@ export default function JobDetailPage() {
               <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-1000" />
               <div className="relative z-10">
                 <div className="flex items-center gap-2 text-white/70 text-[10px] font-bold tracking-[0.2em] uppercase mb-6">
-                  <Sparkles size={16} /> AI MATCHING ENGINE
+                  AI MATCHING ENGINE
                 </div>
                 <div className="text-7xl font-display font-black tracking-tighter mb-4">98%</div>
                 <p className="text-white/80 text-sm leading-relaxed mb-8 font-light">

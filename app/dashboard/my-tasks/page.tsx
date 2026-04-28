@@ -22,23 +22,24 @@ interface Task {
 }
 
 export default function MyTasksPage() {
-  const { user, userData } = useAuth();
+  const { user, userData, loading: authLoading } = useAuth();
   const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
 
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       router.push("/login");
       return;
     }
-    if (userData?.role === "UMKM") {
+    if (!authLoading && userData?.role === "UMKM") {
       router.push("/dashboard/my-posts");
       return;
     }
 
     const fetchTasks = async () => {
+      if (!user) return;
       try {
         const q = query(
           collection(db, "applications"),

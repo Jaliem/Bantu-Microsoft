@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Wallet, ArrowUpRight, ArrowDownLeft, Sparkles, CreditCard, History } from "lucide-react";
+import { ShieldCheck, Wallet, ArrowUpRight, ArrowDownLeft, CreditCard, History } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,15 +22,16 @@ interface Transaction {
 }
 
 export default function WalletPage() {
-  const { user, userData } = useAuth();
+  const { user, userData, loading: authLoading } = useAuth();
   const router = useRouter();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) { router.push("/login"); return; }
+    if (!authLoading && !user) { router.push("/login"); return; }
 
     const fetchTransactions = async () => {
+      if (!user) return;
       try {
         const q = query(
           collection(db, "transactions"),
@@ -46,7 +47,7 @@ export default function WalletPage() {
       }
     };
     fetchTransactions();
-  }, [user, router]);
+  }, [user, authLoading, router]);
 
   const totalBalance = transactions
     .filter(t => t.status === "completed")
@@ -179,9 +180,6 @@ export default function WalletPage() {
               transition={{ delay: 0.2 }}
               className="bg-white rounded-[2rem] p-8 border border-brand-dark/5 shadow-ambient flex items-center gap-5"
             >
-              <div className="w-12 h-12 bg-brand-mid/10 rounded-2xl flex items-center justify-center text-brand-mid shrink-0">
-                <Sparkles size={20} />
-              </div>
               <div>
                 <h4 className="font-display font-bold text-sm text-brand-dark">Top Up Mudah</h4>
                 <p className="text-[11px] text-brand-dark/40 font-sans">Mendukung QRIS, Bank Transfer, dan E-Wallet.</p>

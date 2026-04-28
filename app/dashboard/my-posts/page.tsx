@@ -44,17 +44,18 @@ interface Project {
 }
 
 export default function MyPostsPage() {
-  const { user, userData } = useAuth();
+  const { user, userData, loading: authLoading } = useAuth();
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [approvingId, setApprovingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) { router.push("/login"); return; }
-    if (userData?.role !== "UMKM") { router.push("/dashboard/my-tasks"); return; }
+    if (!authLoading && !user) { router.push("/login"); return; }
+    if (!authLoading && userData?.role !== "UMKM") { router.push("/dashboard/my-tasks"); return; }
 
     const fetchProjects = async () => {
+      if (!user) return;
       try {
         const projQ = query(
           collection(db, "projects"),

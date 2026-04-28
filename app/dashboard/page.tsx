@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Bell, Wallet, TrendingUp, CheckCircle2, Sparkles, Star, ShieldCheck, ClipboardList, ArrowRight, User } from 'lucide-react';
+import { Bell, Wallet, TrendingUp, CheckCircle2,  Star, ShieldCheck, ClipboardList, ArrowRight, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,19 +12,19 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DashboardPage() {
-  const { user, userData } = useAuth();
+  const { user, userData, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any[]>([]);
   const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user) {
+      if (!authLoading && !user) {
         router.push("/login");
         return;
       }
 
-      if (!userData) return;
+      if (authLoading || !userData || !user) return;
 
       if (userData.verified !== true) {
         router.push("/login");
@@ -250,9 +250,6 @@ export default function DashboardPage() {
               <div className="absolute top-0 right-0 w-64 h-64 bg-brand-mid/5 rounded-full blur-3xl" />
               <div className="relative z-10">
                 <div className="flex items-center gap-6 mb-10">
-                  <div className="w-16 h-16 rounded-[1.5rem] bg-brand-mid/10 flex items-center justify-center text-brand-mid shrink-0 shadow-sm">
-                    <Sparkles size={32} />
-                  </div>
                   <div>
                     <h3 className="text-2xl font-display font-bold text-brand-dark tracking-tight">Boost Your Stats</h3>
                     <p className="text-brand-dark/40 text-sm font-sans mt-1">Dapatkan feedback lebih baik dan tingkatkan rank kamu.</p>
