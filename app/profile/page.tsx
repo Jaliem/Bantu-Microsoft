@@ -5,7 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { sendEmailVerification } from "firebase/auth";
-import { Camera, MapPin, Pencil, X, Plus } from "lucide-react";
+import { Camera, MapPin, Pencil, X, Plus, CheckCircle2, ShieldAlert } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 export default function ProfilePersonalInfoPage() {
   const { user } = useAuth();
@@ -73,8 +75,10 @@ export default function ProfilePersonalInfoPage() {
       
       setUserData((prev: any) => ({ ...prev, ...formData }));
       setIsEditing(false);
+      toast.success("Profile updated successfully!");
     } catch (error) {
       console.error("Failed to save profile", error);
+      toast.error("Failed to update profile.");
     } finally {
       setSaving(false);
     }
@@ -89,6 +93,7 @@ export default function ProfilePersonalInfoPage() {
 
     try {
       await setDoc(doc(db, "users", user.uid), { skills: updatedSkills }, { merge: true });
+      toast.success("Skill added!");
     } catch (error) {
       console.error("Failed to save skill", error);
     }
@@ -129,9 +134,11 @@ export default function ProfilePersonalInfoPage() {
         }, { merge: true });
 
         setUserData((prev: any) => ({ ...prev, avatarUrl: newAvatarUrl }));
+        toast.success("Profile picture updated!");
       }
     } catch (error) {
       console.error("Avatar upload error", error);
+      toast.error("Failed to upload image.");
     } finally {
       setUploadingAvatar(false);
     }
@@ -142,8 +149,10 @@ export default function ProfilePersonalInfoPage() {
       try {
         await sendEmailVerification(user);
         setVerificationSent(true);
+        toast.success("Verification email sent!");
       } catch (error) {
         console.error("Failed to send verification email", error);
+        toast.error("Failed to send verification email.");
       }
     }
   };
@@ -151,16 +160,16 @@ export default function ProfilePersonalInfoPage() {
   const avatar = userData?.avatarUrl || user?.photoURL || null;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
+    <div className="flex flex-col lg:flex-row gap-10">
       {/* Left Column - Profile Card */}
-      <div className="w-full lg:w-1/3 space-y-6">
-        <div className="bg-white rounded-[32px] p-8 flex flex-col items-center text-center shadow-[0_4px_20px_rgba(19,27,46,0.02)] border border-[#bccabc]/15">
-          <div className="relative mb-4">
-            <div className={`w-32 h-32 rounded-full overflow-hidden border-[6px] border-white shadow-md ${uploadingAvatar ? 'opacity-50' : ''}`}>
+      <div className="w-full lg:w-80 shrink-0 space-y-8">
+        <div className="bg-white rounded-[2.5rem] p-10 flex flex-col items-center text-center shadow-ambient border border-brand-dark/5">
+          <div className="relative mb-6">
+            <div className={`w-32 h-32 rounded-[2.5rem] overflow-hidden border-[6px] border-brand-light shadow-ambient ${uploadingAvatar ? 'opacity-50' : ''}`}>
               {avatar ? (
                 <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-[#dae2fd] flex items-center justify-center text-[#006d38] text-4xl font-bold">
+                <div className="w-full h-full bg-brand-mid/10 flex items-center justify-center text-brand-mid text-4xl font-display font-bold">
                   {formData.name.charAt(0) || "U"}
                 </div>
               )}
@@ -168,9 +177,9 @@ export default function ProfilePersonalInfoPage() {
             <button 
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadingAvatar}
-              className="absolute bottom-0 right-0 w-10 h-10 bg-[#006d38] rounded-full flex items-center justify-center text-white border-4 border-white hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+              className="absolute -bottom-2 -right-2 w-12 h-12 bg-brand-mid rounded-2xl flex items-center justify-center text-white border-4 border-white hover:bg-brand-dark transition-all cursor-pointer shadow-lg shadow-brand-mid/20"
             >
-              {uploadingAvatar ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Camera size={16} />}
+              {uploadingAvatar ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <Camera size={18} />}
             </button>
             <input 
               type="file" 
@@ -181,68 +190,79 @@ export default function ProfilePersonalInfoPage() {
             />
           </div>
           
-          <h2 className="text-xl font-bold text-[#131b2e] font-display">{formData.name}</h2>
+          <h2 className="text-2xl font-display font-bold text-brand-dark leading-tight">{formData.name}</h2>
           
           {user?.emailVerified ? (
-            <div className="bg-[#006d38] text-white text-[10px] font-bold px-4 py-1.5 rounded-full mt-2 inline-flex items-center gap-1.5 shadow-sm tracking-wider">
-              <div className="w-1.5 h-1.5 bg-[#dae2fd] rounded-full animate-pulse"></div>
-              VERIFIED {userData?.role?.toUpperCase() || 'UMKM'}
+            <div className="bg-brand-mid/10 text-brand-mid text-[9px] font-bold px-4 py-2 rounded-full mt-4 inline-flex items-center gap-2 uppercase tracking-widest border border-brand-mid/20">
+              <CheckCircle2 size={12} />
+              VERIFIED {userData?.role || 'UMKM'}
             </div>
           ) : (
-            <div className="flex flex-col items-center">
-              <div className="bg-red-600 text-white text-[10px] font-bold px-4 py-1.5 rounded-full mt-2 inline-flex items-center gap-1.5 shadow-sm tracking-wider">
-                <div className="w-1.5 h-1.5 bg-red-200 rounded-full animate-pulse"></div>
-                UNVERIFIED {userData?.role?.toUpperCase() || 'UMKM'}
+            <div className="flex flex-col items-center w-full">
+              <div className="bg-red-50 text-red-600 text-[9px] font-bold px-4 py-2 rounded-full mt-4 inline-flex items-center gap-2 uppercase tracking-widest border border-red-100">
+                <ShieldAlert size={12} />
+                UNVERIFIED
               </div>
               {!verificationSent ? (
                 <button 
                   onClick={handleResendVerification}
-                  className="mt-3 text-xs text-red-600 font-semibold hover:underline cursor-pointer"
+                  className="mt-3 text-[10px] font-bold text-red-600 uppercase tracking-widest hover:underline cursor-pointer opacity-60 hover:opacity-100"
                 >
-                  Resend Verification Email
+                  Resend Verification
                 </button>
               ) : (
-                <span className="mt-3 text-xs text-[#006d38] font-semibold">Verification email sent!</span>
+                <span className="mt-3 text-[10px] font-bold text-brand-mid uppercase tracking-widest">Email Sent!</span>
               )}
             </div>
           )}
 
-          <p className="text-sm text-[#3d4a3f] mt-6 leading-relaxed">
+          <div className="w-full h-px bg-brand-dark/5 my-8" />
+
+          <p className="text-sm text-brand-dark/50 leading-relaxed font-sans font-light">
             {formData.bio || "Focused on helping local businesses grow through digital transformation and strategic planning."}
           </p>
         </div>
 
-        <div className="bg-[#f2f3ff] rounded-[32px] p-8 border border-[#bccabc]/15 shadow-inner">
-          <h3 className="font-bold text-sm text-[#131b2e] mb-4">Skill Tags</h3>
-          <div className="flex flex-wrap gap-2">
-            {skills.map(skill => (
-              <span key={skill} className="bg-white px-3 py-1.5 rounded-[16px] text-xs font-semibold text-[#131b2e] shadow-sm border border-[#bccabc]/15 flex items-center gap-1.5 group">
-                {skill}
-                {isEditing && (
-                  <button onClick={() => handleRemoveSkill(skill)} className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                    <X size={12} />
-                  </button>
-                )}
-              </span>
-            ))}
+        <div className="bg-brand-dark rounded-[2.5rem] p-10 text-white shadow-xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-mid/20 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
+          <h3 className="font-display font-bold text-[10px] uppercase tracking-[0.2em] text-white/30 mb-6 relative z-10">Skill Portfolio</h3>
+          <div className="flex flex-wrap gap-2 relative z-10">
+            <AnimatePresence>
+              {skills.map(skill => (
+                <motion.span 
+                  key={skill} 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="bg-white/10 px-3 py-1.5 rounded-xl text-[11px] font-bold text-white/80 border border-white/5 flex items-center gap-2 group/skill"
+                >
+                  {skill}
+                  {isEditing && (
+                    <button onClick={() => handleRemoveSkill(skill)} className="text-white/40 hover:text-red-400 transition-colors cursor-pointer">
+                      <X size={12} />
+                    </button>
+                  )}
+                </motion.span>
+              ))}
+            </AnimatePresence>
             
             {isEditing && (
               addingSkill ? (
-                <div className="flex items-center bg-white rounded-[16px] border border-[#006d38] shadow-sm overflow-hidden">
+                <div className="flex items-center bg-white rounded-xl shadow-sm overflow-hidden">
                   <input 
                     type="text" 
                     value={newSkill} 
                     onChange={e => setNewSkill(e.target.value)} 
                     onKeyDown={e => e.key === 'Enter' && handleAddSkill()}
                     autoFocus
-                    className="px-3 py-1.5 text-xs text-[#131b2e] outline-none w-24 bg-transparent"
-                    placeholder="New skill..."
+                    className="px-3 py-1.5 text-[11px] text-brand-dark outline-none w-24 bg-transparent font-bold"
+                    placeholder="..."
                   />
-                  <button onClick={handleAddSkill} className="bg-[#006d38] text-white px-2 py-1.5 hover:bg-green-700 cursor-pointer text-xs font-bold transition-colors">Add</button>
+                  <button onClick={handleAddSkill} className="bg-brand-mid text-white px-2 py-1.5 hover:bg-brand-dark cursor-pointer text-[10px] font-bold transition-colors">Add</button>
                 </div>
               ) : (
-                <button onClick={() => setAddingSkill(true)} className="bg-[#dae2fd] text-[#006d38] px-3 py-1.5 rounded-[16px] text-xs font-bold flex items-center gap-1 hover:bg-[#c2d0f9] transition-colors cursor-pointer shadow-sm">
-                  <Plus size={12} /> Add Skill
+                <button onClick={() => setAddingSkill(true)} className="bg-brand-mid text-white px-3 py-1.5 rounded-xl text-[10px] font-bold flex items-center gap-1 hover:bg-white hover:text-brand-dark transition-all cursor-pointer shadow-lg shadow-brand-mid/20">
+                  <Plus size={12} /> Add
                 </button>
               )
             )}
@@ -251,47 +271,51 @@ export default function ProfilePersonalInfoPage() {
       </div>
 
       {/* Right Column - Form */}
-      <div className="w-full lg:w-2/3 flex flex-col gap-6">
-        <div className="bg-white rounded-[32px] p-8 shadow-[0_4px_20px_rgba(19,27,46,0.02)] border border-[#bccabc]/15">
-          <div className="flex justify-between items-start mb-8">
+      <div className="flex-1 flex flex-col gap-8">
+        <div className="bg-white rounded-[2.5rem] p-10 md:p-12 shadow-ambient border border-brand-dark/5">
+          <div className="flex justify-between items-start mb-12">
             <div>
-              <h2 className="text-xl font-bold text-[#131b2e] font-display">Personal Details</h2>
-              <p className="text-sm text-[#3d4a3f] mt-1">Update your public profile and contact information.</p>
+              <h2 className="text-3xl font-display font-bold text-brand-dark tracking-tight">Personal Details</h2>
+              <p className="text-brand-dark/40 text-sm mt-1">Update your public profile and contact information.</p>
             </div>
-            <button 
-              onClick={() => setIsEditing(!isEditing)}
-              className="text-[#006d38] text-sm font-bold flex items-center gap-2 hover:bg-[#f2f3ff] px-4 py-2 rounded-[16px] transition-colors cursor-pointer"
-            >
-              <Pencil size={14} />
-              {isEditing ? "Cancel Edit" : "Edit Profile"}
-            </button>
+            {!isEditing && (
+              <button 
+                onClick={() => setIsEditing(true)}
+                className="bg-brand-light text-brand-mid font-display font-bold flex items-center gap-2 hover:bg-brand-mid hover:text-white px-6 py-3 rounded-2xl transition-all cursor-pointer text-[10px] uppercase tracking-widest shadow-sm"
+              >
+                <Pencil size={14} />
+                Edit Profile
+              </button>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#3d4a3f] mb-2 tracking-wider">Nama Lengkap</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
+            <div className="space-y-2">
+              <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-brand-dark/30 ml-1">Nama Lengkap</label>
               <input
                 type="text"
                 name="name"
                 disabled={!isEditing}
                 value={formData.name}
                 onChange={handleInputChange}
-                className={`w-full p-3.5 rounded-[16px] text-sm text-[#131b2e] focus:outline-none transition-colors ${
-                  isEditing ? "bg-white border border-[#006d38] shadow-[0_0_8px_rgba(0,109,56,0.1)]" : "bg-[#f2f3ff] border border-transparent"
+                className={`w-full p-4 rounded-2xl text-sm text-brand-dark focus:outline-none transition-all ${
+                  isEditing 
+                    ? "bg-white border-2 border-brand-mid/20 focus:border-brand-mid shadow-lg shadow-brand-mid/5" 
+                    : "bg-brand-light/50 border-2 border-transparent"
                 }`}
               />
             </div>
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#3d4a3f] mb-2 tracking-wider">Email Address</label>
+            <div className="space-y-2">
+              <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-brand-dark/30 ml-1">Email Address</label>
               <input
                 type="email"
                 disabled={true}
                 value={user?.email || ""}
-                className="w-full p-3.5 rounded-[16px] text-sm text-[#131b2e] bg-[#f2f3ff] border border-transparent focus:outline-none opacity-60 cursor-not-allowed"
+                className="w-full p-4 rounded-2xl text-sm text-brand-dark/40 bg-brand-light/30 border-2 border-transparent focus:outline-none cursor-not-allowed"
               />
             </div>
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#3d4a3f] mb-2 tracking-wider">Nomor Telepon</label>
+            <div className="space-y-2">
+              <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-brand-dark/30 ml-1">Nomor Telepon</label>
               <input
                 type="tel"
                 name="phone"
@@ -299,13 +323,15 @@ export default function ProfilePersonalInfoPage() {
                 value={formData.phone}
                 onChange={handleInputChange}
                 placeholder="+62 812 3456 7890"
-                className={`w-full p-3.5 rounded-[16px] text-sm text-[#131b2e] focus:outline-none transition-colors ${
-                  isEditing ? "bg-white border border-[#006d38] shadow-[0_0_8px_rgba(0,109,56,0.1)]" : "bg-[#f2f3ff] border border-transparent"
+                className={`w-full p-4 rounded-2xl text-sm text-brand-dark focus:outline-none transition-all ${
+                  isEditing 
+                    ? "bg-white border-2 border-brand-mid/20 focus:border-brand-mid shadow-lg shadow-brand-mid/5" 
+                    : "bg-brand-light/50 border-2 border-transparent"
                 }`}
               />
             </div>
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#3d4a3f] mb-2 tracking-wider">Lokasi</label>
+            <div className="space-y-2">
+              <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-brand-dark/30 ml-1">Lokasi</label>
               <div className="relative">
                 <input
                   type="text"
@@ -313,15 +339,17 @@ export default function ProfilePersonalInfoPage() {
                   disabled={!isEditing}
                   value={formData.location}
                   onChange={handleInputChange}
-                  className={`w-full p-3.5 pr-10 rounded-[16px] text-sm text-[#131b2e] focus:outline-none transition-colors ${
-                    isEditing ? "bg-white border border-[#006d38] shadow-[0_0_8px_rgba(0,109,56,0.1)]" : "bg-[#f2f3ff] border border-transparent"
+                  className={`w-full p-4 pr-12 rounded-2xl text-sm text-brand-dark focus:outline-none transition-all ${
+                    isEditing 
+                      ? "bg-white border-2 border-brand-mid/20 focus:border-brand-mid shadow-lg shadow-brand-mid/5" 
+                      : "bg-brand-light/50 border-2 border-transparent"
                   }`}
                 />
-                <MapPin size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3d4a3f]" />
+                <MapPin size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-dark/20" />
               </div>
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-[10px] uppercase font-bold text-[#3d4a3f] mb-2 tracking-wider">Bio Profile</label>
+            <div className="md:col-span-2 space-y-2">
+              <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-brand-dark/30 ml-1">Bio Profile</label>
               <textarea
                 name="bio"
                 disabled={!isEditing}
@@ -329,60 +357,72 @@ export default function ProfilePersonalInfoPage() {
                 onChange={handleInputChange}
                 rows={4}
                 placeholder="Entrepreneur and business consultant with over 10 years of experience..."
-                className={`w-full p-4 rounded-[16px] text-sm text-[#131b2e] focus:outline-none resize-none transition-colors ${
-                  isEditing ? "bg-white border border-[#006d38] shadow-[0_0_8px_rgba(0,109,56,0.1)]" : "bg-[#f2f3ff] border border-transparent"
+                className={`w-full p-5 rounded-2xl text-sm text-brand-dark focus:outline-none resize-none transition-all leading-relaxed ${
+                  isEditing 
+                    ? "bg-white border-2 border-brand-mid/20 focus:border-brand-mid shadow-lg shadow-brand-mid/5" 
+                    : "bg-brand-light/50 border-2 border-transparent"
                 }`}
               />
             </div>
           </div>
+          
+          <AnimatePresence>
+            {isEditing && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="flex justify-end items-center gap-4 mt-12 pt-8 border-t border-brand-dark/5"
+              >
+                <button 
+                  onClick={() => {
+                    setIsEditing(false);
+                    setFormData({
+                      name: userData?.name || user?.displayName || "",
+                      phone: userData?.phone || "",
+                      location: userData?.location || "Jakarta Selatan, Indonesia",
+                      bio: userData?.bio || "",
+                    });
+                  }}
+                  className="text-brand-dark/40 font-display font-bold px-8 py-4 hover:text-brand-dark transition-colors cursor-pointer text-[10px] uppercase tracking-widest"
+                >
+                  Discard Changes
+                </button>
+                <button 
+                  onClick={handleSaveProfile}
+                  disabled={saving}
+                  className="bg-brand-mid text-white font-display font-bold px-10 py-4 rounded-2xl hover:bg-brand-dark transition-all shadow-lg shadow-brand-mid/20 disabled:opacity-70 flex items-center gap-3 cursor-pointer text-[10px] uppercase tracking-widest"
+                >
+                  {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                  Save Changes
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Stats Box */}
-        <div className="bg-[#dae2fd] rounded-[32px] p-8 relative overflow-hidden text-[#131b2e] border border-[#bccabc]/15 shadow-inner">
-          <div className="relative z-10">
-            <h3 className="text-[#006d38] font-bold mb-1 text-lg">Member Status</h3>
-            <p className="text-sm text-[#3d4a3f] mb-8 font-medium">Sejak 12 Maret 2021</p>
+        {/* Stats Section */}
+        <div className="bg-brand-light rounded-[2.5rem] p-12 border border-brand-dark/5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-mid/5 rounded-full blur-3xl" />
+          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-12">
+            <div>
+              <p className="text-[10px] font-bold text-brand-mid uppercase tracking-[0.2em] mb-4">Member Status</p>
+              <h3 className="text-xl font-display font-bold text-brand-dark mb-1">Sejak 12 Maret 2021</h3>
+              <p className="text-xs text-brand-dark/40 font-sans">Active contributor since registration.</p>
+            </div>
             
             <div className="flex gap-16">
               <div>
-                <div className="text-4xl font-bold font-display">152</div>
-                <div className="text-[10px] uppercase font-bold text-[#3d4a3f] mt-2 tracking-wider">Projects Completed</div>
+                <div className="text-5xl font-display font-black tracking-tighter text-brand-dark">152</div>
+                <div className="text-[9px] uppercase font-bold text-brand-dark/30 mt-2 tracking-widest">Tasks Done</div>
               </div>
               <div>
-                <div className="text-4xl font-bold font-display">4.9<span className="text-xl text-[#3d4a3f]/50">/5.0</span></div>
-                <div className="text-[10px] uppercase font-bold text-[#3d4a3f] mt-2 tracking-wider">Client Rating</div>
+                <div className="text-5xl font-display font-black tracking-tighter text-brand-dark">4.9<span className="text-xl text-brand-dark/20 font-bold">/5</span></div>
+                <div className="text-[9px] uppercase font-bold text-brand-dark/30 mt-2 tracking-widest">Avg Rating</div>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Actions */}
-        {isEditing && (
-          <div className="flex justify-end items-center gap-4 mt-2">
-            <button 
-              onClick={() => {
-                setIsEditing(false);
-                setFormData({
-                  name: userData?.name || user?.displayName || "",
-                  phone: userData?.phone || "",
-                  location: userData?.location || "Jakarta Selatan, Indonesia",
-                  bio: userData?.bio || "",
-                });
-              }}
-              className="text-[#3d4a3f] font-semibold px-6 py-3.5 hover:bg-[#f2f3ff] rounded-[16px] transition-colors cursor-pointer"
-            >
-              Discard Changes
-            </button>
-            <button 
-              onClick={handleSaveProfile}
-              disabled={saving}
-              className="bg-gradient-to-br from-[#006d38] to-[#00aa5b] text-white font-semibold px-8 py-3.5 rounded-[16px] hover:opacity-90 transition-opacity shadow-[0_4px_20px_rgba(19,27,46,0.05)] disabled:opacity-70 flex items-center gap-2 cursor-pointer"
-            >
-              {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
-              Save Profile Information
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

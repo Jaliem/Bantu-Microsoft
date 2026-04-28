@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Sidebar from "@/components/Sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   collection, query, where, getDocs, doc, getDoc,
@@ -16,6 +15,7 @@ import {
   Loader2, Star, Sparkles, Users, Trophy, ExternalLink, XCircle
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Submission {
   id: string;
@@ -68,7 +68,6 @@ export default function MyPostsPage() {
         for (const projDoc of projSnap.docs) {
           const projData = projDoc.data();
 
-          // Fetch submissions for this project
           const subQ = query(
             collection(db, "submissions"),
             where("projectId", "==", projDoc.id)
@@ -79,7 +78,6 @@ export default function MyPostsPage() {
             ...s.data(),
           } as Submission));
 
-          // Count applicants
           const appQ = query(
             collection(db, "applications"),
             where("projectId", "==", projDoc.id)
@@ -117,25 +115,21 @@ export default function MyPostsPage() {
   const handleApprove = async (project: Project, submission: Submission) => {
     setApprovingId(submission.id);
     try {
-      // Mark submission approved
       await updateDoc(doc(db, "submissions", submission.id), {
         status: "approved",
         approvedAt: serverTimestamp(),
       });
 
-      // Mark application completed
       await updateDoc(doc(db, "applications", submission.applicationId), {
         status: "completed",
         completedAt: serverTimestamp(),
       });
 
-      // Mark project completed
       await updateDoc(doc(db, "projects", project.id), {
         status: "completed",
         completedAt: serverTimestamp(),
       });
 
-      // Auto-generate Live Ledger entry (Proof-of-Action) for student
       await addDoc(collection(db, "portfolioEntries"), {
         userId: submission.studentId,
         projectId: project.id,
@@ -150,7 +144,6 @@ export default function MyPostsPage() {
         verified: true,
       });
 
-      // Update student stats (completedTasks + rank)
       const studentRef = doc(db, "users", submission.studentId);
       const studentSnap = await getDoc(studentRef);
       if (studentSnap.exists()) {
@@ -163,7 +156,6 @@ export default function MyPostsPage() {
         });
       }
 
-      // Add transaction record for student earnings
       const budgetNum = parseBudget(project.budget);
       await addDoc(collection(db, "transactions"), {
         userId: submission.studentId,
@@ -176,9 +168,8 @@ export default function MyPostsPage() {
         createdAt: serverTimestamp(),
       });
 
-      toast.success(`Work approved! Payment released and portfolio entry created for ${submission.studentName}.`);
+      toast.success(`Work approved! Payment released for ${submission.studentName}.`);
 
-      // Update local state
       setProjects(prev => prev.map(p =>
         p.id === project.id
           ? {
@@ -192,7 +183,7 @@ export default function MyPostsPage() {
       ));
     } catch (err) {
       console.error(err);
-      toast.error("Failed to approve. Please try again.");
+      toast.error("Failed to approve.");
     } finally {
       setApprovingId(null);
     }
@@ -202,7 +193,7 @@ export default function MyPostsPage() {
     try {
       await updateDoc(doc(db, "submissions", submission.id), { status: "rejected" });
       await updateDoc(doc(db, "applications", submission.applicationId), { status: "accepted" });
-      toast.success("Submission rejected. Student can revise and resubmit.");
+      toast.success("Submission rejected.");
       setProjects(prev => prev.map(p => ({
         ...p,
         submissions: p.submissions.map(s =>
@@ -210,12 +201,12 @@ export default function MyPostsPage() {
         ),
       })));
     } catch {
-      toast.error("Failed to reject submission.");
+      toast.error("Failed to reject.");
     }
   };
 
   const gradeColor: Record<string, string> = {
-    S: "text-yellow-600 bg-yellow-50", A: "text-green-600 bg-green-50",
+    S: "text-brand-mid bg-brand-mid/10", A: "text-brand-mid bg-brand-mid/5",
     B: "text-blue-600 bg-blue-50", C: "text-orange-600 bg-orange-50",
     D: "text-red-600 bg-red-50",
   };
@@ -223,195 +214,213 @@ export default function MyPostsPage() {
   const projectStatusConfig: Record<string, { label: string; color: string }> = {
     open: { label: "Open", color: "bg-blue-50 text-blue-600" },
     in_progress: { label: "In Progress", color: "bg-yellow-50 text-yellow-600" },
-    completed: { label: "Completed", color: "bg-green-50 text-green-700" },
+    completed: { label: "Completed", color: "bg-brand-mid/10 text-brand-mid" },
   };
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-[#faf8ff] font-sans">
-        <Sidebar />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="w-12 h-12 border-4 border-[#008f4c] border-t-transparent rounded-full animate-spin" />
-        </main>
+      <div className="flex min-h-screen bg-brand-light items-center justify-center">
+        <div className="w-12 h-12 border-4 border-brand-mid border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-[#faf8ff] font-sans overflow-hidden">
-      <Sidebar />
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8 lg:p-12 max-w-5xl mx-auto">
-          <div className="mb-10">
-            <h1 className="text-4xl md:text-[3rem] font-medium text-gray-900 font-display tracking-tight leading-tight">
-              My Posts
-            </h1>
-            <p className="text-gray-500 mt-2 text-lg font-light">
-              Review submissions and approve work to release payment.
-            </p>
-          </div>
+    <div className="min-h-screen bg-brand-light font-sans text-brand-dark pt-28 pb-20 px-6">
+      <main className="max-w-5xl mx-auto w-full">
+        <div className="mb-12">
+          <motion.h1 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="text-4xl md:text-5xl font-display font-bold tracking-tight text-brand-dark"
+          >
+            My Posts
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-brand-dark/40 mt-2 text-lg font-sans font-light"
+          >
+            Tinjau hasil kerja mahasiswa dan selesaikan pembayaran.
+          </motion.p>
+        </div>
 
-          {projects.length === 0 ? (
-            <div className="bg-white rounded-[32px] p-16 text-center border border-gray-100 shadow-sm">
-              <div className="w-20 h-20 bg-[#f8f9fe] text-gray-300 rounded-full flex items-center justify-center mx-auto mb-6">
-                <ClipboardList size={40} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No projects posted yet</h3>
-              <p className="text-gray-500 mb-6">Post your first project to start finding talented students.</p>
-              <Link href="/post-project" className="inline-flex items-center gap-2 bg-[#008f4c] text-white font-bold px-6 py-3 rounded-2xl hover:bg-[#007a41] transition-all cursor-pointer">
-                Post a Project
-              </Link>
+        {projects.length === 0 ? (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-[2.5rem] p-20 text-center border border-brand-dark/5 shadow-ambient"
+          >
+            <div className="w-24 h-24 bg-brand-light flex items-center justify-center rounded-[2rem] mx-auto mb-8 border border-brand-dark/5">
+              <ClipboardList className="text-brand-dark/10" size={40} />
             </div>
-          ) : (
-            <div className="space-y-4">
-              {projects.map((project) => {
+            <h3 className="text-2xl font-display font-bold text-brand-dark mb-3">Belum ada proyek</h3>
+            <p className="text-brand-dark/40 mb-10 font-sans font-light">Posting proyek pertama Anda untuk mulai mencari talenta.</p>
+            <Link href="/post-project" className="bg-brand-dark text-white font-display font-bold px-10 py-4 rounded-full text-[10px] uppercase tracking-widest hover:bg-brand-mid transition-all shadow-xl shadow-brand-dark/10">
+              Posting Proyek
+            </Link>
+          </motion.div>
+        ) : (
+          <div className="space-y-6">
+            <AnimatePresence>
+              {projects.map((project, idx) => {
                 const statusCfg = projectStatusConfig[project.status] || projectStatusConfig.open;
                 const pendingSubmissions = project.submissions.filter(s => s.status === "pending");
                 return (
-                  <div key={project.id} className="bg-white rounded-[24px] border border-gray-100 shadow-[0_4px_20px_rgba(19,27,46,0.02)] overflow-hidden">
+                  <motion.div 
+                    key={project.id} 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="bg-white rounded-[2.5rem] border border-brand-dark/5 shadow-ambient overflow-hidden"
+                  >
                     {/* Project Header */}
                     <div
-                      className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:bg-gray-50/50 transition-colors"
+                      className="p-8 md:p-10 flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer hover:bg-brand-light/30 transition-all group"
                       onClick={() => toggleExpand(project.id)}
                     >
                       <div className="flex-1">
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span className="text-[10px] uppercase font-bold tracking-widest text-[#008f4c] bg-[#e6f4ea] px-3 py-1 rounded-full">
+                        <div className="flex flex-wrap items-center gap-3 mb-4">
+                          <span className="text-[9px] uppercase font-bold tracking-[0.15em] text-brand-mid bg-brand-mid/10 px-3 py-1.5 rounded-full border border-brand-mid/10">
                             {project.category}
                           </span>
-                          <span className={`text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full ${statusCfg.color}`}>
+                          <span className={`text-[9px] uppercase font-bold tracking-[0.15em] px-3 py-1.5 rounded-full border border-current/10 ${statusCfg.color}`}>
                             {statusCfg.label}
                           </span>
                           {pendingSubmissions.length > 0 && (
-                            <span className="text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full bg-orange-50 text-orange-600 flex items-center gap-1">
-                              <Trophy size={10} /> {pendingSubmissions.length} Pending Review
+                            <span className="text-[9px] uppercase font-bold tracking-[0.15em] px-3 py-1.5 rounded-full bg-orange-50 text-orange-600 border border-orange-100 flex items-center gap-2">
+                              <Sparkles size={10} /> {pendingSubmissions.length} Tinjauan Baru
                             </span>
                           )}
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-1">{project.title}</h3>
-                        <p className="text-sm text-gray-500 flex items-center gap-3">
-                          <span className="flex items-center gap-1"><Users size={12} /> {project.applicantCount} applicants</span>
-                          <span>·</span>
-                          <span className="font-semibold text-gray-700">{project.budget}</span>
-                          {project.createdAt && (
-                            <><span>·</span>
-                            <span>{formatDistanceToNow(project.createdAt.toDate(), { addSuffix: true })}</span></>
-                          )}
-                        </p>
+                        <h3 className="text-xl md:text-2xl font-display font-bold text-brand-dark mb-2 group-hover:text-brand-mid transition-colors">{project.title}</h3>
+                        <div className="flex flex-wrap items-center gap-6 text-[11px] font-bold text-brand-dark/30 uppercase tracking-widest">
+                          <span className="flex items-center gap-2 text-brand-dark/60"><Users size={14} className="text-brand-dark/20" /> {project.applicantCount} Applicants</span>
+                          <span className="w-1 h-1 rounded-full bg-brand-dark/10" />
+                          <span className="text-brand-dark/60 font-black tracking-normal text-sm">{project.budget}</span>
+                          <span className="w-1 h-1 rounded-full bg-brand-dark/10" />
+                          <span>{project.createdAt ? formatDistanceToNow(project.createdAt.toDate(), { addSuffix: true }) : 'Baru saja'}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         <Link
                           href={`/marketplace/${project.id}`}
                           onClick={e => e.stopPropagation()}
-                          className="w-10 h-10 bg-[#f8f9fe] rounded-xl flex items-center justify-center text-gray-400 hover:bg-[#008f4c] hover:text-white transition-all"
+                          className="w-12 h-12 bg-brand-light rounded-2xl flex items-center justify-center text-brand-dark/20 hover:bg-brand-dark hover:text-white transition-all shadow-sm"
                         >
-                          <ExternalLink size={16} />
+                          <ExternalLink size={18} />
                         </Link>
-                        <div className="w-10 h-10 bg-[#f8f9fe] rounded-xl flex items-center justify-center text-gray-400">
-                          {project.expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                        <div className="w-12 h-12 bg-brand-light rounded-2xl flex items-center justify-center text-brand-dark/20 transition-all">
+                          {project.expanded ? <ChevronUp size={22} /> : <ChevronDown size={22} />}
                         </div>
                       </div>
                     </div>
 
                     {/* Submissions Panel */}
-                    {project.expanded && (
-                      <div className="border-t border-gray-100 p-6">
-                        {project.submissions.length === 0 ? (
-                          <div className="text-center py-8">
-                            <p className="text-gray-400 text-sm">No submissions yet. Students are working on it!</p>
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            <h4 className="text-sm font-bold text-gray-700 uppercase tracking-widest mb-4">
-                              Submissions ({project.submissions.length})
-                            </h4>
-                            {project.submissions.map((sub) => (
-                              <div key={sub.id} className={`rounded-[20px] border p-6 ${sub.status === "approved" ? "border-green-200 bg-green-50/40" : sub.status === "rejected" ? "border-red-100 bg-red-50/20 opacity-60" : "border-gray-200 bg-white"}`}>
-                                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
-                                  <div>
-                                    <div className="flex items-center gap-3 mb-1">
-                                      <div className="w-9 h-9 rounded-full bg-[#111827] flex items-center justify-center text-white font-bold text-sm">
+                    <AnimatePresence>
+                      {project.expanded && (
+                        <motion.div 
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="border-t border-brand-dark/5 bg-brand-light/20 p-8 md:p-10"
+                        >
+                          {project.submissions.length === 0 ? (
+                            <div className="text-center py-12">
+                              <p className="text-brand-dark/30 font-display font-bold uppercase tracking-widest text-xs">Belum ada submisi dari mahasiswa</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-6">
+                              <h4 className="text-[10px] font-bold text-brand-dark/40 uppercase tracking-[0.2em] mb-6">
+                                Submissions ({project.submissions.length})
+                              </h4>
+                              {project.submissions.map((sub) => (
+                                <div key={sub.id} className={`rounded-[2rem] border p-8 md:p-10 transition-all ${sub.status === "approved" ? "border-brand-mid/20 bg-white shadow-ambient" : sub.status === "rejected" ? "border-red-100 bg-red-50/20 opacity-70" : "border-brand-dark/5 bg-white shadow-sm"}`}>
+                                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
+                                    <div className="flex items-center gap-4">
+                                      <div className="w-12 h-12 rounded-2xl bg-brand-dark flex items-center justify-center text-white font-display font-bold text-lg shadow-lg">
                                         {sub.studentName?.[0] || "S"}
                                       </div>
                                       <div>
-                                        <p className="font-bold text-gray-900 text-sm">{sub.studentName}</p>
-                                        <p className="text-xs text-gray-400">
-                                          {sub.submittedAt?.toDate ? formatDistanceToNow(sub.submittedAt.toDate(), { addSuffix: true }) : "Just now"}
+                                        <p className="font-display font-bold text-brand-dark text-lg">{sub.studentName}</p>
+                                        <p className="text-[10px] font-bold text-brand-dark/30 uppercase tracking-widest">
+                                          {sub.submittedAt?.toDate ? formatDistanceToNow(sub.submittedAt.toDate(), { addSuffix: true }) : "Baru saja"}
                                         </p>
                                       </div>
                                     </div>
+                                    <div className="flex flex-wrap items-center gap-3">
+                                      {sub.aiGrade && (
+                                        <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border ${gradeColor[sub.aiGrade] || "bg-brand-light text-brand-dark/60 border-brand-dark/5"}`}>
+                                          <Sparkles size={12} /> AI Grade: {sub.aiGrade} ({sub.aiScore}/100)
+                                        </div>
+                                      )}
+                                      {sub.status === "approved" && (
+                                        <span className="flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest bg-brand-mid text-white shadow-lg shadow-brand-mid/20">
+                                          <CheckCircle2 size={12} /> Approved
+                                        </span>
+                                      )}
+                                      {sub.status === "rejected" && (
+                                        <span className="flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-100 text-red-600">
+                                          <XCircle size={12} /> Rejected
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    {sub.aiGrade && (
-                                      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${gradeColor[sub.aiGrade] || "bg-gray-50 text-gray-600"}`}>
-                                        <Sparkles size={10} /> AI Grade: {sub.aiGrade} ({sub.aiScore}/100)
-                                      </div>
-                                    )}
-                                    {sub.status === "approved" && (
-                                      <span className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-green-100 text-green-700">
-                                        <CheckCircle2 size={10} /> Approved
-                                      </span>
-                                    )}
-                                    {sub.status === "rejected" && (
-                                      <span className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-red-100 text-red-600">
-                                        <XCircle size={10} /> Rejected
-                                      </span>
-                                    )}
+
+                                  <div className="bg-brand-light/50 rounded-[1.5rem] p-6 mb-6">
+                                    <p className="text-sm text-brand-dark/70 font-sans leading-relaxed whitespace-pre-wrap">{sub.submissionText}</p>
                                   </div>
+
+                                  {sub.deliveryNotes && (
+                                    <div className="bg-blue-50/50 rounded-2xl px-6 py-4 mb-6 border border-blue-100/50">
+                                      <p className="text-[9px] font-bold text-blue-600 uppercase tracking-widest mb-2">Delivery Notes</p>
+                                      <p className="text-sm text-brand-dark/60 font-sans">{sub.deliveryNotes}</p>
+                                    </div>
+                                  )}
+
+                                  {sub.aiFeedback && (
+                                    <div className="bg-brand-mid/5 rounded-2xl px-6 py-4 mb-8 border border-brand-mid/10">
+                                      <p className="text-[9px] font-bold text-brand-mid uppercase tracking-widest mb-2 flex items-center gap-2">
+                                        <Sparkles size={12} /> AI Quality Gate Feedback
+                                      </p>
+                                      <p className="text-sm text-brand-dark/60 font-sans leading-relaxed">{sub.aiFeedback}</p>
+                                    </div>
+                                  )}
+
+                                  {sub.status === "pending" && project.status !== "completed" && (
+                                    <div className="flex flex-col sm:flex-row gap-4 mt-4 pt-8 border-t border-brand-dark/5">
+                                      <button
+                                        onClick={() => handleApprove(project, sub)}
+                                        disabled={approvingId === sub.id}
+                                        className="flex-1 flex items-center justify-center gap-3 bg-brand-mid hover:bg-brand-dark text-white font-display font-bold py-4 rounded-2xl transition-all shadow-xl shadow-brand-mid/20 disabled:opacity-60 cursor-pointer text-[10px] uppercase tracking-widest"
+                                      >
+                                        {approvingId === sub.id
+                                          ? <Loader2 size={16} className="animate-spin" />
+                                          : <CheckCircle2 size={16} />}
+                                        Approve & Release Payment
+                                      </button>
+                                      <button
+                                        onClick={() => handleReject(sub)}
+                                        className="px-10 flex items-center justify-center gap-3 bg-red-50 hover:bg-red-100 text-red-600 font-display font-bold py-4 rounded-2xl transition-all cursor-pointer text-[10px] uppercase tracking-widest"
+                                      >
+                                        <XCircle size={16} /> Reject
+                                      </button>
+                                    </div>
+                                  )}
                                 </div>
-
-                                <div className="bg-gray-50 rounded-2xl p-4 mb-4">
-                                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{sub.submissionText}</p>
-                                </div>
-
-                                {sub.deliveryNotes && (
-                                  <div className="bg-blue-50 rounded-xl px-4 py-3 mb-4">
-                                    <p className="text-xs font-bold text-blue-600 mb-1">Delivery Notes</p>
-                                    <p className="text-sm text-gray-600">{sub.deliveryNotes}</p>
-                                  </div>
-                                )}
-
-                                {sub.aiFeedback && (
-                                  <div className="bg-[#f0f2ff] rounded-xl px-4 py-3 mb-4">
-                                    <p className="text-xs font-bold text-[#006d38] mb-1 flex items-center gap-1">
-                                      <Sparkles size={10} /> AI Quality Gate Feedback
-                                    </p>
-                                    <p className="text-sm text-gray-600">{sub.aiFeedback}</p>
-                                  </div>
-                                )}
-
-                                {sub.status === "pending" && project.status !== "completed" && (
-                                  <div className="flex gap-3 mt-2">
-                                    <button
-                                      onClick={() => handleApprove(project, sub)}
-                                      disabled={approvingId === sub.id}
-                                      className="flex-1 flex items-center justify-center gap-2 bg-[#008f4c] hover:bg-[#007a41] text-white font-bold py-3 rounded-2xl transition-all shadow-sm disabled:opacity-60 cursor-pointer"
-                                    >
-                                      {approvingId === sub.id
-                                        ? <Loader2 size={16} className="animate-spin" />
-                                        : <CheckCircle2 size={16} />}
-                                      Approve & Release Payment
-                                    </button>
-                                    <button
-                                      onClick={() => handleReject(sub)}
-                                      className="px-6 flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold py-3 rounded-2xl transition-all cursor-pointer"
-                                    >
-                                      <XCircle size={16} /> Reject
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                              ))}
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
                 );
               })}
-            </div>
-          )}
-        </div>
+            </AnimatePresence>
+          </div>
+        )}
       </main>
     </div>
   );

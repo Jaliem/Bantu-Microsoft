@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -12,87 +12,93 @@ export function Navbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const { scrollY } = useScroll();
-  
-  const navWidth = useTransform(scrollY, [0, 50], ["100%", "100%"]);
-  const navPadding = useTransform(scrollY, [0, 50], ["0rem", "0rem"]);
-  const navRadius = useTransform(scrollY, [0, 50], ["0rem", "0rem"]);
 
   useEffect(() => {
     const unsubscribe = scrollY.on("change", (latest) => {
-      setIsScrolled(latest > 50);
+      setIsScrolled(latest > 20);
     });
     return () => unsubscribe();
   }, [scrollY]);
 
-  const hiddenRoutes = ["/dashboard", "/profile", "/chat", "/wallet", "/portfolio", "/settings", "/verify", "/login", "/register"];
-  if (hiddenRoutes.some(route => pathname?.startsWith(route))) {
-    return null;
-  }
-
   return (
     <motion.header
-      style={{ paddingLeft: navPadding, paddingRight: navPadding, paddingTop: navPadding }}
-      className="fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none"
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-700 ease-[0.16,1,0.3,1]",
+        isScrolled 
+          ? "bg-brand-light/90 backdrop-blur-xl border-b border-brand-dark/10 py-4" 
+          : "bg-transparent py-8"
+      )}
     >
-      <motion.nav
-        style={{ 
-          width: navWidth,
-          borderRadius: navRadius,
-        }}
-        className={cn(
-          "pointer-events-auto flex items-center justify-between transition-all duration-300 ease-in-out border-b border-black/5",
-          isScrolled 
-            ? "bg-white/90 backdrop-blur-md shadow-sm px-6 py-4 md:px-12" 
-            : "bg-white px-6 py-5 md:px-12"
-        )}
-      >
-        <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2 group">
-            <span className="font-bold text-xl tracking-tight text-[#008f4c]">BANTU</span>
+      <nav className="container mx-auto px-6 md:px-12 flex items-center justify-between">
+        
+        {/* Logo - Using Brand Dark and Font Display */}
+        <div className="flex items-center gap-12">
+          <Link href="/" className="group">
+            <span className="font-display font-bold text-2xl tracking-tighter text-brand-dark">
+              BANTU<span className="text-brand-mid">.</span>
+            </span>
           </Link>
-          <div className="hidden md:flex items-center gap-6">
-            <Link href="/marketplace" className={cn("text-sm font-medium transition-colors hover:text-[#008f4c] cursor-pointer", pathname?.startsWith("/marketplace") ? "text-[#008f4c] border-b-2 border-[#008f4c] pb-1" : "text-gray-600")}>
-              Marketplace
-            </Link>
-            <Link href="/about" className={cn("text-sm font-medium transition-colors hover:text-[#008f4c] cursor-pointer", pathname?.startsWith("/about") ? "text-[#008f4c] border-b-2 border-[#008f4c] pb-1" : "text-gray-600")}>
-              About
-            </Link>
+          
+          {/* Navigation Links - Using Brand Dark with Low Opacity */}
+          <div className="hidden md:flex items-center gap-10">
+            {(user 
+              ? ["Marketplace", "Tasks", "Chat", "Wallet"] 
+              : ["Marketplace"]
+            ).map((item) => (
+              <Link 
+                key={item}
+                href={item === "Tasks" ? "/dashboard/my-tasks" : `/${item.toLowerCase()}`} 
+                className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-brand-dark/50 hover:text-brand-dark transition-colors relative group font-display"
+              >
+                {item}
+                {(pathname === `/${item.toLowerCase()}` || (item === "Tasks" && pathname === "/dashboard/my-tasks")) && (
+                  <motion.div 
+                    layoutId="nav-underline" 
+                    className="absolute -bottom-1 left-0 w-full h-[1.5px] bg-brand-mid" 
+                  />
+                )}
+              </Link>
+            ))}
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* Action Buttons */}
+        <div className="flex items-center gap-8">
           {user ? (
             <>
               {userData?.role === 'UMKM' && (
-                <Link href="/post-project" className="hidden md:inline-block text-sm font-bold text-[#008f4c] hover:text-[#007a41] transition-colors cursor-pointer mr-2">
-                  Post a Project
+                <Link href="/post-project" className="hidden md:inline-block text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-mid hover:opacity-70 transition-opacity font-display">
+                  + Post Project
                 </Link>
               )}
-              <Link href="/dashboard" className="hidden md:inline-block text-sm font-medium text-gray-700 hover:text-[#008f4c] transition-colors">
+              <Link href="/profile" className="hidden md:inline-block text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-dark/60 hover:text-brand-dark transition-colors font-display">
+                Profile
+              </Link>
+              <Link href="/dashboard" className="hidden md:inline-block text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-dark/60 hover:text-brand-dark transition-colors font-display">
                 Dashboard
               </Link>
               <button 
                 onClick={() => logout()}
-                className="flex h-9 items-center justify-center px-4 rounded-full bg-transparent text-gray-700 border border-gray-200 text-sm font-medium transition-all hover:bg-gray-50 active:scale-95"
+                className="text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-dark border-b border-brand-dark/20 hover:border-brand-dark transition-all pb-0.5 font-display"
               >
                 Log out
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className="hidden md:inline-block text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+              <Link href="/login" className="hidden md:inline-block text-[0.7rem] font-bold uppercase tracking-[0.15em] text-brand-dark/50 hover:text-brand-dark transition-colors font-display">
                 Login
               </Link>
               <Link 
                 href="/register" 
-                className="flex h-9 items-center justify-center px-5 rounded-full bg-[#008f4c] text-white text-sm font-medium transition-all hover:bg-[#007a41] active:scale-95"
+                className="bg-brand-mid text-brand-light px-8 py-3 text-[0.7rem] font-bold uppercase tracking-[0.2em] transition-all hover:bg-brand-dark active:scale-95 rounded-full font-display shadow-lg shadow-brand-mid/20"
               >
-                Signup
+                Join Now
               </Link>
             </>
           )}
         </div>
-      </motion.nav>
+      </nav>
     </motion.header>
   );
 }

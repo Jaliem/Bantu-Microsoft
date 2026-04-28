@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { formatDistanceToNow } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Filter, SlidersHorizontal, ArrowRight, Star, CheckCircle2 } from 'lucide-react';
 
 export default function MarketplacePage() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -39,7 +41,6 @@ export default function MarketplacePage() {
       match = false;
     }
     if (selectedBudget && project.budget) {
-      // Parse budget string (e.g. "Rp 450.000") to number
       const budgetNum = parseInt(project.budget.replace(/[^0-9]/g, ''), 10);
       if (selectedBudget === '< Rp 500k' && budgetNum >= 500000) match = false;
       if (selectedBudget === 'Rp 500k - 1M' && (budgetNum < 500000 || budgetNum > 1000000)) match = false;
@@ -50,36 +51,40 @@ export default function MarketplacePage() {
   });
 
   return (
-    <div className="bg-[#f8f9fe] flex flex-col font-sans text-gray-900 w-full h-full flex-1">
-      <main className="flex-grow pt-24 pb-16 px-6 max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-8">
+    <div className="bg-brand-light flex flex-col font-sans text-brand-dark w-full min-h-screen">
+      <main className="flex-grow pt-28 pb-16 px-6 max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-10">
+        
         {/* Left Sidebar - Filters */}
-        <aside className="w-full lg:w-64 shrink-0 flex flex-col gap-6">
-          <div className="bg-[#f0f2ff] rounded-3xl p-6">
-            <h2 className="text-xl font-bold mb-6 text-gray-800">Filters</h2>
+        <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-8">
+          <div className="bg-white rounded-[2.5rem] p-8 shadow-ambient border border-brand-dark/5 sticky top-28">
+            <div className="flex items-center gap-2 mb-8">
+              <SlidersHorizontal size={18} className="text-brand-mid" />
+              <h2 className="text-xl font-display font-bold text-brand-dark">Filters</h2>
+            </div>
             
-            <div className="mb-8">
-              <h3 className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-4">Category</h3>
-              <div className="space-y-3">
+            <div className="mb-10">
+              <h3 className="text-[10px] font-bold tracking-[0.2em] text-brand-dark/30 uppercase mb-5">Category</h3>
+              <div className="space-y-4">
                 {['Design & Creative', 'Tech & Dev', 'Marketing'].map(category => (
                   <label key={category} className="flex items-center gap-3 cursor-pointer group" onClick={() => setSelectedCategory(selectedCategory === category ? null : category)}>
-                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${selectedCategory === category ? 'border-[#008f4c]' : 'border-gray-300 group-hover:border-[#008f4c]'}`}>
-                      {selectedCategory === category && <div className="w-2.5 h-2.5 rounded-full bg-[#008f4c]" />}
+                    <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${selectedCategory === category ? 'border-brand-mid bg-brand-mid' : 'border-brand-dark/10 group-hover:border-brand-mid'}`}>
+                      {selectedCategory === category && <div className="w-2 h-2 rounded-sm bg-white" />}
                     </div>
-                    <span className={`text-sm ${selectedCategory === category ? 'text-gray-900 font-bold' : 'text-gray-600'}`}>{category}</span>
+                    <span className={`text-sm font-medium transition-colors ${selectedCategory === category ? 'text-brand-dark font-bold' : 'text-brand-dark/50 group-hover:text-brand-dark'}`}>{category}</span>
                   </label>
                 ))}
               </div>
             </div>
 
-            <div className="mb-8">
-              <h3 className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-4">Budget Range</h3>
+            <div className="mb-10">
+              <h3 className="text-[10px] font-bold tracking-[0.2em] text-brand-dark/30 uppercase mb-5">Budget Range</h3>
               <div className="flex flex-wrap gap-2">
                 {['< Rp 500k', 'Rp 500k - 1M', 'Rp 1M - 5M', '> Rp 5M'].map(budgetRange => (
                   <button 
                     key={budgetRange}
                     onClick={() => setSelectedBudget(selectedBudget === budgetRange ? null : budgetRange)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
-                      selectedBudget === budgetRange ? 'bg-[#008f4c] text-white shadow-sm' : 'border border-gray-200 bg-white text-gray-600 hover:border-[#008f4c]'
+                    className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                      selectedBudget === budgetRange ? 'bg-brand-mid text-white shadow-lg shadow-brand-mid/20' : 'bg-brand-light/50 text-brand-dark/50 hover:bg-brand-light hover:text-brand-dark'
                     }`}
                   >
                     {budgetRange}
@@ -89,14 +94,14 @@ export default function MarketplacePage() {
             </div>
 
             <div>
-              <h3 className="text-xs font-bold tracking-widest text-gray-500 uppercase mb-4">Skill Level</h3>
+              <h3 className="text-[10px] font-bold tracking-[0.2em] text-brand-dark/30 uppercase mb-5">Skill Level</h3>
               <div className="flex flex-wrap gap-2">
                 {['Beginner', 'Intermediate', 'Expert'].map(skill => (
                   <button 
                     key={skill}
                     onClick={() => setSelectedSkill(selectedSkill === skill ? null : skill)}
-                    className={`px-4 py-2 rounded-full text-xs font-medium transition-colors shadow-sm ${
-                      selectedSkill === skill ? 'bg-[#008f4c] text-white' : 'border border-gray-200 bg-white text-gray-600 hover:border-[#008f4c]'
+                    className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm cursor-pointer ${
+                      selectedSkill === skill ? 'bg-brand-dark text-white' : 'bg-brand-light/50 text-brand-dark/50 hover:bg-brand-light hover:text-brand-dark'
                     }`}
                   >
                     {skill}
@@ -106,17 +111,17 @@ export default function MarketplacePage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-b from-[#1e2336] to-[#0f111a] rounded-3xl p-6 text-white overflow-hidden relative">
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
+          <div className="bg-brand-dark rounded-[2.5rem] p-8 text-white overflow-hidden relative group">
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-brand-mid/20 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700" />
             <div className="relative z-10">
-              <div className="inline-block bg-[#00ff88] text-[#006d38] text-[10px] font-bold px-2 py-1 rounded mb-4 uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 bg-brand-mid/20 text-brand-mid text-[9px] font-bold px-3 py-1.5 rounded-full mb-6 uppercase tracking-[0.2em] border border-brand-mid/20">
                 PRO TIP
               </div>
-              <h3 className="text-lg font-bold mb-2">Tingkatkan Profil Anda</h3>
-              <p className="text-sm text-gray-400 mb-6 leading-relaxed">
+              <h3 className="text-xl font-display font-bold mb-3">Tingkatkan Profil Anda</h3>
+              <p className="text-sm text-white/50 mb-8 leading-relaxed font-light">
                 Lengkapi portofolio untuk mendapatkan 2x lebih banyak undangan proyek.
               </p>
-              <button className="w-full bg-white text-gray-900 font-semibold py-3 rounded-full text-sm hover:bg-gray-100 transition-colors">
+              <button className="w-full bg-white text-brand-dark font-display font-bold py-4 rounded-full text-[10px] uppercase tracking-widest hover:bg-brand-mid hover:text-white transition-all active:scale-95 shadow-lg">
                 Perbarui Profil
               </button>
             </div>
@@ -125,77 +130,91 @@ export default function MarketplacePage() {
 
         {/* Main Content - Project List */}
         <div className="flex-1">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Proyek Terbaru</h1>
-            <button className="flex items-center gap-2 bg-[#f0f2ff] px-4 py-2 rounded-full text-sm font-medium text-gray-600 hover:bg-[#e4e7ff] transition-colors">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="10" x2="3" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="18" x2="3" y2="18"></line></svg>
-              Terbaru
-            </button>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
+            <div>
+              <h1 className="text-4xl font-display font-semibold tracking-tight text-brand-dark">Marketplace</h1>
+              <p className="text-brand-dark/40 text-sm mt-1">Temukan peluang terbaik untuk karir Anda.</p>
+            </div>
+            <div className="flex items-center gap-4 w-full sm:w-auto">
+               <div className="relative flex-1 sm:w-64">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-dark/20 w-4 h-4" />
+                <input type="text" placeholder="Search tasks..." className="w-full bg-white border border-brand-dark/5 rounded-2xl py-3 pl-11 pr-4 text-sm focus:outline-none focus:ring-4 focus:ring-brand-mid/5 transition-all shadow-ambient" />
+               </div>
+            </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {loading ? (
               <div className="flex justify-center items-center py-20">
-                <div className="w-8 h-8 border-4 border-[#008f4c] border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-10 h-10 border-4 border-brand-mid border-t-transparent rounded-full animate-spin"></div>
               </div>
             ) : filteredProjects.length === 0 ? (
-              <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm">
-                <p className="text-gray-500 font-medium">Belum ada proyek yang sesuai dengan filter.</p>
-              </div>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-[2.5rem] p-16 text-center border border-brand-dark/5 shadow-ambient">
+                <p className="text-brand-dark/30 font-display font-bold uppercase tracking-widest text-sm">Belum ada proyek ditemukan</p>
+              </motion.div>
             ) : (
-              filteredProjects.map(project => (
-                <div key={project.id} className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(19,27,46,0.03)] border border-gray-100">
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-3">
-                        {project.tags?.map((tag: any, i: number) => (
-                          <span key={i} className={`text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1 ${
-                            tag.type === 'category' ? 'bg-[#ebf0ff] text-[#4a72ff]' :
-                            tag.type === 'verified' ? 'bg-[#dcfce7] text-[#16a34a]' :
-                            'bg-gray-100 text-gray-600'
-                          }`}>
-                            {tag.type === 'verified' && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
-                            {tag.type === 'rating' && <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-400"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>}
-                            {tag.label}
+              <AnimatePresence>
+                {filteredProjects.map((project, idx) => (
+                  <motion.div 
+                    key={project.id} 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-ambient border border-brand-dark/5 hover:border-brand-mid/20 transition-all group"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-3 mb-5">
+                          <span className="bg-brand-mid/10 text-brand-mid text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-[0.15em]">
+                            {project.category}
                           </span>
-                        ))}
+                          <span className="bg-brand-dark/5 text-brand-dark/40 text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-[0.15em] flex items-center gap-1.5">
+                            <CheckCircle2 size={10} /> Verified UMKM
+                          </span>
+                        </div>
+                        
+                        <h2 className="text-2xl md:text-3xl font-display font-bold mb-4 text-brand-dark group-hover:text-brand-mid transition-colors">
+                          {project.title}
+                        </h2>
+                        
+                        <p className="text-brand-dark/50 text-base leading-relaxed mb-8 line-clamp-2 font-light">
+                          {project.description}
+                        </p>
+                        
+                        <div className="flex flex-wrap items-center gap-8 md:gap-12 pt-8 border-t border-brand-dark/5">
+                          <div>
+                            <p className="text-[9px] font-bold tracking-[0.2em] text-brand-dark/20 uppercase mb-2">Budget</p>
+                            <p className="font-display font-bold text-brand-dark">{project.budget}</p>
+                          </div>
+                          <div>
+                            <p className="text-[9px] font-bold tracking-[0.2em] text-brand-dark/20 uppercase mb-2">Skill Level</p>
+                            <p className="font-display font-bold text-brand-dark/60">{project.skill || 'Intermediate'}</p>
+                          </div>
+                          <div>
+                            <p className="text-[9px] font-bold tracking-[0.2em] text-brand-dark/20 uppercase mb-2">Posted</p>
+                            <p className="font-display font-bold text-brand-dark/60">
+                              {project.createdAt?.toDate ? formatDistanceToNow(project.createdAt.toDate(), { addSuffix: true }) : 'Baru saja'}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <h2 className="text-xl md:text-2xl font-bold mb-3 text-gray-900">{project.title}</h2>
-                      <p className="text-gray-500 text-sm leading-relaxed mb-6 line-clamp-2">
-                        {project.description}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-6 md:gap-12">
-                        <div>
-                          <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase mb-1">Budget</p>
-                          <p className="font-bold text-gray-900">{project.budget}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase mb-1">Skill Level</p>
-                          <p className="font-semibold text-gray-700">{project.skill || 'Intermediate'}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase mb-1">Waktu</p>
-                          <p className="font-semibold text-gray-700">
-                            {project.createdAt?.toDate ? formatDistanceToNow(project.createdAt.toDate(), { addSuffix: true }) : 'Baru saja'}
-                          </p>
-                        </div>
+                      
+                      <div className="shrink-0 mt-2 md:mt-0 flex flex-row md:flex-col gap-4">
+                        <Link href={`/marketplace/${project.id}`} className="flex-1 md:flex-none">
+                          <button className="w-full bg-brand-dark text-white font-display font-bold py-4 px-10 rounded-full text-[10px] uppercase tracking-widest hover:bg-brand-mid transition-all active:scale-95 shadow-xl shadow-brand-dark/10 group-hover:shadow-brand-mid/20">
+                            View Task
+                          </button>
+                        </Link>
                       </div>
                     </div>
-                    <div className="shrink-0 mt-4 md:mt-0 self-start md:self-auto">
-                      <Link href={`/marketplace/${project.id}`}>
-                        <button className="bg-[#008f4c] text-white font-semibold py-3 px-8 rounded-full shadow-[0_4px_14px_rgba(0,143,76,0.3)] hover:bg-[#007a41] transition-all hover:-translate-y-0.5 active:translate-y-0">
-                          Apply
-                        </button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             )}
           </div>
 
-          <div className="mt-8 flex justify-center">
-            <button className="bg-[#f8f9fe] border border-gray-200 text-[#008f4c] font-semibold py-3 px-8 rounded-full hover:bg-white hover:shadow-sm transition-all">
+          <div className="mt-12 flex justify-center">
+            <button className="bg-white border border-brand-dark/5 text-brand-dark/40 font-display font-bold py-4 px-12 rounded-full text-[10px] uppercase tracking-widest hover:bg-brand-dark hover:text-white transition-all shadow-ambient active:scale-95">
               Muat Proyek Lainnya
             </button>
           </div>

@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import Sidebar from '@/components/Sidebar';
-import { Bell, Wallet, TrendingUp, CheckCircle2, Sparkles, Star, ShieldCheck, ClipboardList } from 'lucide-react';
+import { Bell, Wallet, TrendingUp, CheckCircle2, Sparkles, Star, ShieldCheck, ClipboardList, ArrowRight, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,6 +9,7 @@ import { collection, query, where, orderBy, limit, getDocs } from 'firebase/fire
 import { db } from '@/lib/firebase';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DashboardPage() {
   const { user, userData } = useAuth();
@@ -66,170 +66,215 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="bg-[#f8f9fe] flex font-sans text-gray-900 w-full h-full flex-1">
-        <Sidebar />
-        <main className="flex-1 flex justify-center items-center">
-          <div className="w-12 h-12 border-4 border-[#008f4c] border-t-transparent rounded-full animate-spin"></div>
-        </main>
+      <div className="bg-brand-light min-h-screen flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-brand-mid border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#f8f9fe] flex font-sans text-gray-900 w-full h-full flex-1">
-      <Sidebar />
-      
-      <main className="flex-1 p-8 lg:p-12 overflow-y-auto">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-2">
-              Halo, {userData?.name || 'User'}! {userData?.role === 'UMKM' ? 'Siap kembangkan bisnismu?' : 'Siap cari pengalaman hari ini?'}
+    <div className="bg-brand-light font-sans text-brand-dark min-h-screen pt-28 pb-20 px-6">
+      <main className="max-w-7xl mx-auto w-full">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-brand-dark mb-3">
+              Halo, {userData?.name?.split(' ')[0] || 'User'}!
             </h1>
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1 bg-[#dcfce7] text-[#16a34a] px-3 py-1 rounded-full text-xs font-bold uppercase">
-                <CheckCircle2 size={14} /> Verified {userData?.role}
+              <span className="inline-flex items-center gap-2 bg-brand-mid/10 text-brand-mid px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-brand-mid/20">
+                <CheckCircle2 size={12} /> Verified {userData?.role}
               </span>
             </div>
-          </div>
+          </motion.div>
           
-          <div className="flex items-center gap-4">
-            <button className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center relative hover:bg-gray-50 transition-colors cursor-pointer">
-              <Bell size={20} className="text-gray-600" />
-              <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-4"
+          >
+            <button className="w-14 h-14 rounded-2xl bg-white shadow-ambient flex items-center justify-center relative hover:bg-brand-light transition-all border border-brand-dark/5 cursor-pointer group">
+              <Bell size={22} className="text-brand-dark/40 group-hover:text-brand-dark transition-colors" />
+              <span className="absolute top-4 right-4 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white shadow-sm" />
             </button>
-            <div className="flex items-center gap-3 bg-white p-2 pr-4 rounded-full shadow-sm">
-              <div className="w-10 h-10 bg-[#111827] rounded-full overflow-hidden flex items-center justify-center text-white font-bold">
+            <Link href="/profile" className="flex items-center gap-4 bg-white p-2 pr-6 rounded-2xl shadow-ambient border border-brand-dark/5 hover:border-brand-mid/30 transition-all group">
+              <div className="w-10 h-10 bg-brand-dark rounded-xl overflow-hidden flex items-center justify-center text-white font-display font-bold shadow-lg">
                 {userData?.avatarUrl ? <img src={userData.avatarUrl} alt="avatar" className="w-full h-full object-cover" /> : userData?.name?.[0] || 'U'}
               </div>
-              <div>
-                <p className="text-sm font-bold leading-none mb-1">{userData?.name}</p>
-                <p className="text-[10px] text-gray-500 leading-none">{userData?.role}</p>
+              <div className="hidden sm:block">
+                <p className="text-xs font-bold font-display text-brand-dark mb-0.5">{userData?.name}</p>
+                <p className="text-[9px] font-bold text-brand-dark/30 uppercase tracking-widest">{userData?.role}</p>
               </div>
-            </div>
-          </div>
+            </Link>
+          </motion.div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-10">
           
           {/* Left Column - Stats */}
-          <div className="w-full lg:w-[400px] shrink-0 flex flex-col gap-6">
+          <div className="w-full lg:w-96 shrink-0 flex flex-col gap-8">
             
-            <div className="bg-white rounded-[32px] p-8 shadow-[0_4px_24px_rgba(19,27,46,0.03)] border border-gray-100">
-              <div className="flex justify-between items-start mb-6">
-                <h3 className="text-sm font-bold text-gray-500">{userData?.role === 'UMKM' ? 'Total Spent' : 'Monthly Earnings'}</h3>
-                <div className="w-10 h-10 rounded-xl bg-[#e6f4ea] text-[#008f4c] flex items-center justify-center">
-                  <Wallet size={20} />
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-brand-dark rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group"
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-brand-mid/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-1000" />
+              <div className="relative z-10">
+                <div className="flex justify-between items-start mb-10">
+                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">{userData?.role === 'UMKM' ? 'Total Spent' : 'Total Earnings'}</p>
+                  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-brand-mid backdrop-blur-md border border-white/10">
+                    <Wallet size={24} />
+                  </div>
                 </div>
+                <h2 className="text-4xl font-display font-black tracking-tight mb-4">
+                  {userData?.totalEarnings
+                    ? `Rp ${userData.totalEarnings.toLocaleString("id-ID")}`
+                    : "Rp 0"}
+                </h2>
+                <div className="flex items-center gap-2 text-[10px] font-bold text-brand-mid uppercase tracking-widest">
+                  <TrendingUp size={14} />
+                  Verified on Live Ledger
+                </div>
+                
+                <Link href="/wallet" className="mt-10 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors">
+                  Go to Wallet <ArrowRight size={12} />
+                </Link>
               </div>
-              <div className="text-4xl font-black text-gray-900 mb-3">
-                {userData?.totalEarnings
-                  ? `Rp ${userData.totalEarnings.toLocaleString("id-ID")}`
-                  : "Rp 0"}
-              </div>
-              <div className="flex items-center gap-2 text-sm font-bold text-[#16a34a]">
-                <TrendingUp size={16} />
-                {userData?.totalEarnings ? "Total Earned" : "New Account"}
-              </div>
-            </div>
+            </motion.div>
 
             {userData?.role !== 'UMKM' && (
-              <div className="bg-white rounded-[32px] p-8 shadow-[0_4px_24px_rgba(19,27,46,0.03)] border border-gray-100">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-sm font-bold text-gray-500">Rank & Portfolio Score</h3>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white rounded-[2.5rem] p-10 shadow-ambient border border-brand-dark/5"
+              >
+                <div className="flex justify-between items-center mb-10">
+                  <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark/30">Career Rank</h3>
                   <RankBadge rank={userData?.rank || 'D'} />
                 </div>
-                <div className="flex items-end gap-2 mb-4">
-                  <span className="text-4xl font-black text-gray-900">{userData?.completedTasks || 0}</span>
-                  <span className="text-sm text-gray-400 mb-1">tasks completed</span>
+                <div className="flex items-end gap-2 mb-6">
+                  <span className="text-5xl font-display font-black text-brand-dark tracking-tighter">{userData?.completedTasks || 0}</span>
+                  <span className="text-[10px] font-bold text-brand-dark/30 uppercase tracking-widest mb-2">tasks completed</span>
                 </div>
-                <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden mb-4">
-                  <div
-                    className="h-full bg-[#008f4c] rounded-full transition-all duration-700"
-                    style={{ width: `${getRankProgress(userData?.completedTasks || 0, userData?.rank || 'D')}%` }}
+                <div className="w-full h-2.5 bg-brand-light rounded-full overflow-hidden mb-6">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${getRankProgress(userData?.completedTasks || 0, userData?.rank || 'D')}%` }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    className="h-full bg-brand-mid rounded-full shadow-lg shadow-brand-mid/20"
                   />
                 </div>
-                <p className="text-xs text-gray-500 leading-relaxed">
+                <p className="text-[11px] text-brand-dark/50 font-sans leading-relaxed">
                   {getRankNextStep(userData?.rank || 'D', userData?.completedTasks || 0)}
                 </p>
-              </div>
+              </motion.div>
             )}
 
           </div>
 
           {/* Right Column */}
-          <div className="flex-1 flex flex-col gap-6">
+          <div className="flex-1 flex flex-col gap-10">
             
-            <div className="flex justify-between items-end mb-2">
-              <h2 className="text-xl font-bold text-gray-900">
-                {userData?.role === 'UMKM' ? 'My Active Posts' : 'Recommended Tasks'}
-              </h2>
-              <Link href={userData?.role === 'UMKM' ? "/dashboard/my-posts" : "/marketplace"} className="text-sm font-bold text-[#008f4c] hover:text-[#007a41] transition-colors cursor-pointer">
-                Lihat Semua
-              </Link>
-            </div>
+            <div>
+              <div className="flex justify-between items-end mb-8">
+                <h2 className="text-2xl font-display font-bold text-brand-dark tracking-tight">
+                  {userData?.role === 'UMKM' ? 'My Active Posts' : 'Recommended Tasks'}
+                </h2>
+                <Link href={userData?.role === 'UMKM' ? "/dashboard/my-posts" : "/marketplace"} className="text-[10px] font-bold uppercase tracking-widest text-brand-mid hover:text-brand-dark transition-all">
+                  Lihat Semua
+                </Link>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {data.length > 0 ? (
-                data.map((task) => (
-                  <Link href={`/marketplace/${task.id}`} key={task.id} className="block group cursor-pointer h-full">
-                    <div className="bg-white rounded-[32px] overflow-hidden shadow-[0_4px_24px_rgba(19,27,46,0.03)] border border-gray-100 flex flex-col h-full hover:border-[#008f4c] transition-colors">
-                      <div className="p-6 flex-grow flex flex-col">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="bg-[#f8f9fe] text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
-                            {task.category}
-                          </span>
-                        </div>
-                        <h3 className="font-bold text-gray-900 text-lg mb-2 group-hover:text-[#008f4c] transition-colors line-clamp-2">{task.title}</h3>
-                        <div className="flex items-center justify-between mt-auto pt-4">
-                          <span className="font-bold text-gray-900">{task.budget}</span>
-                          <span className="text-xs text-gray-500 font-medium">{task.createdAt?.toDate ? formatDistanceToNow(task.createdAt.toDate(), { addSuffix: true }) : 'Baru saja'}</span>
-                        </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <AnimatePresence>
+                  {data.length > 0 ? (
+                    data.map((task, idx) => (
+                      <motion.div 
+                        key={task.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 + (idx * 0.1) }}
+                      >
+                        <Link href={`/marketplace/${task.id}`} className="block group h-full">
+                          <div className="bg-white rounded-[2rem] p-8 shadow-ambient border border-brand-dark/5 flex flex-col h-full hover:border-brand-mid/30 hover:shadow-lg transition-all">
+                            <div className="flex items-center gap-2 mb-4">
+                              <span className="bg-brand-mid/10 text-brand-mid text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                                {task.category}
+                              </span>
+                            </div>
+                            <h3 className="font-display font-bold text-brand-dark text-lg mb-4 group-hover:text-brand-mid transition-colors line-clamp-2">
+                              {task.title}
+                            </h3>
+                            <div className="flex items-center justify-between mt-auto pt-6 border-t border-brand-dark/5">
+                              <span className="font-display font-bold text-brand-dark text-sm">{task.budget}</span>
+                              <span className="text-[10px] text-brand-dark/30 font-bold uppercase tracking-widest">
+                                {task.createdAt?.toDate ? formatDistanceToNow(task.createdAt.toDate(), { addSuffix: true }) : 'Baru saja'}
+                              </span>
+                            </div>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="col-span-2 bg-white rounded-[2.5rem] p-16 text-center border border-brand-dark/5 shadow-ambient">
+                      <div className="w-20 h-20 bg-brand-light flex items-center justify-center rounded-3xl mx-auto mb-6">
+                        <ClipboardList className="text-brand-dark/10" size={40} />
                       </div>
+                      <p className="text-brand-dark/40 font-display font-bold uppercase tracking-widest text-xs mb-8">
+                        {userData?.role === 'UMKM' ? "No projects posted yet" : "No tasks found"}
+                      </p>
+                      {userData?.role === 'UMKM' && (
+                        <Link href="/post-project" className="bg-brand-dark text-white font-display font-bold px-10 py-4 rounded-full text-[10px] uppercase tracking-widest hover:bg-brand-mid transition-all shadow-xl shadow-brand-dark/10">
+                          Post a Project
+                        </Link>
+                      )}
                     </div>
-                  </Link>
-                ))
-              ) : (
-                <div className="col-span-2 bg-white rounded-[32px] p-8 text-center border border-gray-100">
-                  <ClipboardList className="mx-auto text-gray-300 mb-4" size={48} />
-                  <p className="text-gray-500">
-                    {userData?.role === 'UMKM' ? "You haven't posted any projects yet." : "No tasks found."}
-                  </p>
-                  {userData?.role === 'UMKM' && (
-                    <Link href="/post-project" className="inline-block mt-4 bg-[#008f4c] text-white px-6 py-2 rounded-full font-bold cursor-pointer">
-                      Post a Project
-                    </Link>
                   )}
-                </div>
-              )}
-            </div>
-
-            <div className="bg-[#f0f2ff] rounded-[32px] p-8 mt-6">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-14 h-14 rounded-full bg-[#008f4c] flex items-center justify-center text-white shrink-0 shadow-lg shadow-emerald-500/20">
-                  <Sparkles size={24} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">Tips Meningkatkan Rank</h3>
-                  <p className="text-sm text-gray-500">Lengkapi portofolio videografi kamu untuk mencapai Rank S!</p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-4">
-                <div className="bg-white px-5 py-3 rounded-full flex items-center gap-3 shadow-sm border border-gray-100">
-                  <div className="bg-[#dcfce7] text-[#16a34a] p-1 rounded-full"><CheckCircle2 size={14} /></div>
-                  <span className="text-sm font-bold text-gray-700">Respon cepat (avg &lt; 30m)</span>
-                </div>
-                <div className="bg-white px-5 py-3 rounded-full flex items-center gap-3 shadow-sm border border-gray-100">
-                  <div className="bg-[#dcfce7] text-[#16a34a] p-1 rounded-full"><Star size={14} fill="currentColor" /></div>
-                  <span className="text-sm font-bold text-gray-700">Rating konsisten 4.8+</span>
-                </div>
-                <div className="bg-white px-5 py-3 rounded-full flex items-center gap-3 shadow-sm border border-gray-100">
-                  <div className="bg-[#dcfce7] text-[#16a34a] p-1 rounded-full"><ShieldCheck size={14} /></div>
-                  <span className="text-sm font-bold text-gray-700">Verified Identity</span>
-                </div>
+                </AnimatePresence>
               </div>
             </div>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="bg-white rounded-[2.5rem] p-10 md:p-12 shadow-ambient border border-brand-dark/5 relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-brand-mid/5 rounded-full blur-3xl" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-6 mb-10">
+                  <div className="w-16 h-16 rounded-[1.5rem] bg-brand-mid/10 flex items-center justify-center text-brand-mid shrink-0 shadow-sm">
+                    <Sparkles size={32} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-display font-bold text-brand-dark tracking-tight">Boost Your Stats</h3>
+                    <p className="text-brand-dark/40 text-sm font-sans mt-1">Dapatkan feedback lebih baik dan tingkatkan rank kamu.</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-4">
+                  <div className="bg-brand-light/50 px-6 py-4 rounded-2xl flex items-center gap-4 border border-brand-dark/5 shadow-sm">
+                    <div className="bg-brand-mid/10 text-brand-mid p-1.5 rounded-full"><CheckCircle2 size={16} /></div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-dark/60">Fast Response</span>
+                  </div>
+                  <div className="bg-brand-light/50 px-6 py-4 rounded-2xl flex items-center gap-4 border border-brand-dark/5 shadow-sm">
+                    <div className="bg-brand-mid/10 text-brand-mid p-1.5 rounded-full"><Star size={16} className="fill-brand-mid" /></div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-dark/60">High Rating</span>
+                  </div>
+                  <div className="bg-brand-light/50 px-6 py-4 rounded-2xl flex items-center gap-4 border border-brand-dark/5 shadow-sm">
+                    <div className="bg-brand-mid/10 text-brand-mid p-1.5 rounded-full"><ShieldCheck size={16} /></div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand-dark/60">Verified ID</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
 
           </div>
         </div>
@@ -240,15 +285,15 @@ export default function DashboardPage() {
 
 function RankBadge({ rank }: { rank: string }) {
   const config: Record<string, { color: string; bg: string }> = {
-    S: { color: "text-yellow-700", bg: "bg-yellow-100" },
-    A: { color: "text-green-700", bg: "bg-green-100" },
-    B: { color: "text-blue-700", bg: "bg-blue-100" },
-    C: { color: "text-orange-700", bg: "bg-orange-100" },
-    D: { color: "text-gray-600", bg: "bg-gray-100" },
+    S: { color: "text-brand-mid", bg: "bg-brand-mid/10" },
+    A: { color: "text-brand-mid/80", bg: "bg-brand-mid/5" },
+    B: { color: "text-brand-dark/60", bg: "bg-brand-light" },
+    C: { color: "text-brand-dark/40", bg: "bg-brand-light" },
+    D: { color: "text-brand-dark/30", bg: "bg-brand-light" },
   };
   const { color, bg } = config[rank] || config.D;
   return (
-    <span className={`font-black text-2xl w-10 h-10 rounded-xl flex items-center justify-center ${color} ${bg}`}>
+    <span className={`font-display font-black text-2xl w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm border border-brand-dark/5 ${color} ${bg}`}>
       {rank}
     </span>
   );
@@ -264,7 +309,7 @@ function getRankProgress(completed: number, rank: string): number {
 
 function getRankNextStep(rank: string, completed: number): string {
   if (rank === "S") return "Maximum rank achieved. You are a BANTU legend!";
-  if (rank === "A") return `${30 - completed} more tasks + 4.8 avg rating to reach Rank S`;
+  if (rank === "A") return `${30 - completed} more tasks to reach Rank S`;
   if (rank === "B") return `${15 - completed} more tasks to reach Rank A`;
   if (rank === "C") return `${5 - completed} more tasks to reach Rank B`;
   return "Complete your first task to reach Rank C!";
