@@ -15,7 +15,7 @@ export function Footer() {
   }
 
   return (
-    <footer className="w-full bg-brand-mid py-24 mt-auto relative overflow-hidden">
+    <footer className="w-full bg-brand-mid py-24 mt-auto relative overflow-hidden print:hidden">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-start gap-16">
           

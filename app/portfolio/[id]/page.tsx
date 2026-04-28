@@ -156,6 +156,10 @@ export default function PortfolioPage() {
     }
   };
 
+  const handleDownload = () => {
+    window.print();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -185,7 +189,7 @@ export default function PortfolioPage() {
 
   return (
     <div className="bg-background flex flex-col font-sans text-brand-dark w-full min-h-screen selection:bg-brand-mid/20 selection:text-brand-mid">
-      <main className="flex-grow pt-32 pb-24 px-6 max-w-7xl mx-auto w-full relative">
+      <main className="flex-grow pt-32 pb-24 px-6 max-w-7xl mx-auto w-full relative print:hidden">
         {/* Decorative Background Element */}
         <div className="absolute top-0 right-0 -z-10 w-1/2 h-1/2 bg-radial from-brand-mid/5 to-transparent pointer-events-none" />
 
@@ -219,7 +223,10 @@ export default function PortfolioPage() {
             </p>
 
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-              <button className="h-14 px-8 rounded-full bg-brand-mid text-white font-semibold tracking-wide flex items-center justify-center gap-2 hover:bg-brand-mid/90 transition-all shadow-lg shadow-brand-mid/20 hover:-translate-y-0.5 cursor-pointer">
+              <button 
+                onClick={handleDownload}
+                className="h-14 px-8 rounded-full bg-brand-mid text-white font-semibold tracking-wide flex items-center justify-center gap-2 hover:bg-brand-mid/90 transition-all shadow-lg shadow-brand-mid/20 hover:-translate-y-0.5 cursor-pointer"
+              >
                 <Download size={18} /> Download Portfolio
               </button>
               <button 
@@ -405,6 +412,78 @@ export default function PortfolioPage() {
           </div>
         </motion.div>
       </main>
+
+      {/* ATS Friendly Printable Version (Only visible when printing) */}
+      <div className="hidden print:block bg-white text-black p-12 font-serif">
+        <header className="border-b-2 border-black pb-6 mb-8">
+          <h1 className="text-4xl font-bold mb-2 uppercase tracking-tight">{profile.name}</h1>
+          <div className="flex flex-wrap gap-4 text-sm font-medium">
+            {profile.university && <span>{profile.university}</span>}
+            <span>•</span>
+            <span>{profile.email}</span>
+            <span>•</span>
+            <span>Reputation Rank: {rank}</span>
+          </div>
+        </header>
+
+        <section className="mb-8">
+          <h2 className="text-xl font-bold uppercase border-b border-black mb-4">Professional Summary</h2>
+          <p className="text-sm leading-relaxed italic">
+            {profile.bio || "Talented student professional with a verified track record of delivering high-quality freelance projects for UMKM. Specialized in bridging technical execution with business needs."}
+          </p>
+        </section>
+
+        {profile.skills && profile.skills.length > 0 && (
+          <section className="mb-8">
+            <h2 className="text-xl font-bold uppercase border-b border-black mb-4">Technical Skills</h2>
+            <div className="text-sm">
+              {profile.skills.join(", ")}
+            </div>
+          </section>
+        )}
+
+        <section className="mb-8">
+          <h2 className="text-xl font-bold uppercase border-b border-black mb-4">Verified Work History (Via BANTU Platform)</h2>
+          <div className="space-y-8">
+            {entries.map((entry) => (
+              <div key={entry.id} className="page-break-inside-avoid">
+                <div className="flex justify-between items-baseline mb-2">
+                  <h3 className="text-lg font-bold underline">{entry.projectTitle}</h3>
+                  <span className="text-sm font-bold">
+                    {entry.completedAt?.toDate ? new Date(entry.completedAt.toDate()).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : ""}
+                  </span>
+                </div>
+                <div className="flex gap-4 text-xs font-bold uppercase mb-2">
+                  <span>Category: {entry.category}</span>
+                  <span>•</span>
+                  <span>Quality Score: {entry.aiScore}/100 ({entry.aiGrade})</span>
+                  {entry.rating && (
+                    <>
+                      <span>•</span>
+                      <span>Client Rating: {entry.rating}/5</span>
+                    </>
+                  )}
+                </div>
+                <p className="text-sm leading-relaxed mb-2">
+                  {entry.description}
+                </p>
+                {entry.review && (
+                  <div className="bg-gray-50 border-l-2 border-black p-3 text-xs italic">
+                    " {entry.review} " — Client Feedback
+                  </div>
+                )}
+              </div>
+            ))}
+            {entries.length === 0 && (
+              <p className="text-sm italic text-gray-500 underline">No verified projects in ledger yet.</p>
+            )}
+          </div>
+        </section>
+
+        <footer className="mt-20 pt-8 border-t border-gray-200 text-center text-[10px] text-gray-400 font-sans uppercase tracking-[0.2em]">
+          Generated via BANTU Professional Student Talent Platform • {new Date().toLocaleDateString()}
+        </footer>
+      </div>
     </div>
   );
 }

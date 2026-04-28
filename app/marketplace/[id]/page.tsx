@@ -150,16 +150,26 @@ export default function JobDetailPage() {
                 to: umkmDataRes.email,
                 subject: `Lamaran Baru untuk ${project.title} 🚀`,
                 html: `
-                  <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-                    <div style="background: linear-gradient(135deg, #006d38 0%, #00aa5b 100%); padding: 40px 32px; text-align: center; border-radius: 0 0 32px 32px;">
-                      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 8px 0; letter-spacing: -0.5px;">BANTU</h1>
-                    </div>
-                    <div style="padding: 40px 32px;">
-                      <h2 style="color: #111827; margin: 0 0 16px 0; font-size: 22px;">Halo ${umkmDataRes.name || 'UMKM'}! 🎉</h2>
-                      <p>Ada lamaran baru dari <b>${userData.name}</b> untuk proyek <b>${project.title}</b>.</p>
-                      <p>Silakan cek dashboard Anda untuk meninjau lamaran ini.</p>
-                      <div style="margin-top: 32px;">
-                        <a href="https://bantu.io/dashboard/my-posts" style="background-color: #006d38; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">Cek Dashboard</a>
+                  <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #eef5f0; padding: 40px 20px;">
+                    <div style="background-color: #ffffff; border-radius: 32px; overflow: hidden; box-shadow: 0 10px 40px rgba(11, 28, 20, 0.05); border: 1px solid rgba(11, 28, 20, 0.05);">
+                      <div style="background: linear-gradient(135deg, #006d38 0%, #0b1c14 100%); padding: 48px 32px; text-align: center;">
+                        <h1 style="color: #ffffff; font-size: 32px; margin: 0; letter-spacing: -1px; font-weight: 800;">BANTU<span style="color: #eef5f0;">.</span></h1>
+                        <p style="color: rgba(238, 245, 240, 0.7); font-size: 12px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin: 12px 0 0 0;">Notifikasi Lamaran</p>
+                      </div>
+                      <div style="padding: 48px 40px;">
+                        <h2 style="color: #0b1c14; margin: 0 0 20px 0; font-size: 24px; font-weight: 700;">Halo ${umkmDataRes.name || 'UMKM'}! 🎉</h2>
+                        <p style="font-size: 16px; line-height: 1.7; color: #4a6654; margin: 0 0 24px 0;">
+                          Kabar gembira! Ada lamaran baru dari talenta terbaik kami, <strong style="color: #006d38;">${userData.name}</strong>, untuk proyek Anda: <strong style="color: #0b1c14;">${project.title}</strong>.
+                        </p>
+                        <p style="font-size: 16px; line-height: 1.7; color: #4a6654; margin: 0 0 32px 0;">
+                          Segera tinjau profil dan portofolio pelamar untuk mempercepat progres proyek Anda.
+                        </p>
+                        <div style="text-align: center;">
+                          <a href="http://localhost:3000/dashboard/my-posts" style="background-color: #006d38; color: #ffffff; padding: 18px 48px; border-radius: 100px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-block; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 10px 20px rgba(0, 109, 56, 0.2);">Tinjau Lamaran</a>
+                        </div>
+                      </div>
+                      <div style="background-color: #f8faf9; padding: 32px; text-align: center; border-top: 1px solid rgba(11, 28, 20, 0.03);">
+                        <p style="font-size: 11px; font-weight: 700; color: #4a6654; letter-spacing: 1.5px; text-transform: uppercase; margin: 0;">© 2024 BANTU INDONESIA • KARYA ANAK BANGSA</p>
                       </div>
                     </div>
                   </div>

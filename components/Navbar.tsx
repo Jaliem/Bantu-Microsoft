@@ -27,7 +27,7 @@ export function Navbar() {
   return (
     <motion.header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out",
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out print:hidden",
         shouldBeCompact 
           ? "bg-brand-light/90 backdrop-blur-xl border-b border-brand-dark/10 h-20" 
           : "bg-transparent h-28"

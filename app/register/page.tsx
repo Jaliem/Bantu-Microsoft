@@ -64,28 +64,30 @@ export default function RegisterPage() {
             to: email,
             subject: "Welcome to BANTU — Please Verify Your Email ✉️",
             html: `
-              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-                <div style="background: linear-gradient(135deg, #006d38 0%, #00aa5b 100%); padding: 40px 32px; text-align: center; border-radius: 0 0 32px 32px;">
-                  <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 8px 0; letter-spacing: -0.5px;">BANTU</h1>
-                  <p style="color: rgba(255,255,255,0.8); font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Connecting UMKM × Mahasiswa</p>
-                </div>
-                <div style="padding: 40px 32px;">
-                  <h2 style="color: #111827; margin: 0 0 16px 0; font-size: 22px;">Welcome aboard, ${name}! 🎉</h2>
-                  <p style="font-size: 15px; line-height: 1.7; color: #4b5563; margin: 0 0 16px 0;">
-                    Thank you for joining BANTU as a <strong style="color: #006d38;">${role}</strong>. You're now part of Indonesia's fastest-growing ecosystem connecting local businesses with talented students.
-                  </p>
-                  <p style="font-size: 15px; line-height: 1.7; color: #4b5563; margin: 0 0 24px 0;">
-                    Before you can access the platform, please verify your email address by clicking the button below:
-                  </p>
-                  <div style="text-align: center; margin: 32px 0;">
-                    <a href="http://localhost:3000/verify/${user.uid}" style="background: linear-gradient(135deg, #006d38, #00aa5b); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 16px; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 4px 14px rgba(0,143,76,0.3);">Verify My Email Address</a>
+              <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #eef5f0; padding: 40px 20px;">
+                <div style="background-color: #ffffff; border-radius: 32px; overflow: hidden; box-shadow: 0 10px 40px rgba(11, 28, 20, 0.05); border: 1px solid rgba(11, 28, 20, 0.05);">
+                  <div style="background: linear-gradient(135deg, #006d38 0%, #0b1c14 100%); padding: 48px 32px; text-align: center;">
+                    <h1 style="color: #ffffff; font-size: 32px; margin: 0; letter-spacing: -1px; font-weight: 800;">BANTU<span style="color: #eef5f0;">.</span></h1>
+                    <p style="color: rgba(238, 245, 240, 0.7); font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin: 12px 0 0 0;">Connecting UMKM × Mahasiswa</p>
                   </div>
-                  <div style="background-color: #f8f9fe; border-radius: 16px; padding: 20px 24px; margin-top: 24px;">
-                    <p style="font-size: 13px; color: #6b7280; margin: 0; line-height: 1.6;">🔒 If you didn't create this account, you can safely ignore this email.</p>
+                  <div style="padding: 48px 40px;">
+                    <h2 style="color: #0b1c14; margin: 0 0 20px 0; font-size: 24px; font-weight: 700;">Selamat bergabung, ${name}! 🎉</h2>
+                    <p style="font-size: 16px; line-height: 1.7; color: #4a6654; margin: 0 0 20px 0;">
+                      Terima kasih telah bergabung dengan BANTU sebagai <strong style="color: #006d38;">${role}</strong>. Anda kini menjadi bagian dari ekosistem yang menghubungkan bisnis lokal dengan talenta mahasiswa terbaik di Indonesia.
+                    </p>
+                    <p style="font-size: 16px; line-height: 1.7; color: #4a6654; margin: 0 0 32px 0;">
+                      Satu langkah lagi! Silakan verifikasi email Anda untuk mulai mengakses platform:
+                    </p>
+                    <div style="text-align: center; margin: 40px 0;">
+                      <a href="http://localhost:3000/verify/${user.uid}" style="background-color: #006d38; color: #ffffff; padding: 18px 48px; border-radius: 100px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-block; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 10px 20px rgba(0, 109, 56, 0.2);">Verifikasi Email Saya</a>
+                    </div>
+                    <div style="background-color: #f8faf9; border-radius: 20px; padding: 24px; margin-top: 40px; border: 1px solid rgba(11, 28, 20, 0.03);">
+                      <p style="font-size: 13px; color: #4a6654; margin: 0; line-height: 1.6;">🔒 Jika Anda tidak merasa membuat akun ini, silakan abaikan email ini.</p>
+                    </div>
                   </div>
-                </div>
-                <div style="border-top: 1px solid #f3f4f6; padding: 24px 32px; text-align: center;">
-                  <p style="font-size: 10px; font-weight: 700; color: #9ca3af; letter-spacing: 1.5px; text-transform: uppercase; margin: 0;">© 2024 BANTU INDONESIA • KARYA ANAK BANGSA</p>
+                  <div style="background-color: #f8faf9; padding: 32px; text-align: center; border-top: 1px solid rgba(11, 28, 20, 0.03);">
+                    <p style="font-size: 11px; font-weight: 700; color: #4a6654; letter-spacing: 1.5px; text-transform: uppercase; margin: 0;">© 2024 BANTU INDONESIA • KARYA ANAK BANGSA</p>
+                  </div>
                 </div>
               </div>
             `
@@ -154,18 +156,26 @@ export default function RegisterPage() {
               to: user.email,
               subject: "Welcome to BANTU — Please Verify Your Email ✉️",
               html: `
-                <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-                  <div style="background: linear-gradient(135deg, #006d38 0%, #00aa5b 100%); padding: 40px 32px; text-align: center; border-radius: 0 0 32px 32px;">
-                    <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 8px 0; letter-spacing: -0.5px;">BANTU</h1>
-                    <p style="color: rgba(255,255,255,0.8); font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin: 0;">Connecting UMKM × Mahasiswa</p>
-                  </div>
-                  <div style="padding: 40px 32px;">
-                    <h2 style="color: #111827; margin: 0 0 16px 0; font-size: 22px;">Welcome aboard, ${user.displayName || 'User'}! 🎉</h2>
-                    <p style="font-size: 15px; line-height: 1.7; color: #4b5563; margin: 0 0 16px 0;">
-                      Thank you for joining BANTU as a <strong style="color: #006d38;">${role}</strong>. Before you can log in, please verify your email address.
-                    </p>
-                    <div style="text-align: center; margin: 32px 0;">
-                      <a href=\"http://localhost:3000/verify/${user.uid}\" style="background: linear-gradient(135deg, #006d38, #00aa5b); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 16px; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 4px 14px rgba(0,143,76,0.3);">Verify My Email Address</a>
+                <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #eef5f0; padding: 40px 20px;">
+                  <div style="background-color: #ffffff; border-radius: 32px; overflow: hidden; box-shadow: 0 10px 40px rgba(11, 28, 20, 0.05); border: 1px solid rgba(11, 28, 20, 0.05);">
+                    <div style="background: linear-gradient(135deg, #006d38 0%, #0b1c14 100%); padding: 48px 32px; text-align: center;">
+                      <h1 style="color: #ffffff; font-size: 32px; margin: 0; letter-spacing: -1px; font-weight: 800;">BANTU<span style="color: #eef5f0;">.</span></h1>
+                      <p style="color: rgba(238, 245, 240, 0.7); font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin: 12px 0 0 0;">Connecting UMKM × Mahasiswa</p>
+                    </div>
+                    <div style="padding: 48px 40px;">
+                      <h2 style="color: #0b1c14; margin: 0 0 20px 0; font-size: 24px; font-weight: 700;">Selamat bergabung, ${user.displayName || 'User'}! 🎉</h2>
+                      <p style="font-size: 16px; line-height: 1.7; color: #4a6654; margin: 0 0 20px 0;">
+                        Terima kasih telah bergabung dengan BANTU sebagai <strong style="color: #006d38;">${role}</strong>. Sebelum Anda dapat masuk, silakan verifikasi email Anda dengan mengklik tombol di bawah ini:
+                      </p>
+                      <div style="text-align: center; margin: 40px 0;">
+                        <a href="http://localhost:3000/verify/${user.uid}" style="background-color: #006d38; color: #ffffff; padding: 18px 48px; border-radius: 100px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-block; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 10px 20px rgba(0, 109, 56, 0.2);">Verifikasi Email Saya</a>
+                      </div>
+                      <div style="background-color: #f8faf9; border-radius: 20px; padding: 24px; margin-top: 40px; border: 1px solid rgba(11, 28, 20, 0.03);">
+                        <p style="font-size: 13px; color: #4a6654; margin: 0; line-height: 1.6;">🔒 Jika Anda tidak merasa membuat akun ini, silakan abaikan email ini.</p>
+                      </div>
+                    </div>
+                    <div style="background-color: #f8faf9; padding: 32px; text-align: center; border-top: 1px solid rgba(11, 28, 20, 0.03);">
+                      <p style="font-size: 11px; font-weight: 700; color: #4a6654; letter-spacing: 1.5px; text-transform: uppercase; margin: 0;">© 2024 BANTU INDONESIA • KARYA ANAK BANGSA</p>
                     </div>
                   </div>
                 </div>
