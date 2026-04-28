@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import ReactMarkdown from 'react-markdown';
 
 export default function PostProjectPage() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function PostProjectPage() {
   const [budget, setBudget] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedSop, setGeneratedSop] = useState('');
+  const [showSopPreview, setShowSopPreview] = useState(false);
   const [step, setStep] = useState(1);
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -259,12 +261,46 @@ export default function PostProjectPage() {
                   <label className="block text-xs font-bold tracking-widest text-gray-900 uppercase mb-3">
                     PROJECT DESCRIPTION & SOP
                   </label>
-                  <textarea 
-                    value={generatedSop}
-                    onChange={(e) => setGeneratedSop(e.target.value)}
-                    placeholder="Describe your project, requirements, and deliverables here..."
-                    className="w-full h-80 bg-[#f8f9fe] border-none rounded-2xl px-6 py-4 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-[#008f4c] transition-all outline-none resize-none leading-relaxed"
-                  />
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs text-gray-400 font-semibold">Markdown supported</span>
+                    <div className="inline-flex rounded-full bg-[#f1f5f9] p-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowSopPreview(false)}
+                        className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all ${
+                          showSopPreview ? 'text-gray-500 hover:text-gray-700' : 'bg-white text-gray-900 shadow-sm'
+                        }`}
+                      >
+                        Write
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowSopPreview(true)}
+                        className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all ${
+                          showSopPreview ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                      >
+                        Preview
+                      </button>
+                    </div>
+                  </div>
+
+                  {showSopPreview ? (
+                    <div className="w-full h-80 bg-white border border-gray-100 rounded-2xl px-6 py-4 overflow-auto">
+                      <div className="prose prose-brand max-w-none text-gray-700">
+                        <ReactMarkdown>
+                          {generatedSop || 'Nothing to preview yet.'}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
+                  ) : (
+                    <textarea 
+                      value={generatedSop}
+                      onChange={(e) => setGeneratedSop(e.target.value)}
+                      placeholder="Describe your project, requirements, and deliverables here..."
+                      className="w-full h-80 bg-[#f8f9fe] border-none rounded-2xl px-6 py-4 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-[#008f4c] transition-all outline-none resize-none leading-relaxed"
+                    />
+                  )}
                   
                   <div className="flex items-center gap-2 mt-4 bg-blue-50 text-blue-700 px-4 py-3 rounded-xl text-sm">
                     <Sparkles size={16} className="text-blue-500 shrink-0" />

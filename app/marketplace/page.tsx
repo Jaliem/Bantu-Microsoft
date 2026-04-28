@@ -55,8 +55,8 @@ export default function MarketplacePage() {
       <main className="flex-grow pt-28 pb-16 px-6 max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-10">
         
         {/* Left Sidebar - Filters */}
-        <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-8">
-          <div className="bg-white rounded-[2.5rem] p-8 shadow-ambient border border-brand-dark/5 sticky top-28">
+        <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-8 lg:sticky lg:top-28 self-start">
+          <div className="bg-white rounded-[2.5rem] p-8 shadow-ambient border border-brand-dark/5">
             <div className="flex items-center gap-2 mb-8">
               <SlidersHorizontal size={18} className="text-brand-mid" />
               <h2 className="text-xl font-display font-bold text-brand-dark">Filters</h2>
