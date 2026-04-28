@@ -286,7 +286,7 @@ export default function PostProjectPage() {
                   </div>
 
                   {showSopPreview ? (
-                    <div className="w-full h-80 bg-white border border-gray-100 rounded-2xl px-6 py-4 overflow-auto">
+                    <div className="w-full h-80 bg-white border border-gray-100 rounded-2xl px-6 py-4 overflow-auto" data-lenis-prevent>
                       <div className="prose prose-brand max-w-none text-gray-700">
                         <ReactMarkdown>
                           {generatedSop || 'Nothing to preview yet.'}
@@ -295,6 +295,7 @@ export default function PostProjectPage() {
                     </div>
                   ) : (
                     <textarea 
+                      data-lenis-prevent
                       value={generatedSop}
                       onChange={(e) => setGeneratedSop(e.target.value)}
                       placeholder="Describe your project, requirements, and deliverables here..."
