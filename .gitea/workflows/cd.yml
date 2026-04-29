@@ -36,9 +36,24 @@ jobs:
             -t "$IMAGE_NAME" \
             .
 
+      - name: Verify built image
+        run: |
+          echo "IMAGE_NAME=$IMAGE_NAME"
+          docker image inspect "$IMAGE_NAME" >/dev/null
+
+      - name: List local images (debug)
+        run: |
+          docker image ls --format '{{.Repository}}:{{.Tag}} {{.ID}}' | grep -E '^(bantu-app|qvlv):' || true
+
       - name: Run new container
         run: |
+          set -e
+          set -x
+          echo "Using docker binary: $(command -v docker)"
+          type docker || true
+          echo "Running image: $IMAGE_NAME"
           docker run -d \
+            --pull=never \
             --name "$CONTAINER_NAME" \
             --restart unless-stopped \
             -p "$APP_PORT":3031 \
