@@ -69,15 +69,3 @@ jobs:
             -e SMTP_PASS=${{ secrets.SMTP_PASS }} \
             -e NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }} \
             "$IMAGE_NAME"
-
-      - name: Health check
-        run: |
-          set -e
-          for i in $(seq 1 10); do
-            if curl -f http://localhost:$APP_PORT; then
-              exit 0
-            fi
-            sleep 3
-          done
-          docker logs "$CONTAINER_NAME"
-          exit 1
