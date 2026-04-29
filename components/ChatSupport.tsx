@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
 
 interface Message {
   role: "user" | "model";
@@ -11,6 +12,7 @@ interface Message {
 }
 
 export default function ChatSupport() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -64,6 +66,8 @@ export default function ChatSupport() {
       handleSend();
     }
   };
+
+  if (pathname === "/chat") return null;
 
   return (
     <>
