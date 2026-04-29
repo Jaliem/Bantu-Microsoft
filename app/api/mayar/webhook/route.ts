@@ -37,8 +37,13 @@ export async function POST(request: NextRequest) {
 
     const payload = await request.json();
     const event: string = payload?.event?.received ?? payload?.event;
+    const status: string | undefined = payload?.data?.status ?? payload?.data?.transactionStatus;
 
-    if (event !== "payment.received") {
+    if (event !== "payment.received" && event !== "payment.reminder") {
+      return NextResponse.json({ received: true });
+    }
+
+    if (event === "payment.reminder" && status && status.toUpperCase() !== "SUCCESS") {
       return NextResponse.json({ received: true });
     }
 
