@@ -28,3 +28,21 @@ jobs:
             -t bantu-app:${{ gitea.sha }} \
             -t bantu-app:latest \
             .
+
+      - name: Push mirror to GitHub
+        env:
+          GITHUB_PAT: ${{ secrets.REPO_PAT }}
+          GITHUB_MIRROR_URL: ${{ secrets.REPO_MIRROR_URL }}
+        run: |
+          set -e
+          if [ -z "$GITHUB_PAT" ] || [ -z "$GITHUB_MIRROR_URL" ]; then
+            echo "Missing GITHUB_PAT or GITHUB_MIRROR_URL secret"
+            exit 1
+          fi
+
+          PUSH_URL="${GITHUB_MIRROR_URL/https:\/\//https://x-access-token:${GITHUB_PAT}@}"
+
+          git remote remove github-mirror 2>/dev/null || true
+          git remote add github-mirror "$PUSH_URL"
+          git push github-mirror --all
+          git push github-mirror --tags
