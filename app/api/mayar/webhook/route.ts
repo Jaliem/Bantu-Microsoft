@@ -24,17 +24,6 @@ function getDb() {
 
 export async function POST(request: NextRequest) {
   try {
-    const webhookToken = process.env.MAYAR_WEBHOOK_TOKEN;
-
-    // Verify webhook authenticity via token header if configured
-    if (webhookToken && webhookToken !== "your_mayar_webhook_token_here") {
-      const authHeader = request.headers.get("authorization") ?? "";
-      const token = authHeader.replace("Bearer ", "");
-      if (token !== webhookToken) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-    }
-
     const payload = await request.json();
     const event: string = payload?.event?.received ?? payload?.event;
     const status: string | undefined = payload?.data?.status ?? payload?.data?.transactionStatus;
