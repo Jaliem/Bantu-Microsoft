@@ -72,5 +72,12 @@ jobs:
 
       - name: Health check
         run: |
-          sleep 5
-          curl -f http://localhost:$APP_PORT || (docker logs "$CONTAINER_NAME" && exit 1)
+          set -e
+          for i in $(seq 1 10); do
+            if curl -f http://localhost:$APP_PORT; then
+              exit 0
+            fi
+            sleep 3
+          done
+          docker logs "$CONTAINER_NAME"
+          exit 1
