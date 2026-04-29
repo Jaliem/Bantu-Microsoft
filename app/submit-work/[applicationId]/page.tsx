@@ -195,23 +195,23 @@ export default function SubmitWorkPage() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-light font-sans text-brand-dark pt-28 pb-20 px-6">
+    <div className="min-h-screen bg-brand-light font-sans text-brand-dark pt-20 pb-10 px-6">
       <div className="max-w-7xl mx-auto">
-        <Link href="/dashboard/my-tasks" className="inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark/30 hover:text-brand-mid transition-all mb-10 group">
+        <Link href="/dashboard/my-tasks" className="inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark/30 hover:text-brand-mid transition-all mb-6 group">
           <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
           Kembali ke Tugas Saya
         </Link>
 
         {/* Header */}
-        <div className="mb-12">
-          <motion.h1 
+        <div className="mb-7">
+          <motion.h1
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-5xl font-display font-bold tracking-tight text-brand-dark mb-4"
+            className="text-3xl md:text-4xl font-display font-bold tracking-tight text-brand-dark mb-2"
           >
             {project?.title}
           </motion.h1>
-          <p className="text-brand-dark/40 text-lg font-sans font-light flex flex-wrap items-center gap-4">
+          <p className="text-brand-dark/40 text-base font-sans font-light flex flex-wrap items-center gap-3">
             <span>by {application?.umkmName}</span>
             <span className="w-1.5 h-1.5 rounded-full bg-brand-dark/10 hidden md:block" />
             <span>{project?.category}</span>
@@ -220,15 +220,15 @@ export default function SubmitWorkPage() {
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-10">
-          {/* Left Column: Form and Results */}
-          <div className="flex-1 space-y-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left Column: Form */}
+          <div className="flex-1">
             {/* Submission Form */}
-            <div className="bg-white rounded-[2.5rem] p-10 md:p-12 shadow-ambient border border-brand-dark/5">
-              <h2 className="text-2xl font-display font-bold text-brand-dark mb-10">Submisi Anda</h2>
+            <div className="bg-white rounded-[2rem] p-8 shadow-ambient border border-brand-dark/5">
+              <h2 className="text-xl font-display font-bold text-brand-dark mb-7">Submisi Anda</h2>
 
-              <div className="grid grid-cols-1 gap-10">
-                <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-6">
+                <div className="space-y-3">
                   <label className="block text-[10px] font-bold text-brand-dark/30 uppercase tracking-[0.2em]">
                     Deskripsi Pekerjaan & Deliverables <span className="text-brand-mid">*</span>
                   </label>
@@ -236,148 +236,167 @@ export default function SubmitWorkPage() {
                     value={submissionText}
                     onChange={(e) => { setSubmissionText(e.target.value); setAiReview(null); }}
                     placeholder="Jelaskan apa yang telah Anda kerjakan, bagaimana ini memenuhi SOP, dan cantumkan semua deliverables dengan jelas (misal: tautan Google Drive, link desain, dll)."
-                    rows={12}
-                    className="w-full bg-brand-light/50 border border-brand-dark/5 rounded-[1.5rem] px-8 py-6 text-base text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-mid/20 focus:bg-white transition-all resize-none leading-relaxed font-sans"
+                    rows={9}
+                    className="w-full bg-brand-light/50 border border-brand-dark/5 rounded-[1.25rem] px-6 py-5 text-sm text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-mid/20 focus:bg-white transition-all resize-none leading-relaxed font-sans"
                   />
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <label className="block text-[10px] font-bold text-brand-dark/30 uppercase tracking-[0.2em]">Catatan Pengiriman (Opsional)</label>
                   <textarea
                     value={deliveryNotes}
                     onChange={(e) => setDeliveryNotes(e.target.value)}
                     placeholder="Catatan tambahan untuk klien, misal: revisi maksimal 2x, file siap diunduh di tautan di atas."
-                    rows={3}
-                    className="w-full bg-brand-light/50 border border-brand-dark/5 rounded-[1.5rem] px-8 py-6 text-base text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-mid/20 focus:bg-white transition-all resize-none font-sans"
+                    rows={2}
+                    className="w-full bg-brand-light/50 border border-brand-dark/5 rounded-[1.25rem] px-6 py-5 text-sm text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-mid/20 focus:bg-white transition-all resize-none font-sans"
                   />
                 </div>
               </div>
 
-              <div className="mt-12 pt-10 border-t border-brand-dark/5 flex flex-col sm:flex-row items-center justify-between gap-8">
+              <div className="mt-8 pt-7 border-t border-brand-dark/5 flex flex-col sm:flex-row items-center justify-between gap-5">
                 <p className="text-xs text-brand-dark/30 font-sans italic max-w-sm">
                   Gunakan AI Quality Check untuk memastikan submisi Anda sudah sesuai standar.
                 </p>
                 <button
                   onClick={handleAIReview}
                   disabled={reviewing || !submissionText.trim()}
-                  className="w-full sm:w-auto flex items-center justify-center gap-3 bg-brand-mid/10 text-brand-mid hover:bg-brand-mid hover:text-white font-display font-bold px-10 py-5 rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-[10px] uppercase tracking-widest border border-brand-mid/20"
+                  className="w-full sm:w-auto flex items-center justify-center gap-3 bg-brand-mid/10 text-brand-mid hover:bg-brand-mid hover:text-white font-display font-bold px-8 py-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-[10px] uppercase tracking-widest border border-brand-mid/20"
                 >
-                  {reviewing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                  {reviewing ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
                   {reviewing ? "AI sedang meninjau..." : "Jalankan AI Quality Check"}
                 </button>
               </div>
             </div>
+          </div>
 
-            {/* AI Review Result (Inline) */}
+          {/* Right Column: AI Result, AI Info, and Final Submit */}
+          <div className="w-full lg:w-[360px] shrink-0 space-y-4 lg:sticky lg:top-24 lg:self-start">
+            {/* AI Review Result — compact card in sidebar */}
             <AnimatePresence>
-              {aiReview && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
+              {reviewing && !aiReview && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`rounded-[2.5rem] p-10 md:p-12 border shadow-ambient ${gradeBg[aiReview.grade] || "bg-white border-brand-dark/5"}`}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="bg-white rounded-[2rem] p-7 border border-brand-dark/5 shadow-ambient flex items-center gap-4"
                 >
-                  <div className="flex flex-col md:flex-row justify-between gap-10 mb-12">
-                    <div className="flex-1">
-                      <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-dark/20 mb-6">AI Gate Analysis</p>
-                      <div className="flex items-end gap-6 mb-8">
-                        <span className={`text-8xl font-display font-black leading-none ${gradeColor[aiReview.grade] || "text-brand-dark"}`}>
+                  <Loader2 size={18} className="animate-spin text-brand-mid shrink-0" />
+                  <p className="text-sm text-brand-dark/50 font-sans">AI sedang menganalisis submisi Anda…</p>
+                </motion.div>
+              )}
+              {aiReview && (
+                <motion.div
+                  key="ai-result"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className={`rounded-[2rem] border shadow-ambient overflow-hidden ${gradeBg[aiReview.grade] || "bg-white border-brand-dark/5"}`}
+                >
+                  {/* Score header */}
+                  <div className="px-7 pt-7 pb-5 flex items-center justify-between">
+                    <div>
+                      <p className="text-[9px] font-bold tracking-[0.2em] uppercase text-brand-dark/20 mb-1">AI Gate Analysis</p>
+                      <div className="flex items-end gap-3">
+                        <span className={`text-5xl font-display font-black leading-none ${gradeColor[aiReview.grade] || "text-brand-dark"}`}>
                           {aiReview.grade}
                         </span>
-                        <div className="mb-2">
-                          <span className="text-3xl font-display font-bold text-brand-dark/40">{aiReview.score}</span>
-                          <span className="text-base font-bold text-brand-dark/20">/100</span>
+                        <div className="mb-1">
+                          <span className="text-xl font-display font-bold text-brand-dark/40">{aiReview.score}</span>
+                          <span className="text-xs font-bold text-brand-dark/20">/100</span>
                         </div>
                       </div>
-                      <div className="mb-8">
-                        {aiReview.approved ? (
-                          <div className="inline-flex items-center gap-2 bg-brand-mid text-white px-5 py-2.5 rounded-full font-display font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-brand-mid/20">
-                            <CheckCircle2 size={16} /> Approved to Send
-                          </div>
-                        ) : (
-                          <div className="inline-flex items-center gap-2 bg-red-500 text-white px-5 py-2.5 rounded-full font-display font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-red-500/20">
-                            <XCircle size={16} /> Needs Revision
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-lg text-brand-dark/70 leading-relaxed font-sans font-light italic">"{aiReview.feedback}"</p>
                     </div>
+                    <div>
+                      {aiReview.approved ? (
+                        <div className="inline-flex items-center gap-1.5 bg-brand-mid text-white px-3.5 py-2 rounded-full font-display font-bold text-[9px] uppercase tracking-widest shadow-md shadow-brand-mid/20">
+                          <CheckCircle2 size={12} /> Approved
+                        </div>
+                      ) : (
+                        <div className="inline-flex items-center gap-1.5 bg-red-500 text-white px-3.5 py-2 rounded-full font-display font-bold text-[9px] uppercase tracking-widest shadow-md shadow-red-500/20">
+                          <XCircle size={12} /> Revision
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 flex-1">
-                      <div>
-                        <p className="text-[9px] font-bold text-brand-dark/20 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                          <Star size={14} className="text-brand-mid fill-brand-mid" /> Strengths
-                        </p>
-                        <ul className="space-y-4">
-                          {aiReview.strengths.map((s, i) => (
-                            <li key={i} className="flex items-start gap-4 text-sm text-brand-dark/60 font-sans leading-relaxed">
-                              <CheckCircle2 size={14} className="text-brand-mid shrink-0 mt-0.5" /> {s}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div>
-                        <p className="text-[9px] font-bold text-brand-dark/20 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                          <TrendingUp size={14} className="text-orange-500" /> Improvements
-                        </p>
-                        <ul className="space-y-4">
-                          {aiReview.improvements.map((imp, i) => (
-                            <li key={i} className="flex items-start gap-4 text-sm text-brand-dark/60 font-sans leading-relaxed">
-                              <AlertCircle size={14} className="text-orange-400 shrink-0 mt-0.5" /> {imp}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                  {/* Feedback */}
+                  <div className="px-7 pb-5">
+                    <p className="text-xs text-brand-dark/60 leading-relaxed font-sans italic border-t border-brand-dark/5 pt-4">
+                      "{aiReview.feedback}"
+                    </p>
+                  </div>
+
+                  {/* Strengths & Improvements */}
+                  <div className="grid grid-cols-2 gap-0 border-t border-brand-dark/5">
+                    <div className="px-5 py-5 border-r border-brand-dark/5">
+                      <p className="text-[8px] font-bold text-brand-dark/20 uppercase tracking-[0.15em] mb-3 flex items-center gap-1.5">
+                        <Star size={10} className="text-brand-mid fill-brand-mid" /> Strengths
+                      </p>
+                      <ul className="space-y-2">
+                        {aiReview.strengths.map((s, i) => (
+                          <li key={i} className="flex items-start gap-2 text-[11px] text-brand-dark/55 font-sans leading-snug">
+                            <CheckCircle2 size={10} className="text-brand-mid shrink-0 mt-0.5" /> {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="px-5 py-5">
+                      <p className="text-[8px] font-bold text-brand-dark/20 uppercase tracking-[0.15em] mb-3 flex items-center gap-1.5">
+                        <TrendingUp size={10} className="text-orange-500" /> Improve
+                      </p>
+                      <ul className="space-y-2">
+                        {aiReview.improvements.map((imp, i) => (
+                          <li key={i} className="flex items-start gap-2 text-[11px] text-brand-dark/55 font-sans leading-snug">
+                            <AlertCircle size={10} className="text-orange-400 shrink-0 mt-0.5" /> {imp}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
 
                   {!aiReview.approved && (
-                    <div className="bg-red-50/50 border border-red-100 rounded-2xl p-8 text-center">
-                      <p className="text-sm text-red-600 font-sans font-medium">
-                        Mohon perbaiki pekerjaan Anda berdasarkan masukan auditor AI di atas agar dapat dikirim ke klien.
+                    <div className="mx-5 mb-5 mt-1 bg-red-50/80 border border-red-100 rounded-xl p-4 text-center">
+                      <p className="text-[11px] text-red-600 font-sans font-medium leading-snug">
+                        Perbaiki berdasarkan masukan AI agar dapat dikirim ke klien.
                       </p>
                     </div>
                   )}
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
 
-          {/* Right Column: AI Info and Final Submit */}
-          <div className="w-full lg:w-[400px] shrink-0 space-y-8">
             {/* AI Info Card */}
-            <div className="bg-brand-dark rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-brand-mid/20 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-1000" />
-              <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-6">
-                  <h3 className="font-display font-bold text-xl">AI Quality Gate</h3>
+            <div className="bg-brand-dark rounded-[1.75rem] p-6 text-white shadow-2xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-52 h-52 bg-brand-mid/20 rounded-full blur-[70px] -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-1000" />
+              <div className="relative z-10 flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <h3 className="font-display font-bold text-base mb-1.5">AI Quality Gate</h3>
+                  <p className="text-white/50 text-[11px] leading-relaxed font-sans font-light">
+                    Skor minimal 60 (Grade B) diperlukan sebelum submisi diterima UMKM.
+                  </p>
                 </div>
-                <p className="text-white/60 text-sm leading-relaxed font-sans font-light mb-8">
-                  Auditor AI kami memastikan hasil kerja Anda memenuhi standar sebelum diterima oleh UMKM. Skor minimal 60 (Grade B) diperlukan.
-                </p>
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
-                  <p className="text-white/30 text-[9px] font-bold uppercase tracking-widest mb-1">Target Score</p>
-                  <p className="text-3xl font-display font-black text-brand-mid">60<span className="text-white/20 text-sm ml-1">/100</span></p>
+                <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 backdrop-blur-sm shrink-0 text-right">
+                  <p className="text-white/30 text-[8px] font-bold uppercase tracking-widest mb-0.5">Target</p>
+                  <p className="text-xl font-display font-black text-brand-mid">60<span className="text-white/20 text-xs ml-0.5">/100</span></p>
                 </div>
               </div>
             </div>
 
             {/* Final Submit Card */}
-            <div className="bg-white rounded-[2.5rem] p-10 border border-brand-dark/5 shadow-ambient">
-              <div className="flex items-start gap-4 mb-8">
-                <div>
-                  <h4 className="font-display font-bold text-sm text-brand-dark mb-1">Escrow Protected</h4>
-                  <p className="text-[11px] text-brand-dark/40 leading-relaxed font-sans font-light">
-                    Dana akan segera dicairkan ke wallet Anda setelah UMKM menyetujui submisi ini.
-                  </p>
-                </div>
+            <div className="bg-white rounded-[1.75rem] p-6 border border-brand-dark/5 shadow-ambient">
+              <div className="mb-5">
+                <h4 className="font-display font-bold text-sm text-brand-dark mb-1">Escrow Protected</h4>
+                <p className="text-[11px] text-brand-dark/40 leading-relaxed font-sans font-light">
+                  Dana akan segera dicairkan ke wallet Anda setelah UMKM menyetujui submisi ini.
+                </p>
               </div>
 
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !submissionText.trim() || (aiReview !== null && !aiReview.approved)}
-                className="w-full flex items-center justify-center gap-4 bg-brand-dark hover:bg-brand-mid text-white font-display font-bold py-6 px-8 rounded-2xl transition-all shadow-xl shadow-brand-dark/10 hover:-translate-y-1 active:translate-y-0 disabled:opacity-30 disabled:cursor-not-allowed disabled:translate-y-0 cursor-pointer text-[11px] uppercase tracking-widest"
+                className="w-full flex items-center justify-center gap-3 bg-brand-dark hover:bg-brand-mid text-white font-display font-bold py-4 px-8 rounded-xl transition-all shadow-xl shadow-brand-dark/10 hover:-translate-y-1 active:translate-y-0 disabled:opacity-30 disabled:cursor-not-allowed disabled:translate-y-0 cursor-pointer text-[11px] uppercase tracking-widest"
               >
-                {submitting ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
+                {submitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                 {submitting ? "Mengirim..." : !aiReview ? "Kirim Tanpa AI" : aiReview.approved ? "Kirim ke Klien" : "Revisi Dulu"}
               </button>
             </div>
