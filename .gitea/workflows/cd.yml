@@ -10,13 +10,17 @@ jobs:
   deploy:
     runs-on: [self-hosted, linux]
     if: ${{ gitea.event.workflow_run.conclusion == 'success' }}
+    env:
+      CONTAINER_NAME: bantu-app
+      IMAGE_NAME: bantu-app:latest
+      APP_PORT: 3031
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Stop and remove existing container
-        run: docker rm -f bantu-app || true
+        run: docker rm -f "$CONTAINER_NAME" || true
 
       - name: Build Docker image
         run: |
@@ -29,15 +33,15 @@ jobs:
             --build-arg NEXT_PUBLIC_FIREBASE_APP_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }} \
             --build-arg NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID }} \
             --build-arg NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }} \
-            -t bantu-app:latest \
+            -t "$IMAGE_NAME" \
             .
 
       - name: Run new container
         run: |
           docker run -d \
-            --name bantu-app \
+            --name "$CONTAINER_NAME" \
             --restart unless-stopped \
-            -p 3031:3031 \
+            -p "$APP_PORT":3031 \
             -e MAYAR_API_KEY=${{ secrets.MAYAR_API_KEY }} \
             -e MAYAR_WEBHOOK_TOKEN=${{ secrets.MAYAR_WEBHOOK_TOKEN }} \
             -e GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
@@ -49,9 +53,9 @@ jobs:
             -e SMTP_USER=${{ secrets.SMTP_USER }} \
             -e SMTP_PASS=${{ secrets.SMTP_PASS }} \
             -e NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }} \
-            bantu-app:latest
+            "$IMAGE_NAME"
 
       - name: Health check
         run: |
           sleep 5
-          curl -f http://localhost:3031 || (docker logs bantu-app && exit 1)
+          curl -f http://localhost:$APP_PORT || (docker logs "$CONTAINER_NAME" && exit 1)
