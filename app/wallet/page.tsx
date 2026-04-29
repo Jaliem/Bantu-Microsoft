@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { collection, query, where, getDocs, orderBy, addDoc, serverTimestamp, updateDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   ShieldCheck, Wallet, ArrowUpRight, ArrowDownLeft, History,
   X, Loader2, ExternalLink, Building2, RefreshCw, XCircle, CheckCircle2,
@@ -29,10 +30,21 @@ const QUICK_AMOUNTS = [50000, 100000, 200000, 500000, 1000000];
 
 const formatRp = (amount: number) => `Rp ${amount.toLocaleString("id-ID")}`;
 
+function TopUpSuccessHandler() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  useEffect(() => {
+    if (searchParams.get("topup") === "success") {
+      toast.success("Pembayaran berhasil! Saldo akan diperbarui setelah konfirmasi.");
+      router.replace("/wallet");
+    }
+  }, [searchParams, router]);
+  return null;
+}
+
 export default function WalletPage() {
   const { user, userData, loading: authLoading } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,14 +87,6 @@ export default function WalletPage() {
     if (!authLoading && !user) { router.push("/login"); return; }
     fetchTransactions();
   }, [user, authLoading, router]);
-
-  // Show success toast after redirect from Mayar
-  useEffect(() => {
-    if (searchParams.get("topup") === "success") {
-      toast.success("Pembayaran berhasil! Saldo akan diperbarui setelah konfirmasi.");
-      router.replace("/wallet");
-    }
-  }, [searchParams]);
 
   const totalBalance = transactions
     .filter(t => t.status === "completed")
@@ -262,6 +266,9 @@ export default function WalletPage() {
 
   return (
     <div className="min-h-screen bg-brand-light font-sans pt-28 pb-20 px-6">
+      <Suspense fallback={null}>
+        <TopUpSuccessHandler />
+      </Suspense>
       <main className="max-w-5xl mx-auto w-full">
 
         {/* Header */}
@@ -654,19 +661,22 @@ export default function WalletPage() {
                       />
                     </div>
 
-                    {/* Fallback footer */}
-                    <div className="px-6 py-4 border-t border-brand-dark/5 flex items-center justify-between gap-4 bg-brand-light/40">
-                      <p className="text-[10px] text-brand-dark/30 font-sans">
-                        QR tidak muncul?
-                      </p>
+                    {/* Footer */}
+                    <div className="px-6 py-4 border-t border-brand-dark/5 flex items-center justify-between gap-3 bg-brand-light/40">
                       <a
                         href={paymentUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-brand-mid hover:text-brand-dark transition-colors"
+                        className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-brand-dark/30 hover:text-brand-mid transition-colors"
                       >
                         <ExternalLink size={11} /> Buka di tab baru
                       </a>
+                      <button
+                        onClick={handleCloseTopUp}
+                        className="flex items-center gap-2 bg-brand-mid text-white font-display font-bold px-5 py-2.5 rounded-xl text-[9px] uppercase tracking-widest hover:bg-brand-dark transition-all shadow-md shadow-brand-mid/20"
+                      >
+                        <CheckCircle2 size={13} /> Selesai Bayar
+                      </button>
                     </div>
                   </motion.div>
                 )}
