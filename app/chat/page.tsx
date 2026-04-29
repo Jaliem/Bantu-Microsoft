@@ -27,6 +27,7 @@ interface ParticipantInfo {
   avatarUrl?: string;
   role?: string;
   university?: string;
+  isOnline?: boolean;
 }
 
 export default function ChatPage() {
@@ -43,6 +44,9 @@ export default function ChatPage() {
   const [otherParticipant, setOtherParticipant] = useState<ParticipantInfo | null>(null);
   const [participantsCache, setParticipantsCache] = useState<Record<string, ParticipantInfo>>({});
 
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingFilePreview, setPendingFilePreview] = useState<string | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [showDetails, setShowDetails] = useState(true);
@@ -51,6 +55,7 @@ export default function ChatPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -93,34 +98,26 @@ export default function ChatPage() {
     const otherId = currentChat.participants.find(p => p !== user.uid);
     if (!otherId) return;
 
-    if (participantsCache[otherId]) {
-      setOtherParticipant(participantsCache[otherId]);
-      return;
-    }
-
-    const fetchOther = async () => {
-      try {
-        const docRef = doc(db, "users", otherId);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          const info = {
-            uid: otherId,
-            name: data.name || "User",
-            avatarUrl: data.avatarUrl || "",
-            role: data.role,
-            university: data.university
-          };
-          setOtherParticipant(info);
-          setParticipantsCache(prev => ({ ...prev, [otherId]: info }));
-        }
-      } catch (error) {
-        console.error("Error fetching other participant:", error);
+    const unsubscribe = onSnapshot(doc(db, "users", otherId), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const info = {
+          uid: otherId,
+          name: data.name || "User",
+          avatarUrl: data.avatarUrl || "",
+          role: data.role,
+          university: data.university,
+          isOnline: data.isOnline
+        };
+        setOtherParticipant(info);
+        setParticipantsCache(prev => ({ ...prev, [otherId]: info }));
       }
-    };
+    }, (error) => {
+      console.error("Error fetching other participant:", error);
+    });
 
-    fetchOther();
-  }, [selectedChatId, user, chats, participantsCache]);
+    return () => unsubscribe();
+  }, [selectedChatId, user, chats]);
 
   useEffect(() => {
     if (!user || chats.length === 0) return;
@@ -195,27 +192,66 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!inputText.trim() || !user || !selectedChatId) return;
+    if (!inputText.trim() && !pendingFile) return;
+    if (!user || !selectedChatId) return;
 
-    const textToSend = inputText;
+    const textToSend = inputText.trim();
+    const fileToSend = pendingFile;
+
     setInputText("");
+    setPendingFile(null);
+    setPendingFilePreview(null);
     setShowEmojiPicker(false);
 
     try {
-      await addDoc(collection(db, "chats", selectedChatId, "messages"), {
-        text: textToSend,
-        senderId: user.uid,
-        senderName: user.displayName || "User",
-        createdAt: serverTimestamp()
-      });
+      if (fileToSend) {
+        setUploading(true);
+        const uploadData = new FormData();
+        uploadData.append("file", fileToSend);
 
-      // Update the chat's last message so the sidebar reflects the latest message
-      await updateDoc(doc(db, "chats", selectedChatId), {
-        lastMessage: textToSend,
-        lastMessageTime: serverTimestamp()
-      });
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: uploadData,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const isImage = fileToSend.type.startsWith('image/');
+
+          await addDoc(collection(db, "chats", selectedChatId, "messages"), {
+            isFile: true,
+            isImage: isImage,
+            fileName: fileToSend.name,
+            fileUrl: data.url,
+            fileSize: `${(fileToSend.size / 1024 / 1024).toFixed(2)} MB`,
+            text: textToSend || null,
+            senderId: user.uid,
+            senderName: user.displayName || "User",
+            createdAt: serverTimestamp()
+          });
+
+          await updateDoc(doc(db, "chats", selectedChatId), {
+            lastMessage: isImage ? `📷 Foto` : `📎 ${fileToSend.name}`,
+            lastMessageTime: serverTimestamp()
+          });
+        }
+        setUploading(false);
+      } else if (textToSend) {
+        await addDoc(collection(db, "chats", selectedChatId, "messages"), {
+          text: textToSend,
+          senderId: user.uid,
+          senderName: user.displayName || "User",
+          createdAt: serverTimestamp()
+        });
+
+        await updateDoc(doc(db, "chats", selectedChatId), {
+          lastMessage: textToSend,
+          lastMessageTime: serverTimestamp()
+        });
+      }
     } catch (error) {
       console.error("Error sending message:", error);
+      setUploading(false);
     }
   };
 
@@ -230,44 +266,20 @@ export default function ChatPage() {
     setInputText(prev => prev + emojiData.emoji);
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0 || !user || !selectedChatId) return;
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
-
-    setUploading(true);
-    try {
-      const uploadData = new FormData();
-      uploadData.append("file", file);
-
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: uploadData,
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-
-        await addDoc(collection(db, "chats", selectedChatId, "messages"), {
-          isFile: true,
-          fileName: file.name,
-          fileUrl: data.url,
-          fileSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-          senderId: user.uid,
-          createdAt: serverTimestamp()
-        });
-
-        // Update the chat's last message for file uploads too
-        await updateDoc(doc(db, "chats", selectedChatId), {
-          lastMessage: `📎 ${file.name}`,
-          lastMessageTime: serverTimestamp()
-        });
-      }
-    } catch (error) {
-      console.error("File upload error", error);
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+    
+    setPendingFile(file);
+    if (file.type.startsWith('image/')) {
+      const url = URL.createObjectURL(file);
+      setPendingFilePreview(url);
+    } else {
+      setPendingFilePreview(null);
     }
+
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (imageInputRef.current) imageInputRef.current.value = '';
   };
 
   const filteredChats = chats.filter(chat => {
@@ -370,10 +382,12 @@ export default function ChatPage() {
                       className="w-11 h-11 rounded-2xl object-cover"
                       style={{ border: isActive ? '2px solid #006d38' : '2px solid rgba(255,255,255,0.08)' }}
                     />
-                    <span
-                      className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2"
-                      style={{ background: '#006d38', borderColor: '#0b1c14' }}
-                    />
+                    {cachedInfo?.isOnline && (
+                      <span
+                        className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2"
+                        style={{ background: '#006d38', borderColor: '#0b1c14' }}
+                      />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline mb-0.5">
@@ -435,10 +449,12 @@ export default function ChatPage() {
                     className="w-10 h-10 rounded-xl object-cover"
                     style={{ border: '2px solid rgba(0,109,56,0.15)' }}
                   />
-                  <span
-                    className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white"
-                    style={{ background: '#006d38' }}
-                  />
+                  {otherParticipant?.isOnline && (
+                    <span
+                      className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white"
+                      style={{ background: '#006d38' }}
+                    />
+                  )}
                 </div>
                 <div>
                   <h2
@@ -448,10 +464,21 @@ export default function ChatPage() {
                     {otherParticipant?.name || selectedChat?.name || "Loading…"}
                   </h2>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <p className="text-[10px] font-bold tracking-[0.12em] uppercase" style={{ color: '#006d38' }}>
-                      Active now
-                    </p>
+                    {otherParticipant?.isOnline ? (
+                      <>
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        <p className="text-[10px] font-bold tracking-[0.12em] uppercase" style={{ color: '#006d38' }}>
+                          Active now
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <span className="w-1.5 h-1.5 rounded-full bg-brand-dark/20" />
+                        <p className="text-[10px] font-bold tracking-[0.12em] uppercase" style={{ color: 'rgba(11,28,20,0.3)' }}>
+                          Offline
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -519,42 +546,84 @@ export default function ChatPage() {
 
                         <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[65%]`}>
                           {msg.isFile ? (
-                            <div
-                              className="flex items-center gap-4 px-4 py-3.5 rounded-2xl"
-                              style={{
-                                background: '#ffffff',
-                                border: '1px solid rgba(11,28,20,0.07)',
-                                boxShadow: '0 2px 12px rgba(11,28,20,0.06)'
-                              }}
-                            >
-                              <div
-                                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
-                                style={{ background: '#006d38' }}
-                              >
-                                {msg.fileUrl?.match(/\.(jpeg|jpg|gif|png)$/i) ? (
-                                  <img src={msg.fileUrl} className="w-full h-full object-cover" alt="attachment" />
-                                ) : (
-                                  <ImageIcon size={16} className="text-white" />
+                            msg.isImage || (msg.fileUrl && typeof msg.fileUrl === 'string' && msg.fileUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i)) ? (
+                              <div className="flex flex-col gap-2">
+                                <div className="relative group overflow-hidden rounded-[1.25rem]" style={{ border: '1px solid rgba(11,28,20,0.07)' }}>
+                                  <img src={msg.fileUrl} alt="attachment" className="max-w-[240px] max-h-[300px] object-cover" />
+                                  <a
+                                    href={msg.fileUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="absolute bottom-2 right-2 w-8 h-8 rounded-lg flex items-center justify-center bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <Download size={14} />
+                                  </a>
+                                </div>
+                                {msg.text && (
+                                  <div
+                                    className="px-4 py-3 text-sm leading-relaxed"
+                                    style={{
+                                      borderRadius: isMe ? '1.25rem 1.25rem 0.35rem 1.25rem' : '1.25rem 1.25rem 1.25rem 0.35rem',
+                                      background: isMe ? '#006d38' : '#ffffff',
+                                      color: isMe ? '#ffffff' : '#0b1c14',
+                                      border: isMe ? 'none' : '1px solid rgba(11,28,20,0.07)',
+                                      boxShadow: isMe ? '0 4px 16px rgba(0,109,56,0.18)' : '0 2px 12px rgba(11,28,20,0.06)'
+                                    }}
+                                  >
+                                    {msg.text}
+                                  </div>
                                 )}
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-bold text-xs truncate" style={{ color: '#0b1c14', fontFamily: 'var(--font-jakarta), sans-serif' }}>
-                                  {msg.fileName}
-                                </p>
-                                <p className="text-[10px] mt-0.5 font-semibold uppercase tracking-wider" style={{ color: 'rgba(11,28,20,0.35)' }}>
-                                  {msg.fileSize}
-                                </p>
+                            ) : (
+                              <div className="flex flex-col gap-2">
+                                <div
+                                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl"
+                                  style={{
+                                    background: '#ffffff',
+                                    border: '1px solid rgba(11,28,20,0.07)',
+                                    boxShadow: '0 2px 12px rgba(11,28,20,0.06)'
+                                  }}
+                                >
+                                  <div
+                                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
+                                    style={{ background: '#006d38' }}
+                                  >
+                                    <Paperclip size={16} className="text-white" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-bold text-xs truncate" style={{ color: '#0b1c14', fontFamily: 'var(--font-jakarta), sans-serif' }}>
+                                      {msg.fileName}
+                                    </p>
+                                    <p className="text-[10px] mt-0.5 font-semibold uppercase tracking-wider" style={{ color: 'rgba(11,28,20,0.35)' }}>
+                                      {msg.fileSize}
+                                    </p>
+                                  </div>
+                                  <a
+                                    href={msg.fileUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center transition-all cursor-pointer"
+                                    style={{ background: 'rgba(0,109,56,0.08)', color: '#006d38' }}
+                                  >
+                                    <Download size={14} />
+                                  </a>
+                                </div>
+                                {msg.text && (
+                                  <div
+                                    className="px-4 py-3 text-sm leading-relaxed"
+                                    style={{
+                                      borderRadius: isMe ? '1.25rem 1.25rem 0.35rem 1.25rem' : '1.25rem 1.25rem 1.25rem 0.35rem',
+                                      background: isMe ? '#006d38' : '#ffffff',
+                                      color: isMe ? '#ffffff' : '#0b1c14',
+                                      border: isMe ? 'none' : '1px solid rgba(11,28,20,0.07)',
+                                      boxShadow: isMe ? '0 4px 16px rgba(0,109,56,0.18)' : '0 2px 12px rgba(11,28,20,0.06)'
+                                    }}
+                                  >
+                                    {msg.text}
+                                  </div>
+                                )}
                               </div>
-                              <a
-                                href={msg.fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all cursor-pointer"
-                                style={{ background: 'rgba(0,109,56,0.08)', color: '#006d38' }}
-                              >
-                                <Download size={14} />
-                              </a>
-                            </div>
+                            )
                           ) : (
                             <div
                               className="px-4 py-3 text-sm leading-relaxed"
@@ -614,12 +683,42 @@ export default function ChatPage() {
               </div>
             )}
 
+            {/* Pending File Preview */}
+            {pendingFile && (
+              <div className="px-8 pt-4 pb-2" style={{ background: '#ffffff', borderTop: '1px solid rgba(11,28,20,0.06)' }}>
+                <div className="relative inline-block" style={{ background: '#f8f6f1', borderRadius: '1rem', border: '1px solid rgba(11,28,20,0.08)', padding: '0.5rem' }}>
+                  <button 
+                    onClick={() => { setPendingFile(null); setPendingFilePreview(null); }}
+                    className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600 transition-all z-10 cursor-pointer"
+                  >
+                    <X size={12} strokeWidth={3} />
+                  </button>
+                  {pendingFilePreview ? (
+                    <img src={pendingFilePreview} alt="Preview" className="w-20 h-20 object-cover rounded-lg" style={{ border: '1px solid rgba(11,28,20,0.05)' }} />
+                  ) : (
+                    <div className="flex items-center gap-3 px-3 py-2">
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'rgba(0,109,56,0.1)' }}>
+                        <Paperclip size={18} style={{ color: '#006d38' }} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold truncate max-w-[120px]" style={{ color: '#0b1c14' }}>{pendingFile.name}</p>
+                        <p className="text-[10px] font-semibold mt-0.5 uppercase tracking-wider" style={{ color: 'rgba(11,28,20,0.4)' }}>
+                          {(pendingFile.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Input bar */}
             <div
-              className="px-8 py-4 shrink-0"
-              style={{ background: '#ffffff', borderTop: '1px solid rgba(11,28,20,0.06)' }}
+              className={`px-8 pb-4 ${!pendingFile ? 'pt-4' : 'pt-2'} shrink-0`}
+              style={{ background: '#ffffff', borderTop: pendingFile ? 'none' : '1px solid rgba(11,28,20,0.06)' }}
             >
               <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
+              <input type="file" accept="image/*" ref={imageInputRef} onChange={handleFileUpload} className="hidden" />
               <div
                 className="flex items-end gap-2 rounded-2xl p-1.5 transition-all duration-300"
                 style={{
@@ -644,7 +743,7 @@ export default function ChatPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={() => imageInputRef.current?.click()}
                     disabled={uploading}
                     className="p-2 rounded-xl transition-all cursor-pointer disabled:opacity-40"
                     style={{ color: 'rgba(11,28,20,0.35)' }}
@@ -682,7 +781,7 @@ export default function ChatPage() {
                   <button
                     type="button"
                     onClick={handleSendMessage}
-                    disabled={!inputText.trim()}
+                    disabled={(!inputText.trim() && !pendingFile) || uploading}
                     className="w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer disabled:opacity-40 disabled:scale-100 hover:scale-105 active:scale-95"
                     style={{
                       background: '#006d38',
@@ -690,7 +789,7 @@ export default function ChatPage() {
                       boxShadow: '0 4px 14px rgba(0,109,56,0.3)'
                     }}
                   >
-                    <Send size={15} className="ml-0.5" />
+                    {uploading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send size={15} className="ml-0.5" />}
                   </button>
                 </div>
               </div>

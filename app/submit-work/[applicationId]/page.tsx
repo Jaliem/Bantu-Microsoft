@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { doc, getDoc, collection, addDoc, updateDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
@@ -38,6 +38,11 @@ export default function SubmitWorkPage() {
   const [aiReview, setAiReview] = useState<AIReview | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) { router.push("/login"); return; }
@@ -97,6 +102,48 @@ export default function SubmitWorkPage() {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.zip') && file.type !== 'application/zip' && file.type !== 'application/x-zip-compressed') {
+      toast.error("Format file harus .zip");
+      return;
+    }
+
+    if (file.size > 1024 * 1024 * 1024) {
+      toast.error("Ukuran file melebihi 1GB. Silakan upload ke Google Drive dan cantumkan URL-nya di deskripsi.", { duration: 6000 });
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    setUploadingFile(true);
+    try {
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: uploadData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setFileUrl(data.url);
+        setFileName(file.name);
+        toast.success("File .zip berhasil diunggah!");
+      } else {
+        throw new Error("Upload failed");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Gagal mengunggah file. Coba lagi atau gunakan Google Drive.");
+    } finally {
+      setUploadingFile(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async () => {
     if (!submissionText.trim()) {
       toast.error("Deskripsi submisi tidak boleh kosong.");
@@ -116,6 +163,8 @@ export default function SubmitWorkPage() {
         studentName: userData?.name,
         submissionText,
         deliveryNotes,
+        fileUrl: fileUrl || null,
+        fileName: fileName || null,
         aiScore: aiReview?.score ?? null,
         aiGrade: aiReview?.grade ?? null,
         aiFeedback: aiReview?.feedback ?? null,
@@ -228,6 +277,52 @@ export default function SubmitWorkPage() {
               <h2 className="text-xl font-display font-bold text-brand-dark mb-7">Submisi Anda</h2>
 
               <div className="grid grid-cols-1 gap-6">
+                <div className="space-y-3">
+                  <label className="block text-[10px] font-bold text-brand-dark/30 uppercase tracking-[0.2em]">
+                    File Hasil Pekerjaan (Max 1GB, .zip)
+                  </label>
+                  <input type="file" accept=".zip,application/zip,application/x-zip-compressed" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
+                  
+                  {fileUrl ? (
+                    <div className="flex items-center justify-between bg-brand-mid/10 border border-brand-mid/20 rounded-[1.25rem] px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 size={20} className="text-brand-mid" />
+                        <div>
+                          <p className="text-sm font-bold text-brand-dark truncate max-w-[200px]">{fileName}</p>
+                          <p className="text-xs text-brand-dark/50">File berhasil diunggah</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => { setFileUrl(null); setFileName(null); }}
+                        className="text-red-500 hover:bg-red-50 p-2 rounded-full transition-all"
+                      >
+                        <XCircle size={18} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingFile}
+                      className="w-full flex flex-col items-center justify-center gap-3 bg-brand-light/50 border border-dashed border-brand-dark/20 rounded-[1.25rem] p-8 text-brand-dark/50 hover:bg-white hover:border-brand-mid/40 transition-all"
+                    >
+                      {uploadingFile ? (
+                        <>
+                          <Loader2 size={24} className="animate-spin text-brand-mid" />
+                          <span className="text-sm">Mengunggah file...</span>
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloud size={28} className="text-brand-dark/30" />
+                          <div className="text-center">
+                            <span className="text-sm font-bold text-brand-dark block">Klik untuk upload file .zip</span>
+                            <span className="text-xs mt-1 block">Maksimal ukuran 1GB. Jika lebih, silakan cantumkan link GDrive di deskripsi.</span>
+                          </div>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+
                 <div className="space-y-3">
                   <label className="block text-[10px] font-bold text-brand-dark/30 uppercase tracking-[0.2em]">
                     Deskripsi Pekerjaan & Deliverables <span className="text-brand-mid">*</span>

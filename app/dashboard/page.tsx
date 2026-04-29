@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Bell, Wallet, TrendingUp, CheckCircle2,  Star, ShieldCheck, ClipboardList, ArrowRight, User } from 'lucide-react';
+import { Bell, Wallet, TrendingUp, CheckCircle2,  Star, ShieldCheck, ClipboardList, ArrowRight, User, Bookmark } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, getDocs, documentId } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
@@ -15,6 +15,7 @@ export default function DashboardPage() {
   const { user, userData, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any[]>([]);
+  const [savedTasks, setSavedTasks] = useState<any[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -65,6 +66,19 @@ export default function DashboardPage() {
           const docs: any[] = [];
           snap.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
           setData(docs);
+
+          // Fetch saved tasks
+          if (userData.savedProjects && userData.savedProjects.length > 0) {
+            const savedIds = userData.savedProjects.slice(0, 10); // Firestore 'in' query limit is 10
+            const savedQ = query(
+              collection(db, "projects"),
+              where(documentId(), "in", savedIds)
+            );
+            const savedSnap = await getDocs(savedQ);
+            const sDocs: any[] = [];
+            savedSnap.forEach(doc => sDocs.push({ id: doc.id, ...doc.data() }));
+            setSavedTasks(sDocs);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
@@ -243,6 +257,59 @@ export default function DashboardPage() {
                 </AnimatePresence>
               </div>
             </div>
+
+            {userData?.role !== 'UMKM' && (
+              <div>
+                <div className="flex justify-between items-end mb-8">
+                  <h2 className="text-2xl font-display font-bold text-brand-dark tracking-tight">
+                    Saved Tasks
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <AnimatePresence>
+                    {savedTasks.length > 0 ? (
+                      savedTasks.map((task, idx) => (
+                        <motion.div 
+                          key={`saved-${task.id}`}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 + (idx * 0.1) }}
+                        >
+                          <Link href={`/marketplace/${task.id}`} className="block group h-full">
+                            <div className="bg-white rounded-[2rem] p-8 shadow-ambient border border-brand-dark/5 flex flex-col h-full hover:border-brand-mid/30 hover:shadow-lg transition-all">
+                              <div className="flex items-center gap-2 mb-4">
+                                <span className="bg-brand-mid/10 text-brand-mid text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                                  {task.category}
+                                </span>
+                              </div>
+                              <h3 className="font-display font-bold text-brand-dark text-lg mb-4 group-hover:text-brand-mid transition-colors line-clamp-2">
+                                {task.title}
+                              </h3>
+                              <div className="flex items-center justify-between mt-auto pt-6 border-t border-brand-dark/5">
+                                <span className="font-display font-bold text-brand-dark text-sm">{task.budget}</span>
+                                <span className="text-[10px] text-brand-dark/30 font-bold uppercase tracking-widest">
+                                  {task.createdAt?.toDate ? formatDistanceToNow(task.createdAt.toDate(), { addSuffix: true }) : 'Baru saja'}
+                                </span>
+                              </div>
+                            </div>
+                          </Link>
+                        </motion.div>
+                      ))
+                    ) : (
+                      <div className="col-span-2 bg-white rounded-[2.5rem] p-12 text-center border border-brand-dark/5 shadow-ambient">
+                        <div className="w-16 h-16 bg-brand-light flex items-center justify-center rounded-2xl mx-auto mb-5">
+                          <Bookmark className="text-brand-dark/10" size={32} />
+                        </div>
+                        <p className="text-brand-dark/40 font-display font-bold uppercase tracking-widest text-xs">
+                          No saved tasks yet
+                        </p>
+                      </div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            )}
 
           </div>
         </div>

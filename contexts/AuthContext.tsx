@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User, signOut as firebaseSignOut } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 
 interface UserData {
@@ -19,6 +19,9 @@ interface UserData {
   university?: string;
   skills?: string[];
   bio?: string;
+  savedProjects?: string[];
+  isOnline?: boolean;
+  lastActive?: any;
 }
 
 interface AuthContextType {
@@ -43,14 +46,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let currentUserUid: string | null = null;
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      // Cookie check for session persistence limit
+      if (currentUser && typeof document !== "undefined") {
+        if (!document.cookie.includes("bantu_session=true")) {
+          await firebaseSignOut(auth);
+          setUser(null);
+          setUserData(null);
+          setLoading(false);
+          return;
+        }
+      }
+
       setUser(currentUser);
       if (currentUser) {
+        currentUserUid = currentUser.uid;
         try {
           const docRef = doc(db, "users", currentUser.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             setUserData(docSnap.data() as UserData);
+            await updateDoc(docRef, {
+              isOnline: true,
+              lastActive: new Date()
+            }).catch(() => {});
           } else {
             setUserData(null);
           }
@@ -59,12 +79,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUserData(null);
         }
       } else {
+        if (currentUserUid) {
+          updateDoc(doc(db, "users", currentUserUid), {
+            isOnline: false,
+            lastActive: new Date()
+          }).catch(() => {});
+        }
+        currentUserUid = null;
         setUserData(null);
       }
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    const handleVisibilityChange = () => {
+      if (currentUserUid) {
+        const docRef = doc(db, "users", currentUserUid);
+        if (document.visibilityState === "visible") {
+          updateDoc(docRef, { isOnline: true, lastActive: new Date() }).catch(() => {});
+        } else {
+          updateDoc(docRef, { isOnline: false, lastActive: new Date() }).catch(() => {});
+        }
+      }
+    };
+    
+    const handleBeforeUnload = () => {
+      if (currentUserUid) {
+        updateDoc(doc(db, "users", currentUserUid), { isOnline: false, lastActive: new Date() }).catch(() => {});
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      unsubscribe();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
   }, []);
 
   const logout = async () => {

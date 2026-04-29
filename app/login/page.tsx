@@ -41,6 +41,10 @@ export default function LoginPage() {
         return;
       }
       
+      // Set session cookie
+      const maxAge = rememberMe ? 3 * 24 * 60 * 60 : 3 * 60 * 60;
+      document.cookie = `bantu_session=true; path=/; max-age=${maxAge}; SameSite=Strict`;
+
       router.push("/dashboard");
       toast.success("Logged in successfully!");
     } catch (err: any) {
@@ -66,6 +70,10 @@ export default function LoginPage() {
         return;
       }
       
+      // Set session cookie
+      const maxAge = rememberMe ? 3 * 24 * 60 * 60 : 3 * 60 * 60;
+      document.cookie = `bantu_session=true; path=/; max-age=${maxAge}; SameSite=Strict`;
+
       router.push("/dashboard");
       toast.success("Successfully logged in!");
     } catch (err: any) {

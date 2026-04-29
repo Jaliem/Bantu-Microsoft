@@ -79,7 +79,7 @@ export default function RegisterPage() {
                       Satu langkah lagi! Silakan verifikasi email Anda untuk mulai mengakses platform:
                     </p>
                     <div style="text-align: center; margin: 40px 0;">
-                      <a href="http://localhost:3000/verify/${user.uid}" style="background-color: #006d38; color: #ffffff; padding: 18px 48px; border-radius: 100px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-block; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 10px 20px rgba(0, 109, 56, 0.2);">Verifikasi Email Saya</a>
+                      <a href="https://bantu.darrenharyanto.com/verify/${user.uid}" style="background-color: #006d38; color: #ffffff; padding: 18px 48px; border-radius: 100px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-block; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 10px 20px rgba(0, 109, 56, 0.2);">Verifikasi Email Saya</a>
                     </div>
                     <div style="background-color: #f8faf9; border-radius: 20px; padding: 24px; margin-top: 40px; border: 1px solid rgba(11, 28, 20, 0.03);">
                       <p style="font-size: 13px; color: #4a6654; margin: 0; line-height: 1.6;">🔒 Jika Anda tidak merasa membuat akun ini, silakan abaikan email ini.</p>
@@ -168,7 +168,7 @@ export default function RegisterPage() {
                         Terima kasih telah bergabung dengan BANTU sebagai <strong style="color: #006d38;">${role}</strong>. Sebelum Anda dapat masuk, silakan verifikasi email Anda dengan mengklik tombol di bawah ini:
                       </p>
                       <div style="text-align: center; margin: 40px 0;">
-                        <a href="http://localhost:3000/verify/${user.uid}" style="background-color: #006d38; color: #ffffff; padding: 18px 48px; border-radius: 100px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-block; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 10px 20px rgba(0, 109, 56, 0.2);">Verifikasi Email Saya</a>
+                        <a href="https://bantu.darrenharyanto.com/verify/${user.uid}" style="background-color: #006d38; color: #ffffff; padding: 18px 48px; border-radius: 100px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-block; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 10px 20px rgba(0, 109, 56, 0.2);">Verifikasi Email Saya</a>
                       </div>
                       <div style="background-color: #f8faf9; border-radius: 20px; padding: 24px; margin-top: 40px; border: 1px solid rgba(11, 28, 20, 0.03);">
                         <p style="font-size: 13px; color: #4a6654; margin: 0; line-height: 1.6;">🔒 Jika Anda tidak merasa membuat akun ini, silakan abaikan email ini.</p>

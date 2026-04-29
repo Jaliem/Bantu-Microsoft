@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, Clock, Wallet, MapPin, CheckCircle2, ShieldCheck, ChevronRight, Share2, Bookmark, Star, MessageSquare, Loader2 } from 'lucide-react';
-import { doc, getDoc, collection, query, where, limit, getDocs, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, limit, getDocs, addDoc, updateDoc, serverTimestamp, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useParams, useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
@@ -25,6 +25,14 @@ export default function JobDetailPage() {
   const [applying, setApplying] = useState(false);
   const [chatLoading, setChatLoading] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (userData?.savedProjects?.includes(id)) {
+      setIsSaved(true);
+    }
+  }, [userData, id]);
 
   useEffect(() => {
     const fetchProjectAndSimilar = async () => {
@@ -165,7 +173,7 @@ export default function JobDetailPage() {
                           Segera tinjau profil dan portofolio pelamar untuk mempercepat progres proyek Anda.
                         </p>
                         <div style="text-align: center;">
-                          <a href="http://localhost:3000/dashboard/my-posts" style="background-color: #006d38; color: #ffffff; padding: 18px 48px; border-radius: 100px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-block; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 10px 20px rgba(0, 109, 56, 0.2);">Tinjau Lamaran</a>
+                          <a href="https://bantu.darrenharyanto.com/dashboard/my-posts" style="background-color: #006d38; color: #ffffff; padding: 18px 48px; border-radius: 100px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-block; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 10px 20px rgba(0, 109, 56, 0.2);">Tinjau Lamaran</a>
                         </div>
                       </div>
                       <div style="background-color: #f8faf9; padding: 32px; text-align: center; border-top: 1px solid rgba(11, 28, 20, 0.03);">
@@ -244,6 +252,44 @@ export default function JobDetailPage() {
       toast.error("Gagal memulai percakapan.");
     } finally {
       setChatLoading(false);
+    }
+  };
+
+  const handleShare = () => {
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Link berhasil disalin ke clipboard!");
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user) {
+      toast.error("Silakan login untuk menyimpan proyek.");
+      router.push("/login");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const userRef = doc(db, "users", user.uid);
+      if (isSaved) {
+        await updateDoc(userRef, {
+          savedProjects: arrayRemove(id)
+        });
+        setIsSaved(false);
+        toast.success("Proyek dihapus dari daftar simpanan.");
+      } else {
+        await updateDoc(userRef, {
+          savedProjects: arrayUnion(id)
+        });
+        setIsSaved(true);
+        toast.success("Proyek berhasil disimpan!");
+      }
+    } catch (error) {
+      console.error("Error saving project:", error);
+      toast.error("Terjadi kesalahan saat menyimpan proyek.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -400,13 +446,15 @@ export default function JobDetailPage() {
                 </div>
               )}
               
-              <div className="flex items-center justify-center gap-4 mt-6">
-                <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-brand-dark/40 hover:text-brand-dark transition-colors">
-                   Share
+              <div className="flex items-center justify-center gap-6 mt-6">
+                <button onClick={handleShare} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-brand-dark/40 hover:text-brand-dark transition-colors cursor-pointer">
+                   <Share2 size={16} /> Share
                 </button>
-                <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-brand-dark/40 hover:text-brand-dark transition-colors">
-                   Save
-                </button>
+                {(!userData || userData.role !== 'UMKM') && (
+                  <button onClick={handleSave} disabled={saving} className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest transition-colors cursor-pointer disabled:opacity-50 ${isSaved ? 'text-brand-mid' : 'text-brand-dark/40 hover:text-brand-dark'}`}>
+                     <Bookmark size={16} className={isSaved ? "fill-brand-mid" : ""} /> {isSaved ? "Saved" : "Save"}
+                  </button>
+                )}
               </div>
             </div>
 
