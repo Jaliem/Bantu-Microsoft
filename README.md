@@ -1,6 +1,6 @@
 # BANTU - Jembatan Ekonomi Digital UMKM & Mahasiswa
 
-BANTU adalah platform ekosistem digital yang dirancang untuk menghubungkan Usaha Mikro, Kecil, dan Menengah (UMKM) dengan mahasiswa atau pekerja lepas berbakat. Melalui BANTU, UMKM dapat menyelesaikan tugas-tugas mikro dengan cepat dan terjangkau, sementara mahasiswa mendapatkan kesempatan untuk membangun portofolio profesional melalui pengalaman kerja nyata yang terverifikasi.
+BANTU adalah platform ekosistem digital yang dirancang untuk menghubungkan Usaha Mikro, Kecil, dan Menengah (UMKM) dengan mahasiswa atau pekerja lepas berbakat. Melalui BANTU, UMKM dapat menyelesaikan tugas-tugas mikro dengan cepat dan terjangkau, sementara mahasiswa mendapatkan kesempatan untuk membangun portofolio profesional melalui pengalaman kerja nyata yang terverifikasi. Tema: Job Matching & Workforce Upskilling
 
 ---
 
