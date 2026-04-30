@@ -32,9 +32,13 @@ Help users with questions about:
 Be friendly, concise, professional, and helpful. If the user writes in Indonesian (Bahasa), respond in Indonesian. If they write in English, respond in English. Keep responses under 150 words unless detailed explanation is needed.`;
 
     // Map the standard messages array to the "input" format required by this API
+    // Normalize role: "model" (Gemini convention) → "assistant" (OpenAI convention)
     const inputMessages = [
       { role: 'system', content: systemInstruction },
-      ...messages
+      ...messages.map((m: { role: string; content: string }) => ({
+        ...m,
+        role: m.role === 'model' ? 'assistant' : m.role,
+      })),
     ];
 
     const body = JSON.stringify({

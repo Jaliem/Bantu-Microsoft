@@ -5,9 +5,10 @@ import { MessageCircle, X, Send } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
-  role: "user" | "model";
+  role: "user" | "assistant";
   content: string;
 }
 
@@ -49,11 +50,11 @@ export default function ChatSupport() {
       if (!res.ok) throw new Error("Failed to get response");
 
       const data = await res.json();
-      setMessages((prev) => [...prev, { role: "model", content: data.reply }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
     } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { role: "model", content: "Maaf, terjadi kendala koneksi. Silakan coba beberapa saat lagi." },
+        { role: "assistant", content: "Maaf, terjadi kendala koneksi. Silakan coba beberapa saat lagi." },
       ]);
     } finally {
       setLoading(false);
@@ -148,7 +149,21 @@ export default function ChatSupport() {
                         : "bg-white text-brand-dark rounded-[1.2rem] rounded-tl-none border border-brand-dark/5"
                     }`}
                   >
-                    {msg.content}
+                    {msg.role === "user" ? (
+                      msg.content
+                    ) : (
+                      <div className="prose prose-sm max-w-none
+                          prose-p:my-1 prose-p:leading-relaxed
+                          prose-ul:my-1 prose-ul:pl-4
+                          prose-ol:my-1 prose-ol:pl-4
+                          prose-li:my-0
+                          prose-strong:font-semibold prose-strong:text-brand-dark
+                          prose-code:text-[11px] prose-code:bg-brand-light prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:font-mono
+                          prose-pre:bg-brand-light prose-pre:text-[11px] prose-pre:rounded-lg prose-pre:p-3
+                          prose-headings:font-bold prose-headings:text-brand-dark prose-headings:mt-2 prose-headings:mb-1">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
