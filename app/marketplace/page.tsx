@@ -10,8 +10,9 @@ import { Search, Filter, SlidersHorizontal, ArrowRight, Star, CheckCircle2 } fro
 import ReactMarkdown from 'react-markdown';
 
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function MarketplacePage() {
+function MarketplaceContent() {
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get('q') || "";
   
@@ -229,5 +230,17 @@ export default function MarketplacePage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function MarketplacePage() {
+  return (
+    <Suspense fallback={
+      <div className="bg-brand-light flex flex-col font-sans text-brand-dark w-full min-h-screen items-center justify-center">
+        <div className="w-10 h-10 border-4 border-brand-mid border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <MarketplaceContent />
+    </Suspense>
   );
 }
