@@ -21,6 +21,9 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "Bantu - Connect Students & Local Businesses",
   description: "Bantu is a marketplace connecting motivated students with local businesses for part-time jobs, freelance projects, and internships.",
+  other: {
+    "dicoding:email": "jasonliem2005@gmail.com, vernandio.rivaldo@gmail.com, darrenharyanto@gmail.com"
+  }
 };
 
 export default function RootLayout({

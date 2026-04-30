@@ -3,10 +3,12 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.AZURE_OPENAI_API_KEY;
+    const rawEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
+    const deploymentName = process.env.AZURE_DEPLOYMENT_NAME;
 
-    if (!apiKey) {
-      return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 });
+    if (!rawEndpoint || !apiKey || !deploymentName) {
+      return NextResponse.json({ error: 'Azure OpenAI configuration missing' }, { status: 500 });
     }
 
     const systemInstruction = `You are the BANTU customer support assistant. BANTU is an Indonesian platform connecting UMKM (local small and medium businesses) with Mahasiswa (university students) for freelance project-based work.
@@ -29,49 +31,39 @@ Help users with questions about:
 
 Be friendly, concise, professional, and helpful. If the user writes in Indonesian (Bahasa), respond in Indonesian. If they write in English, respond in English. Keep responses under 150 words unless detailed explanation is needed.`;
 
-    const contents = messages.map((msg: any) => ({
-      role: msg.role,
-      parts: [{ text: msg.content }]
-    }));
+    // Map the standard messages array to the "input" format required by this API
+    const inputMessages = [
+      { role: 'system', content: systemInstruction },
+      ...messages
+    ];
 
-    const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.0-flash"];
-    let reply = "";
-    let success = false;
+    const body = JSON.stringify({
+      input: inputMessages,
+      max_output_tokens: 800,
+      model: deploymentName,
+      temperature: 0.7
+    });
 
-    for (const model of models) {
-      try {
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              system_instruction: {
-                parts: [{ text: systemInstruction }]
-              },
-              contents
-            })
-          }
-        );
+    const response = await fetch(rawEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: body
+    });
 
-        if (response.ok) {
-          const data = await response.json();
-          reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-          if (reply) {
-            success = true;
-            break;
-          }
-        } else {
-          console.warn(`Gemini model ${model} failed in chat support`);
-        }
-      } catch (e) {
-        console.error(`Error with model ${model} in chat support:`, e);
-      }
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('[Azure OpenAI Response Error]', JSON.stringify(data, null, 2));
+      return NextResponse.json({ 
+        error: data.error?.message || 'Failed to get AI response'
+      }, { status: response.status });
     }
 
-    if (!success) {
-      return NextResponse.json({ error: 'Failed to get AI response from all models' }, { status: 500 });
-    }
+    // New parsing logic for the 2026 "output" format
+    const reply = data.output?.[0]?.content?.[0]?.text || "";
 
     return NextResponse.json({ reply });
   } catch (error: any) {

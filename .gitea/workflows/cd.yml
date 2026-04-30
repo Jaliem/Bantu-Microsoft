@@ -59,7 +59,9 @@ jobs:
             -p "$APP_PORT":3031 \
             -e MAYAR_API_KEY=${{ secrets.MAYAR_API_KEY }} \
             -e MAYAR_WEBHOOK_TOKEN=${{ secrets.MAYAR_WEBHOOK_TOKEN }} \
-            -e GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
+            -e AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY }} \
+            -e AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT }} \
+            -e AZURE_DEPLOYMENT_NAME=${{ secrets.AZURE_DEPLOYMENT_NAME }} \
             -e CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }} \
             -e CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }} \
             -e CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }} \
