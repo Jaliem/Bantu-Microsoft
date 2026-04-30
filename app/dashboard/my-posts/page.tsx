@@ -37,6 +37,7 @@ interface Application {
   studentName: string;
   status: "applied" | "accepted" | "rejected";
   appliedAt: any;
+  bidAmount?: string;
 }
 
 interface Project {
@@ -137,11 +138,12 @@ export default function MyPostsPage() {
   const handleAcceptApplicant = async (project: Project, application: Application) => {
     setAcceptingId(application.id);
     try {
-      // 1. Update project status and accepted student
+      // 1. Update project status, accepted student and budget
       await updateDoc(doc(db, "projects", project.id), {
         status: "in_progress",
         acceptedStudent: application.studentId,
-        acceptedApplicationId: application.id
+        acceptedApplicationId: application.id,
+        budget: application.bidAmount || project.budget
       });
 
       // 2. Update application status
@@ -237,13 +239,16 @@ export default function MyPostsPage() {
       }
 
       const budgetNum = parseBudget(project.budget);
+      const platformFee = Math.floor(budgetNum * 0.02);
+      const netAmount = budgetNum - platformFee;
+
       await addDoc(collection(db, "transactions"), {
         userId: submission.studentId,
         projectId: project.id,
         projectTitle: project.title,
-        amount: budgetNum,
+        amount: netAmount,
         type: "credit",
-        description: `Payment for: ${project.title}`,
+        description: `Payment for: ${project.title} (Net after 2% fee)`,
         status: "completed",
         createdAt: serverTimestamp(),
       });
@@ -426,10 +431,16 @@ export default function MyPostsPage() {
                                         </div>
                                         <div>
                                           <p className="font-display font-bold text-brand-dark text-sm">{app.studentName}</p>
-                                          <div className="flex items-center gap-3">
+                                          <div className="flex flex-wrap items-center gap-3">
                                             <p className="text-[9px] text-brand-dark/30 uppercase tracking-widest">
                                               Applied {app.appliedAt?.toDate ? formatDistanceToNow(app.appliedAt.toDate(), { addSuffix: true }) : "Baru saja"}
                                             </p>
+                                            {app.bidAmount && (
+                                              <>
+                                                <span className="w-1 h-1 rounded-full bg-brand-dark/10" />
+                                                <p className="text-[9px] text-brand-mid font-black uppercase tracking-widest">Bid: {app.bidAmount}</p>
+                                              </>
+                                            )}
                                             <Link 
                                               href={`/portfolio/${app.studentId}`}
                                               className="text-[9px] text-brand-mid font-bold uppercase tracking-widest hover:underline flex items-center gap-1"

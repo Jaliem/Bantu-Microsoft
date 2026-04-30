@@ -20,6 +20,7 @@ export async function POST(request: Request) {
   try {
     const data = await request.formData();
     const fileOrUrl = data.get('file') as File | string;
+    const folder = data.get('folder') as string || 'bantu_avatars';
 
     if (!fileOrUrl) {
       return NextResponse.json({ error: 'No file or URL provided' }, { status: 400 });
@@ -38,14 +39,14 @@ export async function POST(request: Request) {
       const arrayBuffer = await response.arrayBuffer();
       buffer = Buffer.from(arrayBuffer);
       contentType = response.headers.get('content-type') || 'image/jpeg';
-      fileName = `bantu_avatars/${uniqueId}`;
+      fileName = `${folder}/${uniqueId}`;
     } else {
       // It's a File object (e.g. from profile edit upload)
       const bytes = await fileOrUrl.arrayBuffer();
       buffer = Buffer.from(bytes);
       contentType = fileOrUrl.type;
       const ext = fileOrUrl.name.split('.').pop() || 'jpg';
-      fileName = `bantu_avatars/${uniqueId}.${ext}`;
+      fileName = `${folder}/${uniqueId}.${ext}`;
     }
 
     const bucketName = process.env.BUCKET_NAME || "bantu";

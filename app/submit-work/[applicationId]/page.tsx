@@ -82,6 +82,8 @@ export default function SubmitWorkPage() {
     }
     setReviewing(true);
     setAiReview(null);
+    const isImage = fileUrl && (fileUrl.toLowerCase().endsWith('.jpg') || fileUrl.toLowerCase().endsWith('.jpeg') || fileUrl.toLowerCase().endsWith('.png') || fileUrl.toLowerCase().endsWith('.webp'));
+
     try {
       const res = await fetch("/api/review-submission", {
         method: "POST",
@@ -91,6 +93,7 @@ export default function SubmitWorkPage() {
           projectTitle: project?.title,
           projectDescription: project?.description,
           category: project?.category,
+          fileUrl: isImage ? fileUrl : null,
         }),
       });
       const data = await res.json();
@@ -106,8 +109,12 @@ export default function SubmitWorkPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.name.toLowerCase().endsWith('.zip') && file.type !== 'application/zip' && file.type !== 'application/x-zip-compressed') {
-      toast.error("Format file harus .zip");
+    const allowedExtensions = ['.zip', '.jpg', '.jpeg', '.png', '.webp'];
+    const isImage = file.type.startsWith('image/');
+    const isZip = file.name.toLowerCase().endsWith('.zip') || file.type === 'application/zip' || file.type === 'application/x-zip-compressed';
+
+    if (!isZip && !isImage) {
+      toast.error("Format file harus .zip atau gambar (jpg, png, webp)");
       return;
     }
 
@@ -121,6 +128,7 @@ export default function SubmitWorkPage() {
     try {
       const uploadData = new FormData();
       uploadData.append("file", file);
+      uploadData.append("folder", "submissions");
 
       const res = await fetch("/api/upload", {
         method: "POST",
@@ -131,7 +139,7 @@ export default function SubmitWorkPage() {
         const data = await res.json();
         setFileUrl(data.url);
         setFileName(file.name);
-        toast.success("File .zip berhasil diunggah!");
+        toast.success(`${isImage ? 'Gambar' : 'File .zip'} berhasil diunggah!`);
       } else {
         throw new Error("Upload failed");
       }
@@ -147,10 +155,6 @@ export default function SubmitWorkPage() {
   const handleSubmit = async () => {
     if (!submissionText.trim()) {
       toast.error("Deskripsi submisi tidak boleh kosong.");
-      return;
-    }
-    if (aiReview && !aiReview.approved) {
-      toast.error("Mohon perbaiki berdasarkan masukan AI sebelum mengirim ke klien.");
       return;
     }
 
@@ -244,7 +248,7 @@ export default function SubmitWorkPage() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-light font-sans text-brand-dark pt-20 pb-10 px-6">
+    <div className="min-h-screen bg-brand-light font-sans text-brand-dark pt-28 pb-10 px-6">
       <div className="max-w-7xl mx-auto">
         <Link href="/dashboard/my-tasks" className="inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark/30 hover:text-brand-mid transition-all mb-6 group">
           <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
@@ -279,9 +283,9 @@ export default function SubmitWorkPage() {
               <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-3">
                   <label className="block text-[10px] font-bold text-brand-dark/30 uppercase tracking-[0.2em]">
-                    File Hasil Pekerjaan (Max 1GB, .zip)
+                    File Hasil Pekerjaan (ZIP atau Gambar)
                   </label>
-                  <input type="file" accept=".zip,application/zip,application/x-zip-compressed" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
+                  <input type="file" accept=".zip,application/zip,application/x-zip-compressed,image/*" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
                   
                   {fileUrl ? (
                     <div className="flex items-center justify-between bg-brand-mid/10 border border-brand-mid/20 rounded-[1.25rem] px-6 py-4">
@@ -314,7 +318,7 @@ export default function SubmitWorkPage() {
                         <>
                           <UploadCloud size={28} className="text-brand-dark/30" />
                           <div className="text-center">
-                            <span className="text-sm font-bold text-brand-dark block">Klik untuk upload file .zip</span>
+                            <span className="text-sm font-bold text-brand-dark block">Klik untuk upload ZIP atau Gambar</span>
                             <span className="text-xs mt-1 block">Maksimal ukuran 1GB. Jika lebih, silakan cantumkan link GDrive di deskripsi.</span>
                           </div>
                         </>
@@ -452,7 +456,7 @@ export default function SubmitWorkPage() {
                   {!aiReview.approved && (
                     <div className="mx-5 mb-5 mt-1 bg-red-50/80 border border-red-100 rounded-xl p-4 text-center">
                       <p className="text-[11px] text-red-600 font-sans font-medium leading-snug">
-                        Perbaiki berdasarkan masukan AI agar dapat dikirim ke klien.
+                        AI menyarankan beberapa perbaikan untuk hasil maksimal.
                       </p>
                     </div>
                   )}
@@ -465,9 +469,9 @@ export default function SubmitWorkPage() {
               <div className="absolute top-0 right-0 w-52 h-52 bg-brand-mid/20 rounded-full blur-[70px] -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-1000" />
               <div className="relative z-10 flex items-center justify-between gap-4">
                 <div className="flex-1">
-                  <h3 className="font-display font-bold text-base mb-1.5">AI Quality Gate</h3>
+                  <h3 className="font-display font-bold text-base mb-1.5">AI Quality Analysis</h3>
                   <p className="text-white/50 text-[11px] leading-relaxed font-sans font-light">
-                    Skor minimal 60 (Grade B) diperlukan sebelum submisi diterima UMKM.
+                    Skor minimal 60 (Grade B) disarankan untuk memastikan kualitas terbaik bagi UMKM.
                   </p>
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 backdrop-blur-sm shrink-0 text-right">
@@ -488,11 +492,11 @@ export default function SubmitWorkPage() {
 
               <button
                 onClick={handleSubmit}
-                disabled={submitting || !submissionText.trim() || (aiReview !== null && !aiReview.approved)}
+                disabled={submitting || !submissionText.trim()}
                 className="w-full flex items-center justify-center gap-3 bg-brand-dark hover:bg-brand-mid text-white font-display font-bold py-4 px-8 rounded-xl transition-all shadow-xl shadow-brand-dark/10 hover:-translate-y-1 active:translate-y-0 disabled:opacity-30 disabled:cursor-not-allowed disabled:translate-y-0 cursor-pointer text-[11px] uppercase tracking-widest"
               >
                 {submitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                {submitting ? "Mengirim..." : !aiReview ? "Kirim Tanpa AI" : aiReview.approved ? "Kirim ke Klien" : "Revisi Dulu"}
+                {submitting ? "Mengirim..." : "Kirim ke Klien"}
               </button>
             </div>
           </div>

@@ -86,7 +86,7 @@ export default function RegisterPage() {
                     </div>
                   </div>
                   <div style="background-color: #f8faf9; padding: 32px; text-align: center; border-top: 1px solid rgba(11, 28, 20, 0.03);">
-                    <p style="font-size: 11px; font-weight: 700; color: #4a6654; letter-spacing: 1.5px; text-transform: uppercase; margin: 0;">© 2024 BANTU INDONESIA • KARYA ANAK BANGSA</p>
+                    <p style="font-size: 11px; font-weight: 700; color: #4a6654; letter-spacing: 1.5px; text-transform: uppercase; margin: 0;">© 2026 BANTU INDONESIA • KARYA ANAK BANGSA</p>
                   </div>
                 </div>
               </div>
@@ -175,7 +175,7 @@ export default function RegisterPage() {
                       </div>
                     </div>
                     <div style="background-color: #f8faf9; padding: 32px; text-align: center; border-top: 1px solid rgba(11, 28, 20, 0.03);">
-                      <p style="font-size: 11px; font-weight: 700; color: #4a6654; letter-spacing: 1.5px; text-transform: uppercase; margin: 0;">© 2024 BANTU INDONESIA • KARYA ANAK BANGSA</p>
+                      <p style="font-size: 11px; font-weight: 700; color: #4a6654; letter-spacing: 1.5px; text-transform: uppercase; margin: 0;">© 2026 BANTU INDONESIA • KARYA ANAK BANGSA</p>
                     </div>
                   </div>
                 </div>
@@ -370,7 +370,7 @@ export default function RegisterPage() {
       {/* Footer */}
       <div className="absolute bottom-0 left-0 right-0 p-8 flex justify-between items-end text-[9px] font-bold tracking-[0.2em] text-brand-dark/15 pointer-events-none uppercase">
         <div className="w-1/2 pr-12 hidden lg:block">
-          <p>© 2024 BANTU INDONESIA. KARYA ANAK BANGSA.</p>
+          <p>© 2026 BANTU INDONESIA. KARYA ANAK BANGSA.</p>
         </div>
       </div>
     </div>

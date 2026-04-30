@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, getDoc, collection, query, where, getDocs, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { CheckCircle2, Download, ArrowRight, Star, Loader2, Trophy, MessageSquare } from 'lucide-react';
+import { CheckCircle2, Download, ArrowRight, Star, Loader2, Trophy, MessageSquare, MapPin, Phone } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,11 +24,14 @@ interface PortfolioEntry {
   review?: string;
   completedAt: any;
   verified: boolean;
+  isHidden?: boolean;
 }
 
 interface StudentProfile {
   name: string;
   email: string;
+  phone?: string;
+  location?: string;
   avatarUrl?: string;
   university?: string;
   bio?: string;
@@ -36,6 +39,8 @@ interface StudentProfile {
   rank?: string;
   completedTasks?: number;
   avgRating?: number;
+  hideAiScores?: boolean;
+  hideRatings?: boolean;
 }
 
 const gradeColor: Record<string, string> = {
@@ -81,10 +86,12 @@ export default function PortfolioPage() {
           orderBy("completedAt", "desc")
         );
         const snap = await getDocs(q);
-        const entryList: PortfolioEntry[] = snap.docs.map(d => ({
-          id: d.id,
-          ...d.data(),
-        } as PortfolioEntry));
+        const entryList: PortfolioEntry[] = snap.docs
+          .map(d => ({
+            id: d.id,
+            ...d.data(),
+          } as PortfolioEntry))
+          .filter(e => !e.isHidden); // Filter out hidden entries
         setEntries(entryList);
       } catch (err) {
         console.error(err);
@@ -157,7 +164,10 @@ export default function PortfolioPage() {
   };
 
   const handleDownload = () => {
+    const originalTitle = document.title;
+    document.title = ""; // Clears the page title from the print header
     window.print();
+    document.title = originalTitle;
   };
 
   if (loading) {
@@ -188,7 +198,7 @@ export default function PortfolioPage() {
   const rankCfg = rankConfig[rank] || rankConfig["D"];
 
   return (
-    <div className="bg-background flex flex-col font-sans text-brand-dark w-full min-h-screen selection:bg-brand-mid/20 selection:text-brand-mid">
+    <div className="bg-background flex flex-col font-sans text-brand-dark w-full min-h-screen selection:bg-brand-mid/20 selection:text-brand-mid print:min-h-0 print:bg-white">
       <main className="flex-grow pt-32 pb-24 px-6 max-w-7xl mx-auto w-full relative print:hidden">
         {/* Decorative Background Element */}
         <div className="absolute top-0 right-0 -z-10 w-1/2 h-1/2 bg-radial from-brand-mid/5 to-transparent pointer-events-none" />
@@ -212,11 +222,27 @@ export default function PortfolioPage() {
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-semibold tracking-[-0.04em] text-brand-dark leading-[0.95] font-display mb-4 text-balance">
               {profile.name}
             </h1>
-            {profile.university && (
-              <h2 className="text-2xl md:text-3xl font-medium tracking-tight text-brand-mid leading-tight mb-8 font-display">
-                {profile.university}
-              </h2>
-            )}
+            
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-y-4 gap-x-8 mb-8">
+              {profile.university && (
+                <div className="flex items-center gap-2.5 text-brand-mid font-display font-medium text-xl md:text-2xl tracking-tight">
+                  <Trophy size={20} className="opacity-50" />
+                  {profile.university}
+                </div>
+              )}
+              {profile.location && (
+                <div className="flex items-center gap-2 text-brand-dark/40 font-sans font-medium text-sm uppercase tracking-widest">
+                  <MapPin size={16} className="text-brand-mid" />
+                  {profile.location}
+                </div>
+              )}
+              {profile.phone && (
+                <div className="flex items-center gap-2 text-brand-dark/40 font-sans font-medium text-sm uppercase tracking-widest">
+                  <Phone size={16} className="text-brand-mid" />
+                  {profile.phone}
+                </div>
+              )}
+            </div>
 
             <p className="text-brand-dark/70 text-lg md:text-xl leading-relaxed max-w-2xl mb-12 font-light text-balance mx-auto lg:mx-0">
               {profile.bio || "Talented student ready to help your UMKM grow through high-quality freelance work."}
@@ -266,8 +292,8 @@ export default function PortfolioPage() {
             { label: "Tasks Completed", value: profile.completedTasks || 0, icon: null },
             { 
               label: "Client Rating", 
-              value: profile.avgRating ? profile.avgRating.toFixed(1) : "—", 
-              icon: <Star className="text-brand-mid" fill="currentColor" size={24} /> 
+              value: (profile.hideRatings) ? "—" : (profile.avgRating ? profile.avgRating.toFixed(1) : "—"), 
+              icon: (!profile.hideRatings) ? <Star className="text-brand-mid" fill="currentColor" size={24} /> : null 
             },
             { label: "BANTU Rank", value: rank, icon: null, highlight: true }
           ].map((stat, i) => (
@@ -355,7 +381,7 @@ export default function PortfolioPage() {
                       <span className="inline-block bg-brand-mid/10 text-brand-mid text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">
                         {entry.category}
                       </span>
-                      {entry.aiGrade && (
+                      {entry.aiGrade && !profile.hideAiScores && (
                         <div className={`w-8 h-8 rounded-full border flex items-center justify-center text-xs font-bold ${gradeColor[entry.aiGrade] || "bg-gray-50 text-gray-500 border-gray-200"}`}>
                           {entry.aiGrade}
                         </div>
@@ -363,7 +389,7 @@ export default function PortfolioPage() {
                     </div>
                     <h3 className="font-semibold text-brand-dark text-xl mb-3 font-display leading-tight">{entry.projectTitle}</h3>
                     
-                    {entry.rating && (
+                    {entry.rating && !profile.hideRatings && (
                       <div className="flex items-center gap-1 mb-3">
                         {[1, 2, 3, 4, 5].map((s) => (
                           <Star 
@@ -414,17 +440,28 @@ export default function PortfolioPage() {
       </main>
 
       {/* ATS Friendly Printable Version (Only visible when printing) */}
-      <div className="hidden print:block bg-white text-black p-12 font-serif">
-        <header className="border-b-2 border-black pb-6 mb-8">
-          <h1 className="text-4xl font-bold mb-2 uppercase tracking-tight">{profile.name}</h1>
-          <div className="flex flex-wrap gap-4 text-sm font-medium">
+      <div className="hidden print:block bg-white text-black font-serif w-full">
+        <style dangerouslySetInnerHTML={{ __html: `
+          @page { size: auto; margin: 0mm; }
+          @media print {
+            body { background: white !important; margin: 0 !important; }
+            header, footer, nav { display: none !important; }
+            .hidden.print\\:block { 
+              display: block !important; 
+              padding: 20mm 15mm !important;
+            }
+          }
+        `}} />
+        
+        <div className="border-b-2 border-black pb-6 mb-8">
+          <div className="text-4xl font-bold mb-2">{profile.name}</div>
+          <div className="text-sm font-bold">
             {profile.university && <span>{profile.university}</span>}
-            <span>•</span>
-            <span>{profile.email}</span>
-            <span>•</span>
-            <span>Reputation Rank: {rank}</span>
+            {profile.location && <span> • {profile.location}</span>}
+            {profile.phone && <span> • {profile.phone}</span>}
+            {profile.email && <span> • {profile.email}</span>}
           </div>
-        </header>
+        </div>
 
         <section className="mb-8">
           <h2 className="text-xl font-bold uppercase border-b border-black mb-4">Professional Summary</h2>
@@ -455,9 +492,7 @@ export default function PortfolioPage() {
                 </div>
                 <div className="flex gap-4 text-xs font-bold uppercase mb-2">
                   <span>Category: {entry.category}</span>
-                  <span>•</span>
-                  <span>Quality Score: {entry.aiScore}/100 ({entry.aiGrade})</span>
-                  {entry.rating && (
+                  {entry.rating && !profile.hideRatings && (
                     <>
                       <span>•</span>
                       <span>Client Rating: {entry.rating}/5</span>
@@ -467,7 +502,7 @@ export default function PortfolioPage() {
                 <p className="text-sm leading-relaxed mb-2">
                   {entry.description}
                 </p>
-                {entry.review && (
+                {entry.review && !profile.hideRatings && (
                   <div className="bg-gray-50 border-l-2 border-black p-3 text-xs italic">
                     " {entry.review} " — Client Feedback
                   </div>
@@ -479,10 +514,6 @@ export default function PortfolioPage() {
             )}
           </div>
         </section>
-
-        <footer className="mt-20 pt-8 border-t border-gray-200 text-center text-[10px] text-gray-400 font-sans uppercase tracking-[0.2em]">
-          Generated via BANTU Professional Student Talent Platform • {new Date().toLocaleDateString()}
-        </footer>
       </div>
     </div>
   );

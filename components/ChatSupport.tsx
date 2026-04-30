@@ -82,9 +82,6 @@ export default function ChatSupport() {
             className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-brand-mid text-white rounded-full flex items-center justify-center shadow-xl hover:bg-brand-dark transition-all cursor-pointer group border-none outline-none print:hidden"
           >
             <MessageCircle size={24} className="group-hover:scale-110 transition-transform" />
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-brand-dark rounded-full flex items-center justify-center text-[10px] font-bold text-white border-2 border-white">
-              1
-            </span>
           </motion.button>
         )}
       </AnimatePresence>

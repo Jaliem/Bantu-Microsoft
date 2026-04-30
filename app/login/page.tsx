@@ -204,7 +204,7 @@ export default function LoginPage() {
       {/* Footer Area - Fixed Bottom for Login Context */}
       <div className="absolute bottom-0 left-0 right-0 p-8 flex justify-between items-end text-[9px] font-bold tracking-[0.2em] text-brand-dark/15 pointer-events-none uppercase">
         <div className="w-1/2 pr-12 hidden lg:block">
-          <p>© 2024 BANTU INDONESIA. KARYA ANAK BANGSA.</p>
+          <p>© 2026 BANTU INDONESIA. KARYA ANAK BANGSA.</p>
         </div>
         <div className="w-1/2 flex justify-between px-6 sm:px-12 lg:px-24">
           {/* Custom page footer if needed */}

@@ -170,7 +170,7 @@ export default function MarketplacePage() {
                         
                         <div className="flex flex-wrap items-center gap-8 md:gap-12 pt-8 border-t border-brand-dark/5">
                           <div>
-                            <p className="text-[9px] font-bold tracking-[0.2em] text-brand-dark/20 uppercase mb-2">Budget</p>
+                            <p className="text-[9px] font-bold tracking-[0.2em] text-brand-dark/20 uppercase mb-2">Est. Budget</p>
                             <p className="font-display font-bold text-brand-dark">{project.budget}</p>
                           </div>
                           <div>

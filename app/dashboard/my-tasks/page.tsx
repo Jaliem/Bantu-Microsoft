@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { collection, query, where, getDocs, doc, getDoc, orderBy } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc, orderBy, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { ClipboardList, Clock, CheckCircle2, AlertCircle, ExternalLink, Loader2, UploadCloud } from "lucide-react";
+import { ClipboardList, Clock, CheckCircle2, AlertCircle, ExternalLink, Loader2, UploadCloud, Edit3, DollarSign, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 interface Task {
   id: string;
@@ -16,6 +17,7 @@ interface Task {
   projectTitle: string;
   projectCategory: string;
   projectBudget: string;
+  bidAmount?: string;
   umkmName: string;
   status: "applied" | "accepted" | "in_progress" | "completed" | "rejected";
   appliedAt: any;
@@ -27,6 +29,11 @@ export default function MyTasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+
+  // Edit Bid State
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [newBid, setNewBid] = useState("");
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -56,7 +63,8 @@ export default function MyTasksPage() {
             projectId: data.projectId,
             projectTitle: data.projectTitle || "Untitled Project",
             projectCategory: data.projectCategory || "General",
-            projectBudget: data.projectBudget || "N/A",
+            projectBudget: data.bidAmount || data.projectBudget || "N/A",
+            bidAmount: data.bidAmount,
             umkmName: data.umkmName || "Unknown UMKM",
             status: data.status || "applied",
             appliedAt: data.appliedAt,
@@ -75,6 +83,30 @@ export default function MyTasksPage() {
 
     fetchTasks();
   }, [user, userData, router]);
+
+  const handleUpdateBid = async () => {
+    if (!editingTask || !newBid) return;
+    setUpdating(true);
+    try {
+      const formattedBid = `Rp ${parseInt(newBid).toLocaleString('id-ID')}`;
+      await updateDoc(doc(db, "applications", editingTask.id), {
+        bidAmount: formattedBid,
+        projectBudget: formattedBid
+      });
+      
+      setTasks(prev => prev.map(t => 
+        t.id === editingTask.id ? { ...t, bidAmount: formattedBid, projectBudget: formattedBid } : t
+      ));
+      
+      toast.success("Bid updated successfully!");
+      setEditingTask(null);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update bid.");
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   const filteredTasks = filter === "all" ? tasks : tasks.filter(t => t.status === filter);
 
@@ -208,6 +240,18 @@ export default function MyTasksPage() {
                         </div>
                         
                         <div className="flex items-center gap-3">
+                          {task.status === "applied" && (
+                            <button
+                              onClick={() => {
+                                setEditingTask(task);
+                                setNewBid(task.bidAmount?.replace(/[^0-9]/g, '') || '');
+                              }}
+                              className="w-14 h-14 bg-brand-mid/10 rounded-2xl flex items-center justify-center text-brand-mid hover:bg-brand-mid hover:text-white transition-all shadow-sm cursor-pointer"
+                              title="Edit Bid"
+                            >
+                              <Edit3 size={20} />
+                            </button>
+                          )}
                           {(task.status === "accepted" || task.status === "in_progress") && (
                             <Link
                               href={`/submit-work/${task.id}`}
@@ -233,6 +277,83 @@ export default function MyTasksPage() {
           </div>
         )}
       </main>
+
+      {/* Edit Bid Modal */}
+      <AnimatePresence>
+        {editingTask && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setEditingTask(null)}
+              className="absolute inset-0 bg-brand-dark/40 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg bg-white rounded-[2.5rem] p-10 shadow-2xl border border-brand-dark/5"
+            >
+              <button 
+                onClick={() => setEditingTask(null)}
+                className="absolute top-8 right-8 text-brand-dark/20 hover:text-brand-dark transition-colors"
+              >
+                <X size={24} />
+              </button>
+
+              <div className="text-center mb-10">
+                <div className="w-20 h-20 bg-brand-mid/10 rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-brand-mid">
+                  <DollarSign size={40} />
+                </div>
+                <h3 className="text-3xl font-display font-bold text-brand-dark mb-2">Update Bid</h3>
+                <p className="text-brand-dark/40 font-sans font-light">Sesuaikan penawaran Anda untuk proyek ini.</p>
+                <p className="text-[10px] text-brand-dark/30 font-bold uppercase tracking-widest mt-1">(Biaya platform 2% akan dikenakan saat selesai)</p>
+                <p className="text-brand-mid font-display font-bold text-sm mt-2">{editingTask.projectTitle}</p>
+              </div>
+
+              <div className="space-y-8">
+                <div className="space-y-4">
+                  <label className="text-[10px] font-bold text-brand-dark/30 uppercase tracking-[0.2em] ml-1">Penawaran Baru (Rp)</label>
+                  <div className="relative group">
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-brand-dark/20 font-display font-black text-xl group-focus-within:text-brand-mid transition-colors">
+                      Rp
+                    </div>
+                    <input 
+                      type="text" 
+                      value={newBid}
+                      onChange={(e) => setNewBid(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder="500.000"
+                      className="w-full bg-brand-light/50 border-2 border-transparent rounded-2xl pl-16 pr-8 py-6 text-brand-dark placeholder:text-brand-dark/20 focus:bg-white focus:border-brand-mid focus:ring-4 focus:ring-brand-mid/5 transition-all outline-none font-display font-black text-2xl tracking-tighter"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => setEditingTask(null)}
+                    className="flex-1 py-4 font-display font-bold text-[10px] uppercase tracking-widest text-brand-dark/40 hover:text-brand-dark transition-all"
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    onClick={handleUpdateBid}
+                    disabled={updating || !newBid}
+                    className="flex-[2] bg-brand-mid text-white font-display font-bold py-4 rounded-2xl text-[10px] uppercase tracking-widest shadow-lg shadow-brand-mid/20 hover:bg-brand-dark transition-all disabled:opacity-50 active:scale-95"
+                  >
+                    {updating ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 size={16} className="animate-spin" />
+                        Memperbarui...
+                      </div>
+                    ) : "Update Penawaran"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

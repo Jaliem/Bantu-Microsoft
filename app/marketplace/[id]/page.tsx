@@ -23,10 +23,17 @@ export default function JobDetailPage() {
   const [loading, setLoading] = useState(true);
   const [similarProjects, setSimilarProjects] = useState<any[]>([]);
   const [applying, setApplying] = useState(false);
+  const [bidAmount, setBidAmount] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (project) {
+      setBidAmount(project.budget.replace(/[^0-9]/g, ''));
+    }
+  }, [project]);
 
   useEffect(() => {
     if (userData?.savedProjects?.includes(id)) {
@@ -124,12 +131,15 @@ export default function JobDetailPage() {
     
     setApplying(true);
     try {
+      const formattedBid = `Rp ${parseInt(bidAmount).toLocaleString('id-ID')}`;
+      
       // 1. Create Application document
       const appRef = await addDoc(collection(db, "applications"), {
         projectId: id,
         projectTitle: project.title,
         projectCategory: project.category,
-        projectBudget: project.budget,
+        projectBudget: formattedBid,
+        bidAmount: formattedBid,
         umkmId: project.umkmId,
         umkmName: umkmData?.name || "BANTU UMKM",
         studentId: user.uid,
@@ -177,7 +187,7 @@ export default function JobDetailPage() {
                         </div>
                       </div>
                       <div style="background-color: #f8faf9; padding: 32px; text-align: center; border-top: 1px solid rgba(11, 28, 20, 0.03);">
-                        <p style="font-size: 11px; font-weight: 700; color: #4a6654; letter-spacing: 1.5px; text-transform: uppercase; margin: 0;">© 2024 BANTU INDONESIA • KARYA ANAK BANGSA</p>
+                        <p style="font-size: 11px; font-weight: 700; color: #4a6654; letter-spacing: 1.5px; text-transform: uppercase; margin: 0;">© 2026 BANTU INDONESIA • KARYA ANAK BANGSA</p>
                       </div>
                     </div>
                   </div>
@@ -335,7 +345,7 @@ export default function JobDetailPage() {
                     <Wallet size={24} />
                   </div>
                   <div>
-                    <p className="text-[9px] font-bold tracking-[0.2em] text-brand-dark/20 uppercase mb-1">Budget</p>
+                    <p className="text-[9px] font-bold tracking-[0.2em] text-brand-dark/20 uppercase mb-1">Est. Budget</p>
                     <p className="font-display font-bold text-brand-dark text-sm">{project.budget}</p>
                   </div>
                 </div>
@@ -424,9 +434,23 @@ export default function JobDetailPage() {
 
               {userData?.role !== 'UMKM' ? (
                 <>
+                  <div className="mb-6">
+                    <label className="block text-[10px] font-bold text-brand-dark/30 uppercase tracking-[0.2em] mb-3 ml-1">Your Bid Amount (Rp)</label>
+                    <div className="relative group">
+                      <div className="absolute left-5 top-1/2 -translate-y-1/2 text-brand-dark/20 font-display font-bold text-sm">Rp</div>
+                      <input 
+                        type="text" 
+                        value={bidAmount}
+                        onChange={(e) => setBidAmount(e.target.value.replace(/[^0-9]/g, ''))}
+                        placeholder="500.000"
+                        className="w-full bg-brand-light/50 border-2 border-transparent rounded-[1.25rem] pl-12 pr-6 py-4 text-brand-dark font-display font-bold text-sm focus:bg-white focus:border-brand-mid transition-all outline-none"
+                      />
+                    </div>
+                    <p className="text-[9px] text-brand-dark/30 mt-2 ml-1 italic">Klien merekomendasikan {project.budget}. (Dikenakan biaya platform 2% saat selesai)</p>
+                  </div>
                   <button 
                     onClick={handleApply}
-                    disabled={applying || hasApplied}
+                    disabled={applying || hasApplied || !bidAmount}
                     className="w-full bg-brand-mid hover:bg-brand-dark text-white font-display font-bold py-5 rounded-[1.25rem] text-[10px] uppercase tracking-[0.2em] transition-all shadow-lg shadow-brand-mid/20 hover:-translate-y-0.5 active:translate-y-0 mb-4 cursor-pointer disabled:opacity-70 disabled:translate-y-0"
                   >
                     {applying ? "Applying..." : hasApplied ? "Applied" : "Apply for this Task"}

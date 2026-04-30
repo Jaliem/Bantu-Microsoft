@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const { submissionText, projectTitle, projectDescription, category } = await request.json();
+    const { submissionText, projectTitle, projectDescription, category, fileUrl } = await request.json();
 
     if (!submissionText) {
       return NextResponse.json({ error: 'Submission text is required' }, { status: 400 });
@@ -21,7 +21,8 @@ export async function POST(request: Request) {
       });
     }
 
-    const prompt = `You are a strict but fair Quality Assurance reviewer for a freelance marketplace called BANTU.
+    let parts: any[] = [
+      { text: `You are a strict but fair Quality Assurance reviewer for a freelance marketplace called BANTU.
 Your job is to pre-audit a student's work submission BEFORE it reaches the client (UMKM).
 
 Project: "${projectTitle}"
@@ -29,8 +30,10 @@ Category: "${category}"
 Project Requirements/SOP:
 ${projectDescription || 'No SOP provided.'}
 
-Student's Submission:
+Student's Submission Text:
 ${submissionText}
+
+${fileUrl ? "An image of the work has also been provided. Please analyze both the text and the image to ensure quality." : ""}
 
 Evaluate this submission and respond ONLY with valid JSON (no markdown, no extra text) in this exact format:
 {
@@ -47,7 +50,27 @@ Scoring guide:
 - 75-89 (A): Strong, meets all requirements well
 - 60-74 (B): Satisfactory, meets most requirements
 - 40-59 (C): Needs significant improvement before client review
-- 0-39 (D): Does not meet minimum requirements, resubmit required`;
+- 0-39 (D): Does not meet minimum requirements, resubmit required` }
+    ];
+
+    if (fileUrl) {
+      try {
+        const imageRes = await fetch(fileUrl);
+        if (imageRes.ok) {
+          const contentType = imageRes.headers.get('content-type') || 'image/jpeg';
+          const buffer = await imageRes.arrayBuffer();
+          const base64Image = Buffer.from(buffer).toString('base64');
+          parts.push({
+            inlineData: {
+              mimeType: contentType,
+              data: base64Image
+            }
+          });
+        }
+      } catch (e) {
+        console.error("Failed to fetch image for AI review:", e);
+      }
+    }
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
@@ -55,7 +78,7 @@ Scoring guide:
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
+          contents: [{ parts }],
           generationConfig: { responseMimeType: 'application/json' },
         }),
       }

@@ -22,6 +22,8 @@ interface UserData {
   savedProjects?: string[];
   isOnline?: boolean;
   lastActive?: any;
+  hideAiScores?: boolean;
+  hideRatings?: boolean;
 }
 
 interface AuthContextType {

@@ -48,21 +48,31 @@ export function Navbar() {
             {(user 
               ? ["Marketplace", "Tasks", "Chat", "Wallet"] 
               : ["Marketplace"]
-            ).map((item) => (
-              <Link 
-                key={item}
-                href={item === "Tasks" ? "/dashboard/my-tasks" : `/${item.toLowerCase()}`} 
-                className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-brand-dark/50 hover:text-brand-dark transition-colors relative group font-display flex items-center h-full"
-              >
-                {item}
-                {(pathname === `/${item.toLowerCase()}` || (item === "Tasks" && pathname === "/dashboard/my-tasks")) && (
-                  <motion.div 
-                    layoutId="nav-underline" 
-                    className="absolute -bottom-1 left-0 w-full h-[1.5px] bg-brand-mid" 
-                  />
-                )}
-              </Link>
-            ))}
+            ).map((item) => {
+              const isUmkm = userData?.role === 'UMKM';
+              const href = item === "Tasks" 
+                ? (isUmkm ? "/dashboard/my-posts" : "/dashboard/my-tasks")
+                : `/${item.toLowerCase()}`;
+              const label = item === "Tasks" && isUmkm ? "My Posts" : item;
+              
+              const isActive = pathname === href || (item === "Tasks" && pathname === href);
+
+              return (
+                <Link 
+                  key={item}
+                  href={href} 
+                  className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-brand-dark/50 hover:text-brand-dark transition-colors relative group font-display flex items-center h-full"
+                >
+                  {label}
+                  {isActive && (
+                    <motion.div 
+                      layoutId="nav-underline" 
+                      className="absolute -bottom-1 left-0 w-full h-[1.5px] bg-brand-mid" 
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </div>
         </div>
 

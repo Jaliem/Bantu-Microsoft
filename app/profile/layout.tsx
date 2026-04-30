@@ -45,6 +45,7 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
 
   const tabs = [
     { name: "Informasi Pribadi", path: "/profile" },
+    ...(userData?.role === 'Mahasiswa' ? [{ name: "Kustomisasi Portofolio", path: "/profile/portfolio" }] : []),
     { name: "Keamanan", path: "/profile/keamanan" },
     { name: "Notifikasi", path: "/profile/notifikasi" },
   ];

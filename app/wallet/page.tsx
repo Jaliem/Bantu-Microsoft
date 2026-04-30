@@ -355,7 +355,7 @@ export default function WalletPage() {
                 </div>
                 <h3 className="text-xl font-display font-bold mb-4">BANTU Secure Payments</h3>
                 <p className="text-white/80 text-sm leading-relaxed font-sans font-light">
-                  Dana Anda dipegang aman di escrow dan hanya dicairkan setelah proyek disetujui. Aman bagi UMKM, terjamin bagi Mahasiswa.
+                  Dana Anda dipegang aman di escrow dan hanya dicairkan setelah proyek disetujui. Aman bagi UMKM, terjamin bagi Mahasiswa. (Biaya platform 2% berlaku).
                 </p>
               </div>
             </motion.div>

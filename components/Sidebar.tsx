@@ -34,12 +34,12 @@ export default function Sidebar() {
         </Link>
         
         {userData?.role === 'UMKM' ? (
-          <Link href="/dashboard/my-posts" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all cursor-pointer">
+          <Link href="/dashboard/my-posts" className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all cursor-pointer ${pathname === '/dashboard/my-posts' ? 'bg-white text-[#008f4c] font-bold shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'}`}>
             <ClipboardList size={20} />
             <span className="text-sm">My Posts</span>
           </Link>
         ) : (
-          <Link href="/dashboard/my-tasks" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-500 hover:text-gray-900 hover:bg-white/50 transition-all cursor-pointer">
+          <Link href="/dashboard/my-tasks" className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all cursor-pointer ${pathname === '/dashboard/my-tasks' ? 'bg-white text-[#008f4c] font-bold shadow-sm' : 'text-gray-500 hover:text-gray-900 hover:bg-white/50'}`}>
             <ClipboardList size={20} />
             <span className="text-sm">My Tasks</span>
           </Link>

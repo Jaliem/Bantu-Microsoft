@@ -39,15 +39,23 @@ export function Footer() {
               {(user 
                 ? ["Marketplace", "Tasks", "Chat", "Wallet"] 
                 : ["Marketplace"]
-              ).map((item) => (
-                <Link 
-                  key={item}
-                  href={item === "Tasks" ? "/dashboard/my-tasks" : `/${item.toLowerCase()}`} 
-                  className="text-brand-light/60 hover:text-white transition-all text-[11px] font-bold uppercase tracking-widest"
-                >
-                  {item}
-                </Link>
-              ))}
+              ).map((item) => {
+                const isUmkm = userData?.role === 'UMKM';
+                const href = item === "Tasks" 
+                  ? (isUmkm ? "/dashboard/my-posts" : "/dashboard/my-tasks")
+                  : `/${item.toLowerCase()}`;
+                const label = item === "Tasks" && isUmkm ? "My Posts" : item;
+
+                return (
+                  <Link 
+                    key={item}
+                    href={href} 
+                    className="text-brand-light/60 hover:text-white transition-all text-[11px] font-bold uppercase tracking-widest"
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
               
               {user ? (
                 <>
@@ -80,7 +88,7 @@ export function Footer() {
         {/* Bottom Area */}
         <div className="mt-24 pt-10 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-[10px] font-bold tracking-[0.3em] text-brand-light/30 uppercase">
-            © 2024 BANTU INDONESIA. KARYA ANAK BANGSA.
+            © 2026 BANTU INDONESIA. KARYA ANAK BANGSA.
           </div>
         </div>
       </div>
