@@ -13,6 +13,7 @@ export async function POST(request: Request) {
     const deploymentName = process.env.AZURE_DEPLOYMENT_NAME;
 
     if (!rawEndpoint || !apiKey || !deploymentName) {
+      console.warn('[Review Submission] Azure OpenAI configuration missing — returning mock review');
       return NextResponse.json({
         score: 72,
         grade: 'B',
@@ -22,15 +23,6 @@ export async function POST(request: Request) {
         approved: true,
       });
     }
-
-    const urlObj = new URL(rawEndpoint);
-    const baseHost = `${urlObj.protocol}//${urlObj.hostname}`;
-    const apiVersion = urlObj.searchParams.get('api-version') || "2024-08-01-preview";
-    
-    const isResponseApi = urlObj.pathname.includes('/responses');
-    const pathSuffix = isResponseApi ? '/responses' : '/chat/completions';
-    
-    const url = `${baseHost}/openai/deployments/${deploymentName}${pathSuffix}?api-version=${apiVersion}`;
 
     const systemInstruction = `You are a strict but fair Quality Assurance reviewer for a freelance marketplace called BANTU.
 Your job is to pre-audit a student's work submission BEFORE it reaches the client (UMKM).
@@ -60,52 +52,56 @@ ${projectDescription || 'No SOP provided.'}
 Student's Submission Text:
 ${submissionText}
 
-${fileUrl ? "An image of the work has also been provided. Please analyze both the text and the image to ensure quality." : ""}`;
+${fileUrl ? 'An image of the work has also been provided. Please analyze both the text and the image to ensure quality.' : ''}`;
 
-    const content: any[] = [{ type: 'text', text: userPrompt }];
+    const userContent: unknown[] = [{ type: 'text', text: userPrompt }];
 
     if (fileUrl) {
       try {
+        console.log(`[Review Submission] Fetching submission image from ${fileUrl}`);
         const imageRes = await fetch(fileUrl);
         if (imageRes.ok) {
           const contentType = imageRes.headers.get('content-type') || 'image/jpeg';
           const buffer = await imageRes.arrayBuffer();
           const base64Image = Buffer.from(buffer).toString('base64');
-          content.push({
-            type: 'image_url',
-            image_url: {
-              url: `data:${contentType};base64,${base64Image}`
-            }
+          // Responses API uses type "input_image" with a flat image_url string
+          userContent.push({
+            type: 'input_image',
+            image_url: `data:${contentType};base64,${base64Image}`,
           });
+          console.log('[Review Submission] Image attached to review request');
+        } else {
+          console.warn('[Review Submission] Failed to fetch image, proceeding without it');
         }
       } catch (e) {
-        console.error("Failed to fetch image for AI review:", e);
+        console.error('[Review Submission] Error fetching image:', e);
       }
     }
 
-    const response = await fetch(url, {
+    console.log(`[Review Submission] Calling Azure OpenAI for project="${projectTitle}"`);
+
+    const response = await fetch(rawEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'api-key': apiKey,
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        messages: [
+        model: deploymentName,
+        input: [
           { role: 'system', content: systemInstruction },
-          { role: 'user', content: content }
+          { role: 'user', content: userContent },
         ],
+        max_output_tokens: 1000,
         temperature: 0.3,
-        response_format: { type: "json_object" }
-      })
+        text: { format: { type: 'json_object' } },
+      }),
     });
 
-    if (response.ok) {
-      const data = await response.json();
-      const rawText = data.choices?.[0]?.message?.content || '{}';
-      return NextResponse.json(JSON.parse(rawText));
-    } else {
-      const err = await response.json().catch(() => ({}));
-      console.error(`Azure OpenAI failed in review:`, err);
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('[Review Submission] Azure OpenAI error:', JSON.stringify(data, null, 2));
       return NextResponse.json({
         score: 65,
         grade: 'B',
@@ -116,8 +112,12 @@ ${fileUrl ? "An image of the work has also been provided. Please analyze both th
       });
     }
 
+    const rawText: string = data.output?.[0]?.content?.[0]?.text ?? '{}';
+    console.log(`[Review Submission] AI review completed, parsing JSON response`);
+    return NextResponse.json(JSON.parse(rawText));
+
   } catch (error: any) {
-    console.error('Error reviewing submission:', error);
+    console.error('[Review Submission] Unexpected error:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
