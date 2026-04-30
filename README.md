@@ -1,39 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BANTU - Jembatan Ekonomi Digital UMKM & Mahasiswa
 
-## Getting Started
+BANTU adalah platform ekosistem digital yang dirancang untuk menghubungkan Usaha Mikro, Kecil, dan Menengah (UMKM) dengan mahasiswa atau pekerja lepas berbakat. Melalui BANTU, UMKM dapat menyelesaikan tugas-tugas mikro dengan cepat dan terjangkau, sementara mahasiswa mendapatkan kesempatan untuk membangun portofolio profesional melalui pengalaman kerja nyata yang terverifikasi.
 
-First, run the development server:
+## 🌟 Fitur Utama
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Mode Ganda (Hire & Work):** Pengguna dapat beralih antara mencari penyedia jasa (UMKM) atau mencari proyek untuk dikerjakan (Mahasiswa/Freelancer).
+- **Marketplace Proyek:** Telusuri berbagai kategori layanan mulai dari Website Development, Desain Grafis, Video Editing, hingga Social Media Management.
+- **Sistem Manajemen Proyek:** Alur kerja terintegrasi dari pengiriman proyek hingga penyerahan hasil kerja.
+- **Chat Real-time:** Komunikasi langsung antara UMKM dan pekerja untuk memastikan kesesuaian hasil.
+- **Dompet Digital (Wallet):** Transaksi yang aman dan transparan di dalam platform.
+- **Portofolio Terverifikasi:** Hasil kerja mahasiswa secara otomatis terdokumentasi dalam profil portofolio yang dapat dipamerkan.
+- **Scrolling Halus:** Pengalaman navigasi premium dengan integrasi Lenis.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework:** [Next.js](https://nextjs.org/) (App Router)
+- **Bahasa:** [TypeScript](https://www.typescriptlang.org/)
+- **Styling:** [Tailwind CSS 4](https://tailwindcss.com/)
+- **Animasi:** [Framer Motion](https://www.framer.com/motion/)
+- **Backend & Database:** [Firebase](https://firebase.google.com/)
+- **Ikon:** [Lucide React](https://lucide.dev/)
+- **Karusel:** [Embla Carousel](https://www.embla-carousel.com/)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Memulai
 
-## Learn More
+### Prasyarat
 
-To learn more about Next.js, take a look at the following resources:
+- Node.js 18+ atau yang lebih baru
+- Akun Firebase (untuk konfigurasi backend)
+- Akun AWS (untuk penyimpanan S3)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Instalasi
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Klon repositori:
+   ```bash
+   git clone https://github.com/username/bantu.git
+   cd bantu
+   ```
 
-## Deploy on Vercel
+2. Instal dependensi:
+   ```bash
+   npm install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. Konfigurasi variabel lingkungan:
+   Buat file `.env.local` dan tambahkan kredensial Firebase dan AWS Anda.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. Jalankan server pengembangan:
+   ```bash
+   npm run dev
+   ```
 
-Developer:
+Buka [http://localhost:3000](http://localhost:3000) di browser Anda untuk melihat hasilnya.
+
+## 📜 Lisensi
+
+Proyek ini dibuat untuk keperluan akademis dan pengembangan komunitas UMKM.
+
+---
+
+**Developer:**  
+Darren Oliver Putra Haryanto
+Jason
 Vernandio Rivaldo
