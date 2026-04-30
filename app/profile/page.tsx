@@ -9,6 +9,7 @@ import { Camera, MapPin, Pencil, X, Plus, CheckCircle2, ShieldAlert } from "luci
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import Link from "next/link";
+import { t } from "@/lib/i18n";
 
 export default function ProfilePersonalInfoPage() {
   const { user } = useAuth();
@@ -252,7 +253,7 @@ export default function ProfilePersonalInfoPage() {
                 className="w-full bg-brand-light text-brand-mid font-display font-bold flex items-center justify-center gap-2 hover:bg-brand-mid hover:text-white px-6 py-4 rounded-2xl transition-all cursor-pointer text-[10px] uppercase tracking-widest shadow-sm"
               >
                 <CheckCircle2 size={14} />
-                Lihat Portofolio Saya
+                {t('Lihat Portofolio Saya')}
               </Link>
             </div>
           )}
@@ -264,7 +265,7 @@ export default function ProfilePersonalInfoPage() {
                 className="w-full bg-brand-light text-brand-mid font-display font-bold flex items-center justify-center gap-2 hover:bg-brand-mid hover:text-white px-6 py-4 rounded-2xl transition-all cursor-pointer text-[10px] uppercase tracking-widest shadow-sm"
               >
                 <CheckCircle2 size={14} />
-                Lihat Profil UMKM Saya
+                {t('Lihat Profil UMKM Saya')}
               </Link>
             </div>
           )}
@@ -326,8 +327,8 @@ export default function ProfilePersonalInfoPage() {
         <div className="bg-white rounded-[2.5rem] p-10 md:p-12 shadow-ambient border border-brand-dark/5">
           <div className="flex justify-between items-start mb-12">
             <div>
-              <h2 className="text-3xl font-display font-bold text-brand-dark tracking-tight">Personal Details</h2>
-              <p className="text-brand-dark/40 text-sm mt-1">Update your public profile and contact information.</p>
+              <h2 className="text-3xl font-display font-bold text-brand-dark tracking-tight">{t('Personal Details')}</h2>
+              <p className="text-brand-dark/40 text-sm mt-1">{t('Update your public profile and contact information.')}</p>
             </div>
             {!isEditing && (
               <button 
@@ -335,7 +336,7 @@ export default function ProfilePersonalInfoPage() {
                 className="bg-brand-light text-brand-mid font-display font-bold flex items-center gap-2 hover:bg-brand-mid hover:text-white px-6 py-3 rounded-2xl transition-all cursor-pointer text-[10px] uppercase tracking-widest shadow-sm"
               >
                 <Pencil size={14} />
-                Edit Profile
+                {t('Edit Profile')}
               </button>
             )}
           </div>

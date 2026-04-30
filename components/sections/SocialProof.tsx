@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { t } from "@/lib/i18n";
 
 const stats = [
 	{ value: "10k+", label: "Tugas Mikro Selesai" },
@@ -69,7 +70,7 @@ export function SocialProof() {
 				{/* Logos Placeholder */}
 				<div className="mb-32 text-center">
 					<p className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-[0.22em] mb-10 font-sans">
-						Dipercaya oleh universitas terkemuka dan bisnis-bisnis yang sedang berkembang
+						{t("Dipercaya oleh universitas terkemuka dan bisnis-bisnis yang sedang berkembang")}
 					</p>
 					<div className="flex flex-wrap justify-center items-center gap-16 md:gap-24 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
 						<img src="/images/logo_binus.png" alt="BINUS University" className="h-10 md:h-14 w-auto object-contain" />
@@ -92,7 +93,7 @@ export function SocialProof() {
 								{stat.value}
 							</div>
 							<div className="text-brand-dark/70 font-medium tracking-wide font-sans text-sm md:text-base">
-								{stat.label}
+								{t(stat.label)}
 							</div>
 						</motion.div>
 					))}
@@ -124,15 +125,15 @@ export function SocialProof() {
 												{testimonial.name}
 											</div>
 											<div className="inline-flex items-center px-4 py-1.5 rounded-full bg-brand-mid/10 text-brand-mid text-xs font-semibold tracking-widest uppercase font-sans">
-												{testimonial.role}
+												{t(testimonial.role)}
 											</div>
 										</div>
 									</div>
 									<div className="text-brand-dark/70 leading-relaxed text-lg font-sans font-light">
 										<strong className="text-brand-dark text-xl font-medium tracking-tight block mb-2 text-balance">
-											{testimonial.title}
+											{t(testimonial.title)}
 										</strong>
-										"{testimonial.quote}"
+										"{t(testimonial.quote)}"
 									</div>
 								</div>
 							</div>

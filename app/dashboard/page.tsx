@@ -10,6 +10,7 @@ import { db } from '@/lib/firebase';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { t } from '@/lib/i18n';
 
 export default function DashboardPage() {
   const { user, userData, loading: authLoading } = useAuth();
@@ -227,7 +228,7 @@ export default function DashboardPage() {
                   {userData?.role === 'UMKM' ? 'My Active Posts' : 'Recommended Tasks'}
                 </h2>
                 <Link href={userData?.role === 'UMKM' ? "/dashboard/my-posts" : "/marketplace"} className="text-[10px] font-bold uppercase tracking-widest text-brand-mid hover:text-brand-dark transition-all">
-                  Lihat Semua
+                  {t("Lihat Semua")}
                 </Link>
               </div>
 

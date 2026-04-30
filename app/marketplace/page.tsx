@@ -11,6 +11,7 @@ import ReactMarkdown from 'react-markdown';
 
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { t } from '@/lib/i18n';
 
 function MarketplaceContent() {
   const searchParams = useSearchParams();
@@ -22,6 +23,7 @@ function MarketplaceContent() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, "projects"), orderBy("createdAt", "desc"));
@@ -71,12 +73,22 @@ function MarketplaceContent() {
     <div className="bg-brand-light flex flex-col font-sans text-brand-dark w-full min-h-screen">
       <main className="flex-grow pt-28 pb-16 px-6 max-w-7xl mx-auto w-full flex flex-col lg:flex-row gap-10">
         
+        {/* Mobile Filter Toggle */}
+        <div className="lg:hidden w-full flex justify-end -mb-6">
+          <button 
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 text-brand-dark/60 font-bold uppercase tracking-widest text-[10px] bg-white px-4 py-2 rounded-full shadow-sm border border-brand-dark/5"
+          >
+            <Filter size={14} /> {showFilters ? t('Hide Filters') : t('Show Filters')}
+          </button>
+        </div>
+
         {/* Left Sidebar - Filters */}
-        <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-8 lg:sticky lg:top-28 self-start">
+        <aside className={`w-full lg:w-72 shrink-0 flex-col gap-8 lg:sticky lg:top-28 self-start ${showFilters ? 'flex' : 'hidden lg:flex'}`}>
           <div className="bg-white rounded-[2.5rem] p-8 shadow-ambient border border-brand-dark/5">
             <div className="flex items-center gap-2 mb-8">
               <SlidersHorizontal size={18} className="text-brand-mid" />
-              <h2 className="text-xl font-display font-bold text-brand-dark">Filters</h2>
+              <h2 className="text-xl font-display font-bold text-brand-dark">{t('Filters')}</h2>
             </div>
             
             <div className="mb-10">
@@ -133,8 +145,8 @@ function MarketplaceContent() {
         <div className="flex-1">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
             <div>
-              <h1 className="text-4xl font-display font-semibold tracking-tight text-brand-dark">Marketplace</h1>
-              <p className="text-brand-dark/40 text-sm mt-1">Temukan peluang terbaik untuk karir Anda.</p>
+              <h1 className="text-4xl font-display font-semibold tracking-tight text-brand-dark">{t('Marketplace')}</h1>
+              <p className="text-brand-dark/40 text-sm mt-1">{t('Temukan peluang terbaik untuk karir Anda.')}</p>
             </div>
             <div className="flex items-center gap-4 w-full sm:w-auto">
                <div className="relative flex-1 sm:w-64">
@@ -143,7 +155,7 @@ function MarketplaceContent() {
                   type="text" 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search tasks..." 
+                  placeholder={t('Search tasks...')} 
                   className="w-full bg-white border border-brand-dark/5 rounded-2xl py-3 pl-11 pr-4 text-sm focus:outline-none focus:ring-4 focus:ring-brand-mid/5 transition-all shadow-ambient" 
                 />
                </div>
@@ -157,7 +169,7 @@ function MarketplaceContent() {
               </div>
             ) : filteredProjects.length === 0 ? (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-[2.5rem] p-16 text-center border border-brand-dark/5 shadow-ambient">
-                <p className="text-brand-dark/30 font-display font-bold uppercase tracking-widest text-sm">Belum ada proyek ditemukan</p>
+                <p className="text-brand-dark/30 font-display font-bold uppercase tracking-widest text-sm">{t('Belum ada proyek ditemukan')}</p>
               </motion.div>
             ) : (
               <AnimatePresence>
@@ -210,8 +222,8 @@ function MarketplaceContent() {
                       
                       <div className="shrink-0 mt-2 md:mt-0 flex flex-row md:flex-col gap-4">
                         <Link href={`/marketplace/${project.id}`} className="flex-1 md:flex-none">
-                          <button className="w-full bg-brand-dark text-white font-display font-bold py-4 px-10 rounded-full text-[10px] uppercase tracking-widest hover:bg-brand-mid transition-all active:scale-95 shadow-xl shadow-brand-dark/10 group-hover:shadow-brand-mid/20">
-                            View Task
+                          <button className="w-full bg-brand-dark text-white font-display font-bold py-4 px-10 rounded-full text-[10px] uppercase tracking-widest hover:bg-brand-mid transition-all active:scale-95 shadow-xl shadow-brand-dark/10 group-hover:shadow-brand-mid/20 cursor-pointer">
+                            {t('View Task')}
                           </button>
                         </Link>
                       </div>
@@ -220,12 +232,6 @@ function MarketplaceContent() {
                 ))}
               </AnimatePresence>
             )}
-          </div>
-
-          <div className="mt-12 flex justify-center">
-            <button className="bg-white border border-brand-dark/5 text-brand-dark/40 font-display font-bold py-4 px-12 rounded-full text-[10px] uppercase tracking-widest hover:bg-brand-dark hover:text-white transition-all shadow-ambient active:scale-95">
-              Muat Proyek Lainnya
-            </button>
           </div>
         </div>
       </main>

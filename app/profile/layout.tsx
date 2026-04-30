@@ -7,6 +7,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { t } from "@/lib/i18n";
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -44,10 +45,10 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
   }
 
   const tabs = [
-    { name: "Informasi Pribadi", path: "/profile" },
-    ...(userData?.role === 'Mahasiswa' ? [{ name: "Kustomisasi Portofolio", path: "/profile/portfolio" }] : []),
-    { name: "Keamanan", path: "/profile/keamanan" },
-    { name: "Notifikasi", path: "/profile/notifikasi" },
+    { name: t("Informasi Pribadi"), path: "/profile" },
+    ...(userData?.role === 'Mahasiswa' ? [{ name: t("Kustomisasi Portofolio"), path: "/profile/portfolio" }] : []),
+    { name: t("Keamanan"), path: "/profile/keamanan" },
+    { name: t("Notifikasi"), path: "/profile/notifikasi" },
   ];
 
   return (
@@ -67,7 +68,7 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
             transition={{ delay: 0.1 }}
             className="text-brand-dark/40 mt-2 font-light text-lg font-sans"
           >
-            Kelola informasi pribadi, keamanan, dan preferensi akun Anda.
+            {t("Kelola informasi pribadi, keamanan, dan preferensi akun Anda.")}
           </motion.p>
         </div>
 

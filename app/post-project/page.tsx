@@ -133,7 +133,7 @@ export default function PostProjectPage() {
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Left Column - Progress */}
           <div className="w-full lg:w-56 shrink-0">
-            <div className="space-y-8 relative sticky top-32">
+            <div className="flex flex-row lg:flex-col justify-between lg:justify-start gap-4 lg:gap-0 lg:space-y-8 relative lg:sticky lg:top-32 overflow-x-auto pb-4 lg:pb-0 hide-scrollbar">
               {['Basics', 'Description', 'Budget'].map((item, idx) => {
                 const stepNum = idx + 1;
                 const isActive = step === stepNum;
@@ -150,13 +150,13 @@ export default function PostProjectPage() {
                       {item}
                     </span>
                     {idx < 2 && (
-                      <div className="absolute left-5 top-10 w-px h-8 bg-brand-dark/5" />
+                      <div className="hidden lg:block absolute left-5 top-10 w-px h-8 bg-brand-dark/5" />
                     )}
                   </div>
                 );
               })}
 
-              <div className="bg-white rounded-3xl p-6 mt-12 shadow-ambient border border-brand-dark/5">
+              <div className="hidden lg:block bg-white rounded-3xl p-6 mt-12 shadow-ambient border border-brand-dark/5">
                 <h4 className="text-[9px] font-bold tracking-[0.2em] text-brand-dark/20 uppercase mb-4">Completion</h4>
                 <div className="w-full h-1.5 bg-brand-light rounded-full mb-3 overflow-hidden">
                   <motion.div 

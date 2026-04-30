@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { t } from "@/lib/i18n";
 
 const faqs = [
 	{
@@ -37,20 +38,19 @@ export function FAQ() {
 							viewport={{ once: true }}
 							className="inline-flex items-center px-4 py-1.5 rounded-full border border-brand-light/20 bg-white/10 backdrop-blur-md text-brand-light font-medium text-xs tracking-widest uppercase mb-8"
 						>
-							Bantuan
+							{t("Bantuan")}
 						</motion.div>
 						<h2 className="text-4xl md:text-5xl font-medium tracking-tight text-brand-light font-display mb-6">
-							Pertanyaan Umum.
+							{t("Pertanyaan Umum.")}
 						</h2>
 						<p className="text-brand-light/70 leading-relaxed mb-10 font-light">
-							Semua yang perlu Anda ketahui tentang memulai proyek pertama Anda di
-							BANTU.
+							{t("Semua yang perlu Anda ketahui tentang memulai proyek pertama Anda di BANTU.")}
 						</p>
 
 						<div className="pt-10 border-t border-brand-light/10">
-							<p className="text-sm font-display font-bold uppercase tracking-widest text-brand-mid brightness-150 mb-4">Punya pertanyaan lain?</p>
+							<p className="text-sm font-display font-bold uppercase tracking-widest text-brand-mid brightness-150 mb-4">{t("Punya pertanyaan lain?")}</p>
 							<p className="text-brand-light/50 text-sm font-sans leading-relaxed">
-								Email kami di <a href="mailto:bantu.idn@gmail.com" className="text-brand-light hover:underline">bantu.idn@gmail.com</a> atau tanyakan langsung pada <strong>chatbot</strong> kami di pojok kanan bawah.
+								{t("Email kami di")} <a href="mailto:bantu.idn@gmail.com" className="text-brand-light hover:underline">bantu.idn@gmail.com</a> {t("atau tanyakan langsung pada chatbot kami di pojok kanan bawah.")}
 							</p>
 						</div>
 					</div>
@@ -84,7 +84,7 @@ export function FAQ() {
 												: "text-brand-light/80"
 										)}
 									>
-										{faq.question}
+										{t(faq.question)}
 									</span>
 									<div
 										className={cn(
@@ -106,7 +106,7 @@ export function FAQ() {
 											transition={{ duration: 0.3 }}
 										>
 											<div className="px-8 pb-8 pt-2 text-brand-light/70 leading-relaxed font-light">
-												{faq.answer}
+												{t(faq.answer)}
 											</div>
 										</motion.div>
 									)}

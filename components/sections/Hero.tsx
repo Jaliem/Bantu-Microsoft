@@ -6,18 +6,19 @@ import { Search, ArrowRight, ChevronRight, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
+import { t } from "@/lib/i18n";
 
 const popularServices = [
 	{ title: "Vibe Coding", color: "bg-[#006d38]", image: "/images/vibecoding.webp" },
-	{ title: "Website Development", color: "bg-[#006d38]", image: "/images/webdev.webp" },
-	{ title: "Video Editing", color: "bg-[#006d38]", image: "/images/videoediting.png" },
-	{ title: "Software Development", color: "bg-[#006d38]", image: "/images/softwaredevelopment.jpg" },
-	{ title: "Social Media Management", color: "bg-[#006d38]", image: "/images/socialmedia.webp" },
-	{ title: "Data Analytics & Research", color: "bg-[#006d38]", image: "/images/dataanalytics.jpg" },
-	{ title: "Copywriting & Content", color: "bg-[#006d38]", image: "/images/copywriting.jpg" },
-	{ title: "Graphic Design & UI/UX", color: "bg-[#006d38]", image: "/images/graphicdesign.jpg" },
-	{ title: "Mobile App Development", color: "bg-[#006d38]", image: "/images/mobiledev.jpg" },
-	{ title: "SEO & Digital Marketing", color: "bg-[#006d38]", image: "/images/digital-marketing.jpg" },
+	{ title: "Pengembangan Web", color: "bg-[#006d38]", image: "/images/webdev.webp" },
+	{ title: "Pengeditan Video", color: "bg-[#006d38]", image: "/images/videoediting.png" },
+	{ title: "Pengembangan Perangkat Lunak", color: "bg-[#006d38]", image: "/images/softwaredevelopment.jpg" },
+	{ title: "Manajemen Media Sosial", color: "bg-[#006d38]", image: "/images/socialmedia.webp" },
+	{ title: "Analitik & Riset Data", color: "bg-[#006d38]", image: "/images/dataanalytics.jpg" },
+	{ title: "Penulisan Teks & Konten", color: "bg-[#006d38]", image: "/images/copywriting.jpg" },
+	{ title: "Desain Grafis & UI/UX", color: "bg-[#006d38]", image: "/images/graphicdesign.jpg" },
+	{ title: "Pengembangan Aplikasi Mobile", color: "bg-[#006d38]", image: "/images/mobiledev.jpg" },
+	{ title: "SEO & Pemasaran Digital", color: "bg-[#006d38]", image: "/images/digital-marketing.jpg" },
 ];
 
 export function Hero() {
@@ -52,7 +53,7 @@ export function Hero() {
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 0.6, ease: "easeOut" }}
-					className="relative rounded-[2rem] overflow-hidden bg-primary text-primary-foreground shadow-2xl h-150 flex items-center"
+					className="relative rounded-[2rem] overflow-hidden bg-primary text-primary-foreground shadow-2xl min-h-[500px] md:min-h-[600px] flex items-center py-12 md:py-0"
 				>
 					{/* Background Image Placeholder */}
 					<div
@@ -64,17 +65,17 @@ export function Hero() {
 						}}
 					/>
 
-					<div className="relative z-10 px-8 sm:px-16 md:px-24 w-full md:w-3/4 lg:w-4/5 pt-12 pb-12">
-						<h1 className="text-[clamp(2.5rem,5vw,4.5rem)] font-medium tracking-tight font-display mb-6 leading-[1.05] text-balance">
+					<div className="relative z-10 px-6 sm:px-16 md:px-24 w-full md:w-3/4 lg:w-4/5 pt-12 pb-12">
+						<h1 className="text-[clamp(2rem,6vw,4.5rem)] font-medium tracking-tight font-display mb-6 leading-[1.05] text-balance">
 							{mode === "hire" 
-								? "Pekerjakan ahli yang dibutuhkan bisnis Anda"
-								: "Temukan proyek yang membangun portofolio Anda"}
+								? t("Pekerjakan ahli yang dibutuhkan bisnis Anda")
+								: t("Temukan proyek yang membangun portofolio Anda")}
 						</h1>
 
 						<p className="text-base md:text-xl text-primary-foreground/80 mb-10 max-w-2xl font-sans leading-relaxed text-balance font-light">
 							{mode === "hire"
-								? "Akses pekerja lepas terampil yang siap membantu Anda membangun dan mengembangkan bisnis — tanpa komitmen penuh waktu"
-								: "Dapatkan akses ke tugas mikro dari UMKM lokal yang dikonversi menjadi pengalaman kerja nyata dan portofolio terverifikasi"}
+								? t("Akses pekerja lepas terampil yang siap membantu Anda membangun dan mengembangkan bisnis — tanpa komitmen penuh waktu")
+								: t("Dapatkan akses ke tugas mikro dari UMKM lokal yang dikonversi menjadi pengalaman kerja nyata dan portofolio terverifikasi")}
 						</p>
 
 						{/* Toggle: Hire vs Work */}
@@ -86,7 +87,7 @@ export function Hero() {
 									mode === "hire" ? "bg-white/20 text-white" : "text-white/70 hover:bg-white/10"
 								)}
 							>
-								Saya ingin merekrut
+								{t("Saya ingin merekrut")}
 							</button>
 							<button 
 								onClick={() => setMode("work")}
@@ -95,7 +96,7 @@ export function Hero() {
 									mode === "work" ? "bg-white/20 text-white" : "text-white/70 hover:bg-white/10"
 								)}
 							>
-								Saya ingin bekerja
+								{t("Saya ingin bekerja")}
 							</button>
 						</div>
 
@@ -108,7 +109,7 @@ export function Hero() {
 								type="text"
 								value={searchQuery}
 								onChange={(e) => setSearchQuery(e.target.value)}
-								placeholder={mode === "hire" ? "Cari layanan apa saja..." : "Cari tugas atau kategori..."}
+								placeholder={mode === "hire" ? t("Cari layanan apa saja...") : t("Cari tugas atau kategori...")}
 								className="w-full bg-transparent border-none outline-none text-brand-dark placeholder:text-brand-dark/50 font-sans text-base leading-none"
 							/>
 							<button 
@@ -117,7 +118,7 @@ export function Hero() {
 							>
 								<Search className="w-5 h-5 text-white" />
 								<span className="text-white font-medium hidden sm:block">
-									Cari
+									{t("Cari")}
 								</span>
 							</button>
 						</form>
@@ -148,7 +149,7 @@ export function Hero() {
 				<div className="mt-20 sm:mt-24 mb-12 relative group">
 					<div className="flex items-center justify-between mb-8">
 						<h2 className="text-3xl sm:text-5xl font-medium tracking-tight leading-tight text-foreground font-display text-balance">
-							Layanan populer
+							{t("Layanan populer")}
 						</h2>
 						<div className="hidden sm:flex gap-2">
 							<button

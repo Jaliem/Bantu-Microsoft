@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { LaptopMockup } from "../ui/LaptopMockup";
 import { mockups } from "@/lib/mockups";
 import { cn } from "@/lib/utils";
+import { t } from "@/lib/i18n";
 
 const features = [
 	{
@@ -44,11 +45,10 @@ export function CoreFeatures() {
 			<div className="container mx-auto px-6">
 				<div className="text-center mb-24">
 					<h2 className="text-[clamp(2.4rem,4.5vw,4.4rem)] font-medium tracking-tight leading-[1.05] text-brand-light font-display mb-6 text-balance">
-						Fitur Utama
+						{t("Fitur Utama")}
 					</h2>
 					<p className="text-lg md:text-xl text-brand-light/80 max-w-3xl mx-auto leading-relaxed text-balance font-light">
-						Semua yang Anda butuhkan untuk mengelola tugas mikro dengan aman dan
-						membangun portofolio yang dapat diverifikasi.
+						{t("Semua yang Anda butuhkan untuk mengelola tugas mikro dengan aman dan membangun portofolio yang dapat diverifikasi.")}
 					</p>
 				</div>
 
@@ -71,10 +71,10 @@ export function CoreFeatures() {
 										transition={{ duration: 0.6 }}
 									>
 										<h3 className="text-3xl md:text-4xl font-medium tracking-tight leading-tight mb-6 font-display text-brand-light text-balance brightness-150">
-											{feature.title}
+											{t(feature.title)}
 										</h3>
 										<p className="text-lg md:text-xl text-brand-light/80 leading-relaxed max-w-2xl text-balance font-light">
-											{feature.desc}
+											{t(feature.desc)}
 										</p>
 									</motion.div>
 								</div>

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { LaptopMockup } from "../ui/LaptopMockup";
 import { mockups } from "@/lib/mockups";
 import { cn } from "@/lib/utils";
+import { t } from "@/lib/i18n";
 
 const steps = [
 	{
@@ -73,10 +74,10 @@ export function HowItWorks() {
 			<div className="container mx-auto px-6 py-32">
 				<div className="text-center mb-20">
 					<h2 className="text-[clamp(2.4rem,4.5vw,4.4rem)] font-semibold tracking-[-0.03em] leading-[1.05] text-brand-dark font-display mb-6 text-balance">
-						Cara Kerjanya
+						{t("Cara Kerjanya")}
 					</h2>
 					<p className="text-lg md:text-xl text-brand-dark/80 max-w-3xl mx-auto leading-relaxed text-balance">
-						Proses yang mulus dengan bantuan AI, dari posting hingga pembayaran.
+						{t("Proses yang mulus dengan bantuan AI, dari posting hingga pembayaran.")}
 					</p>
 				</div>
 
@@ -94,13 +95,13 @@ export function HowItWorks() {
 								)}
 							>
 								<div className="text-brand-dark/80 font-sans text-xs sm:text-sm mb-4 font-semibold tracking-[0.22em] uppercase">
-									Langkah 0{step.id}
+									{t("Langkah")} 0{step.id}
 								</div>
 								<h3 className="text-3xl md:text-5xl font-semibold tracking-[-0.03em] leading-tight mb-4 font-display text-brand-dark text-balance">
-									{step.title}
+									{t(step.title)}
 								</h3>
 								<p className="text-lg md:text-2xl text-brand-dark/80 leading-relaxed max-w-xl text-balance">
-									{step.desc}
+									{t(step.desc)}
 								</p>
 							</motion.div>
 						))}

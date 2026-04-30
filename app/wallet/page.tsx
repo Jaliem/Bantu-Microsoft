@@ -14,6 +14,7 @@ import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { t } from "@/lib/i18n";
 
 interface Transaction {
   id: string;
@@ -274,24 +275,24 @@ export default function WalletPage() {
         {/* Header */}
         <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-brand-dark tracking-tight">Wallet</h1>
+            <h1 className="text-4xl md:text-5xl font-display font-bold text-brand-dark tracking-tight">{t("Wallet")}</h1>
             <p className="text-brand-dark/40 mt-2 text-lg font-sans font-light">
-              Kelola pendapatan, pengeluaran, dan saldo escrow Anda.
+              {t("Kelola pendapatan, pengeluaran, dan saldo escrow Anda.")}
             </p>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3">
             <button
               onClick={() => setShowWithdraw(true)}
-              className="bg-white text-brand-dark font-display font-bold py-3 px-6 rounded-2xl text-[10px] uppercase tracking-widest shadow-ambient border border-brand-dark/5 hover:bg-brand-dark hover:text-white transition-all"
+              className="bg-white text-brand-dark font-display font-bold py-3 px-6 rounded-2xl text-[10px] uppercase tracking-widest shadow-ambient border border-brand-dark/5 hover:bg-brand-dark hover:text-white transition-all cursor-pointer"
             >
-              Tarik Saldo
+              {t("Tarik Saldo")}
             </button>
             <button
               onClick={() => setShowTopUp(true)}
-              className="bg-brand-mid text-white font-display font-bold py-3 px-6 rounded-2xl text-[10px] uppercase tracking-widest shadow-lg shadow-brand-mid/20 hover:bg-brand-dark transition-all"
+              className="bg-brand-mid text-white font-display font-bold py-3 px-6 rounded-2xl text-[10px] uppercase tracking-widest shadow-lg shadow-brand-mid/20 hover:bg-brand-dark transition-all cursor-pointer"
             >
-              Isi Saldo
+              {t("Isi Saldo")}
             </button>
           </motion.div>
         </div>
@@ -355,7 +356,7 @@ export default function WalletPage() {
                 </div>
                 <h3 className="text-xl font-display font-bold mb-4">BANTU Secure Payments</h3>
                 <p className="text-white/80 text-sm leading-relaxed font-sans font-light">
-                  Dana Anda dipegang aman di escrow dan hanya dicairkan setelah proyek disetujui. Aman bagi UMKM, terjamin bagi Mahasiswa. (Biaya platform 2% berlaku).
+                  {t("Dana Anda dipegang aman di escrow dan hanya dicairkan setelah proyek disetujui. Aman bagi UMKM, terjamin bagi Mahasiswa. (Biaya platform 2% berlaku).")}
                 </p>
               </div>
             </motion.div>
@@ -368,7 +369,7 @@ export default function WalletPage() {
               onClick={() => setShowTopUp(true)}
             >
               <div>
-                <h4 className="font-display font-bold text-sm text-brand-dark">Top Up Mudah</h4>
+                <h4 className="font-display font-bold text-sm text-brand-dark">{t("Top Up Mudah")}</h4>
                 <p className="text-[11px] text-brand-dark/40 font-sans">Mendukung QRIS, Bank Transfer, dan E-Wallet via Mayar.</p>
               </div>
             </motion.div>
@@ -389,17 +390,17 @@ export default function WalletPage() {
               <div className="w-24 h-24 bg-brand-light/50 rounded-full flex items-center justify-center mx-auto mb-8 border border-brand-dark/5">
                 <Wallet size={40} className="text-brand-dark/10" />
               </div>
-              <h3 className="text-2xl font-display font-bold text-brand-dark mb-3">Belum ada transaksi</h3>
+              <h3 className="text-2xl font-display font-bold text-brand-dark mb-3">{t("Belum ada transaksi")}</h3>
               <p className="text-brand-dark/40 mb-10 font-sans font-light max-w-xs mx-auto">
                 {userData?.role === "Mahasiswa"
-                  ? "Selesaikan tugas pertama Anda untuk melihat riwayat pembayaran di sini."
-                  : "Posting proyek pertama Anda untuk memulai transaksi."}
+                  ? t("Selesaikan tugas pertama Anda untuk melihat riwayat pembayaran di sini.")
+                  : t("Posting proyek pertama Anda untuk memulai transaksi.")}
               </p>
               <Link
                 href={userData?.role === "Mahasiswa" ? "/marketplace" : "/post-project"}
                 className="inline-flex items-center gap-3 bg-brand-dark text-white font-display font-bold px-10 py-4 rounded-full text-[10px] uppercase tracking-widest hover:bg-brand-mid transition-all shadow-xl shadow-brand-dark/10"
               >
-                {userData?.role === "Mahasiswa" ? "Cari Proyek" : "Posting Proyek"}
+                {userData?.role === "Mahasiswa" ? t("Cari Proyek") : t("Posting Proyek")}
               </Link>
             </div>
           ) : (

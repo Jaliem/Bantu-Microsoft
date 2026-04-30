@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { LaptopMockup } from "../ui/LaptopMockup";
 import { mockups } from "@/lib/mockups";
+import { t } from "@/lib/i18n";
 
 export function Solution() {
   return (
@@ -17,7 +18,7 @@ export function Solution() {
             viewport={{ once: true }}
             className="text-xs sm:text-sm font-semibold tracking-[0.24em] uppercase text-brand-light/80 mb-5"
           >
-            Mengapa BANTU Bekerja
+            {t("Mengapa BANTU Bekerja")}
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -25,7 +26,7 @@ export function Solution() {
             viewport={{ once: true }}
             className="text-[clamp(2.4rem,5vw,4.75rem)] font-semibold tracking-[-0.035em] leading-[1.02] font-display mb-6 text-balance text-brand-light"
           >
-            Jembatan Itu Ada di Sini.
+            {t("Jembatan Itu Ada di Sini.")}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -34,7 +35,7 @@ export function Solution() {
             transition={{ delay: 0.1 }}
             className="text-lg md:text-2xl text-brand-light/80 max-w-3xl mx-auto leading-relaxed text-balance"
           >
-            BANTU adalah ekosistem di mana tugas mikro UMKM berubah menjadi portofolio mahasiswa. Cepat, andal, dan adil.
+            {t("BANTU adalah ekosistem di mana tugas mikro UMKM berubah menjadi portofolio mahasiswa. Cepat, andal, dan adil.")}
           </motion.p>
         </div>
 

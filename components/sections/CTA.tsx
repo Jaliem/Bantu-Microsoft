@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { t } from "@/lib/i18n";
 
 export function CTA() {
   return (
@@ -17,7 +18,7 @@ export function CTA() {
             viewport={{ once: true }}
             className="text-xs sm:text-sm font-semibold tracking-[0.24em] uppercase text-brand-dark/80 mb-4"
           >
-            Mulai Hari Ini
+            {t("Mulai Hari Ini")}
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -25,7 +26,7 @@ export function CTA() {
             viewport={{ once: true }}
             className="text-[clamp(2.8rem,6vw,5.75rem)] font-semibold tracking-[-0.04em] leading-[0.98] font-display mb-8 text-balance text-brand-dark"
           >
-            Siap Menjembatani Kesenjangan?
+            {t("Siap Menjembatani Kesenjangan?")}
           </motion.h2>
           
           <motion.p
@@ -35,7 +36,7 @@ export function CTA() {
             transition={{ delay: 0.1 }}
             className="text-lg md:text-2xl text-brand-dark/80 mb-12 max-w-3xl mx-auto leading-relaxed text-balance"
           >
-            Bergabunglah dengan ribuan mahasiswa yang sedang membangun karier mereka, dan UMKM yang mempercepat pertumbuhan mereka bersama BANTU.
+            {t("Bergabunglah dengan ribuan mahasiswa yang sedang membangun karier mereka, dan UMKM yang mempercepat pertumbuhan mereka bersama BANTU.")}
           </motion.p>
           
           <motion.div
@@ -49,7 +50,7 @@ export function CTA() {
               href="/marketplace" 
               className="h-14 px-8 rounded-full bg-brand-mid text-white font-semibold tracking-wide flex items-center justify-center gap-2 hover:bg-brand-mid/90 transition-colors w-full sm:w-auto text-lg cursor-pointer"
             >
-              Mulai Secara Gratis
+              {t("Mulai Secara Gratis")}
               <ArrowRight className="w-5 h-5" />
             </Link>
           </motion.div>

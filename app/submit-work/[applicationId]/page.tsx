@@ -12,6 +12,7 @@ import {
   UploadCloud, Send, ShieldCheck, Star, TrendingUp, XCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { t } from "@/lib/i18n";
 
 interface AIReview {
   score: number;
@@ -76,7 +77,7 @@ export default function SubmitWorkPage() {
 
   const handleAIReview = async () => {
     if (!submissionText.trim()) {
-      toast.error("Silakan deskripsikan pekerjaan Anda sebelum meminta tinjauan AI.");
+      toast.error(t("Silakan deskripsikan pekerjaan Anda sebelum meminta tinjauan AI."));
       return;
     }
     setReviewing(true);
@@ -98,7 +99,7 @@ export default function SubmitWorkPage() {
       const data = await res.json();
       setAiReview(data);
     } catch {
-      toast.error("Tinjauan AI gagal. Anda masih dapat mengirim secara manual.");
+      toast.error(t("Tinjauan AI gagal. Anda masih dapat mengirim secara manual."));
     } finally {
       setReviewing(false);
     }
@@ -186,7 +187,7 @@ export default function SubmitWorkPage() {
         });
       }
 
-      toast.success("Pekerjaan berhasil dikirim! Menunggu tinjauan klien.");
+      toast.success(t("Pekerjaan berhasil dikirim! Menunggu tinjauan klien."));
       router.push("/dashboard/my-tasks");
     } catch (err) {
       console.error(err);
@@ -236,7 +237,7 @@ export default function SubmitWorkPage() {
         <div>
           <h1 className="text-3xl font-display font-bold text-brand-dark mb-3">Pekerjaan Sudah Dikirim</h1>
           <p className="text-brand-dark/40 max-w-md mx-auto font-sans">
-            Anda telah mengirimkan pekerjaan untuk tugas ini. Menunggu tinjauan dari klien.
+            {t("Anda telah mengirimkan pekerjaan untuk tugas ini. Menunggu tinjauan dari klien.")}
           </p>
         </div>
         <Link href="/dashboard/my-tasks" className="bg-brand-dark text-white font-display font-bold px-10 py-4 rounded-full text-[10px] uppercase tracking-widest hover:bg-brand-mid transition-all shadow-xl shadow-brand-dark/10">

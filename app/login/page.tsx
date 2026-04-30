@@ -24,6 +24,52 @@ export default function LoginPage() {
     }
   }, [currentUser, currentUserData, router]);
 
+  const resendVerificationEmail = async (uid: string, userEmail: string, name: string, role: string) => {
+    try {
+      const toastId = toast.loading("Mengirim ulang email verifikasi...");
+      await fetch("/api/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: userEmail,
+          subject: "Welcome to BANTU — Please Verify Your Email ✉️",
+          html: `
+            <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #eef5f0; padding: 40px 20px;">
+              <div style="background-color: #ffffff; border-radius: 32px; overflow: hidden; box-shadow: 0 10px 40px rgba(11, 28, 20, 0.05); border: 1px solid rgba(11, 28, 20, 0.05);">
+                <div style="background: linear-gradient(135deg, #006d38 0%, #0b1c14 100%); padding: 48px 32px; text-align: center;">
+                  <h1 style="color: #ffffff; font-size: 32px; margin: 0; letter-spacing: -1px; font-weight: 800;">BANTU<span style="color: #eef5f0;">.</span></h1>
+                  <p style="color: rgba(238, 245, 240, 0.7); font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin: 12px 0 0 0;">Connecting UMKM × Mahasiswa</p>
+                </div>
+                <div style="padding: 48px 40px;">
+                  <h2 style="color: #0b1c14; margin: 0 0 20px 0; font-size: 24px; font-weight: 700;">Selamat bergabung, ${name}! 🎉</h2>
+                  <p style="font-size: 16px; line-height: 1.7; color: #4a6654; margin: 0 0 20px 0;">
+                    Terima kasih telah bergabung dengan BANTU sebagai <strong style="color: #006d38;">${role}</strong>. Anda kini menjadi bagian dari ekosistem yang menghubungkan bisnis lokal dengan talenta mahasiswa terbaik di Indonesia.
+                  </p>
+                  <p style="font-size: 16px; line-height: 1.7; color: #4a6654; margin: 0 0 32px 0;">
+                    Satu langkah lagi! Silakan verifikasi email Anda untuk mulai mengakses platform:
+                  </p>
+                  <div style="text-align: center; margin: 40px 0;">
+                    <a href="https://bantu.darrenharyanto.com/verify/${uid}" style="background-color: #006d38; color: #ffffff; padding: 18px 48px; border-radius: 100px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-block; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 10px 20px rgba(0, 109, 56, 0.2);">Verifikasi Email Saya</a>
+                  </div>
+                  <div style="background-color: #f8faf9; border-radius: 20px; padding: 24px; margin-top: 40px; border: 1px solid rgba(11, 28, 20, 0.03);">
+                    <p style="font-size: 13px; color: #4a6654; margin: 0; line-height: 1.6;">🔒 Jika Anda tidak merasa membuat akun ini, silakan abaikan email ini.</p>
+                  </div>
+                </div>
+                <div style="background-color: #f8faf9; padding: 32px; text-align: center; border-top: 1px solid rgba(11, 28, 20, 0.03);">
+                  <p style="font-size: 11px; font-weight: 700; color: #4a6654; letter-spacing: 1.5px; text-transform: uppercase; margin: 0;">© 2026 BANTU INDONESIA • KARYA ANAK BANGSA</p>
+                </div>
+              </div>
+            </div>
+          `
+        })
+      });
+      toast.dismiss(toastId);
+      toast.success("Email verifikasi telah dikirim ulang! Silakan periksa kotak masuk Anda.");
+    } catch (e) {
+      toast.error("Gagal mengirim ulang email verifikasi.");
+    }
+  };
+
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -31,23 +77,33 @@ export default function LoginPage() {
       const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
       await setPersistence(auth, persistence);
       
+      // Set session cookie BEFORE sign in to prevent race condition with AuthContext
+      const maxAge = rememberMe ? 3 * 24 * 60 * 60 : 3 * 60 * 60;
+      document.cookie = `bantu_session=true; path=/; max-age=${maxAge}; SameSite=Strict`;
+      
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
       // Check Firestore verified field
       const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
       if (userDoc.exists() && userDoc.data().verified !== true) {
         await firebaseSignOut(auth);
-        toast.error("Please verify your email before logging in. Check your inbox for the verification link.");
+        document.cookie = "bantu_session=; path=/; max-age=0"; // clear cookie
+        const userData = userDoc.data();
+        toast.error("Email Anda belum diverifikasi.", {
+          description: "Silakan periksa kotak masuk Anda untuk tautan verifikasi.",
+          action: {
+            label: "Kirim Ulang",
+            onClick: () => resendVerificationEmail(userCredential.user.uid, userCredential.user.email || email, userData.name, userData.role)
+          },
+          duration: 10000
+        });
         return;
       }
-      
-      // Set session cookie
-      const maxAge = rememberMe ? 3 * 24 * 60 * 60 : 3 * 60 * 60;
-      document.cookie = `bantu_session=true; path=/; max-age=${maxAge}; SameSite=Strict`;
 
       router.push("/dashboard");
       toast.success("Logged in successfully!");
     } catch (err: any) {
+      document.cookie = "bantu_session=; path=/; max-age=0"; // clear cookie
       toast.error(err.message || "Failed to log in.");
     } finally {
       setLoading(false);
@@ -60,23 +116,33 @@ export default function LoginPage() {
       const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
       await setPersistence(auth, persistence);
       
+      // Set session cookie BEFORE sign in to prevent race condition with AuthContext
+      const maxAge = rememberMe ? 3 * 24 * 60 * 60 : 3 * 60 * 60;
+      document.cookie = `bantu_session=true; path=/; max-age=${maxAge}; SameSite=Strict`;
+      
       const userCredential = await signInWithPopup(auth, googleProvider);
       
       // Check Firestore verified field
       const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
       if (userDoc.exists() && userDoc.data().verified !== true) {
         await firebaseSignOut(auth);
-        toast.error("Please verify your email before logging in. Check your inbox for the verification link.");
+        document.cookie = "bantu_session=; path=/; max-age=0"; // clear cookie
+        const userData = userDoc.data();
+        toast.error("Email Anda belum diverifikasi.", {
+          description: "Silakan periksa kotak masuk Anda untuk tautan verifikasi.",
+          action: {
+            label: "Kirim Ulang",
+            onClick: () => resendVerificationEmail(userCredential.user.uid, userCredential.user.email || email, userData.name, userData.role)
+          },
+          duration: 10000
+        });
         return;
       }
-      
-      // Set session cookie
-      const maxAge = rememberMe ? 3 * 24 * 60 * 60 : 3 * 60 * 60;
-      document.cookie = `bantu_session=true; path=/; max-age=${maxAge}; SameSite=Strict`;
 
       router.push("/dashboard");
       toast.success("Successfully logged in!");
     } catch (err: any) {
+      document.cookie = "bantu_session=; path=/; max-age=0"; // clear cookie
       toast.error(err.message || "Failed to log in with Google.");
     } finally {
       setLoading(false);

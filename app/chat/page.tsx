@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Paperclip, Image as ImageIcon, Smile, Send, Info, Download, AlertCircle, MessageSquare, CheckCircle2, Star, X, MapPin, Trophy } from "lucide-react";
+import { Search, Paperclip, Image as ImageIcon, Smile, Send, Info, Download, AlertCircle, MessageSquare, CheckCircle2, Star, X, MapPin, Trophy, ChevronLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
@@ -10,6 +10,7 @@ import EmojiPicker from 'emoji-picker-react';
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow, format, isToday, isYesterday } from "date-fns";
 import { toast } from "sonner";
+import { t } from "@/lib/i18n";
 
 interface Chat {
   id: string;
@@ -50,10 +51,11 @@ export default function ChatPage() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const [showDetails, setShowDetails] = useState(true);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showDetails, setShowDetails] = useState(false);
+  const [showMobileChat, setShowMobileChat] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -330,7 +332,7 @@ export default function ChatPage() {
 
       {/* ── Sidebar ── */}
       <div
-        className="w-[320px] flex flex-col shrink-0 h-full"
+        className={`w-full md:w-[320px] flex-col shrink-0 h-full ${showMobileChat ? 'hidden md:flex' : 'flex'}`}
         style={{ background: '#0b1c14' }}
       >
         {/* Sidebar header */}
@@ -370,7 +372,7 @@ export default function ChatPage() {
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.04 }}
-                  onClick={() => setSelectedChatId(chat.id)}
+                  onClick={() => { setSelectedChatId(chat.id); setShowMobileChat(true); }}
                   className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl cursor-pointer transition-all duration-200 text-left"
                   style={{
                     background: isActive ? 'rgba(255,255,255,0.10)' : 'transparent',
@@ -435,15 +437,21 @@ export default function ChatPage() {
       </div>
 
       {/* ── Main chat area ── */}
-      <div className="flex-1 flex flex-col h-full min-w-0" style={{ background: '#f8f6f1' }}>
+      <div className={`flex-1 flex-col h-full min-w-0 ${showMobileChat ? 'flex' : 'hidden md:flex'}`} style={{ background: '#f8f6f1' }}>
         {selectedChatId ? (
           <>
             {/* Chat header */}
             <div
-              className="h-[68px] flex items-center justify-between px-8 shrink-0"
+              className="h-[68px] flex items-center justify-between px-4 md:px-8 shrink-0"
               style={{ background: '#ffffff', borderBottom: '1px solid rgba(11,28,20,0.06)' }}
             >
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 md:gap-4">
+                <button 
+                  className="md:hidden p-2 -ml-2 rounded-xl text-brand-dark hover:bg-brand-light transition-colors"
+                  onClick={() => setShowMobileChat(false)}
+                >
+                  <ChevronLeft size={24} />
+                </button>
                 <div className="relative">
                   <img
                     src={otherParticipant?.avatarUrl || selectedChat?.avatar || "https://i.pravatar.cc/150?u=" + selectedChatId}
@@ -826,14 +834,20 @@ export default function ChatPage() {
             animate={{ width: 272, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="flex flex-col shrink-0 overflow-y-auto hide-scrollbar"
+            className="absolute right-0 top-0 bottom-0 z-50 md:relative flex flex-col shrink-0 overflow-y-auto hide-scrollbar shadow-2xl md:shadow-none"
             style={{
               background: '#ffffff',
               borderLeft: '1px solid rgba(11,28,20,0.07)',
             }}
           >
-            <div className="p-8 flex flex-col items-center" style={{ borderBottom: '1px solid rgba(11,28,20,0.06)' }}>
-              <div className="relative mb-5">
+            <div className="p-8 flex flex-col items-center relative" style={{ borderBottom: '1px solid rgba(11,28,20,0.06)' }}>
+              <button 
+                onClick={() => setShowDetails(false)}
+                className="absolute top-4 right-4 p-2 text-brand-dark/40 hover:text-brand-dark bg-brand-dark/5 rounded-full transition-colors md:hidden"
+              >
+                <X size={16} />
+              </button>
+              <div className="relative mb-5 mt-2">
                 <img
                   src={otherParticipant?.avatarUrl || selectedChat?.avatar || "https://i.pravatar.cc/150?u=" + selectedChatId}
                   alt="Avatar"
@@ -881,7 +895,7 @@ export default function ChatPage() {
                     e.currentTarget.style.color = '#006d38';
                   }}
                 >
-                  Lihat Profil
+                  {t("Lihat Profil")}
                 </button>
               )}
             </div>

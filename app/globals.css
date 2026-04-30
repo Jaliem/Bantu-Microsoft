@@ -97,6 +97,20 @@
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
+
+  /* Ensure all clickable elements show a pointer cursor globally */
+  button, 
+  a, 
+  [role="button"], 
+  input[type="submit"], 
+  input[type="button"], 
+  input[type="reset"], 
+  input[type="checkbox"], 
+  input[type="radio"], 
+  select, 
+  label {
+    @apply cursor-pointer;
+  }
 }
 
 @layer utilities {

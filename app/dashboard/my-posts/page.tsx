@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { t } from "@/lib/i18n";
 
 interface Submission {
   id: string;
@@ -377,7 +378,7 @@ export default function MyPostsPage() {
                           </span>
                           {pendingSubmissions.length > 0 && (
                             <span className="text-[9px] uppercase font-bold tracking-[0.15em] px-3 py-1.5 rounded-full bg-orange-50 text-orange-600 border border-orange-100 flex items-center gap-2">
-                              {pendingSubmissions.length} Tinjauan Baru
+                              {pendingSubmissions.length} {t("Tinjauan Baru")}
                             </span>
                           )}
                         </div>
