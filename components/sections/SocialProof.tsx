@@ -1,7 +1,9 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const stats = [
 	{ value: "10k+", label: "Tugas Mikro Selesai" },
@@ -43,7 +45,23 @@ const testimonials = [
 
 export function SocialProof() {
 	// Use align: "center" so it peeks out on the sides of the full-width screen
-	const [emblaRef] = useEmblaCarousel({ loop: true, align: "center" });
+	const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "center" });
+	const [selectedIndex, setSelectedIndex] = useState(0);
+
+	const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
+	const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
+
+	const onSelect = useCallback(() => {
+		if (!emblaApi) return;
+		setSelectedIndex(emblaApi.selectedScrollSnap());
+	}, [emblaApi]);
+
+	useEffect(() => {
+		if (!emblaApi) return;
+		onSelect();
+		emblaApi.on("select", onSelect);
+		emblaApi.on("reInit", onSelect);
+	}, [emblaApi, onSelect]);
 
 	return (
 		<section className="py-32 bg-brand-light text-brand-dark overflow-hidden">
@@ -53,15 +71,9 @@ export function SocialProof() {
 					<p className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-[0.22em] mb-10 font-sans">
 						Dipercaya oleh universitas terkemuka dan bisnis-bisnis yang sedang berkembang
 					</p>
-					<div className="flex flex-wrap justify-center items-center gap-12 opacity-50 grayscale">
-						{[1, 2, 3, 4, 5].map((i) => (
-							<div
-								key={i}
-								className="h-10 w-32 bg-primary/10 rounded-lg flex items-center justify-center text-xs text-primary font-sans font-medium"
-							>
-								Logo {i}
-							</div>
-						))}
+					<div className="flex flex-wrap justify-center items-center gap-16 md:gap-24 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
+						<img src="/images/logo_binus.png" alt="BINUS University" className="h-10 md:h-14 w-auto object-contain" />
+						<img src="/images/logo_untar.webp" alt="Tarumanagara University" className="h-10 md:h-14 w-auto object-contain" />
 					</div>
 				</div>
 
@@ -88,17 +100,17 @@ export function SocialProof() {
 			</div>
 
 			{/* Testimonials Carousel - Full Width */}
-			<div className="w-full relative cursor-grab active:cursor-grabbing">
+			<div className="w-full relative group">
 				<div className="overflow-hidden px-4 sm:px-12" ref={emblaRef}>
 					<div className="flex -ml-6 items-center">
 						{testimonials.map((testimonial, i) => (
 							<div
 								key={i}
-								className="flex-[0_0_100%] min-w-0 md:flex-[0_0_60%] lg:flex-[0_0_45%] pl-6 py-8"
+								className="flex-[0_0_100%] min-w-0 md:flex-[0_0_60%] lg:flex-[0_0_45%] pl-6 py-12"
 							>
 								<div
-									className={`p-8 md:p-12 rounded-[2rem] bg-white h-full shadow-lg transition-transform duration-500 hover:-translate-y-2
-                  ${i === 0 ? "ring-2 ring-primary" : "ring-1 ring-border"}
+									className={`p-8 md:p-12 rounded-[2rem] bg-white h-full shadow-lg transition-all duration-500 hover:-translate-y-2
+                  ${selectedIndex === i ? "ring-2 ring-brand-mid scale-105 shadow-xl z-20" : "ring-1 ring-border opacity-50 scale-95"}
                 `}
 								>
 									<div className="flex items-center gap-6 mb-8">
@@ -126,6 +138,24 @@ export function SocialProof() {
 							</div>
 						))}
 					</div>
+				</div>
+
+				{/* Navigation Arrows */}
+				<div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 pointer-events-none px-4 sm:px-12 flex justify-between items-center z-30">
+					<button
+						onClick={scrollPrev}
+						className="w-14 h-14 rounded-full bg-white shadow-xl flex items-center justify-center text-brand-dark hover:text-brand-mid transition-all pointer-events-auto cursor-pointer border border-brand-dark/5 hover:scale-110 active:scale-95"
+						aria-label="Previous testimonial"
+					>
+						<ChevronLeft size={24} />
+					</button>
+					<button
+						onClick={scrollNext}
+						className="w-14 h-14 rounded-full bg-white shadow-xl flex items-center justify-center text-brand-dark hover:text-brand-mid transition-all pointer-events-auto cursor-pointer border border-brand-dark/5 hover:scale-110 active:scale-95"
+						aria-label="Next testimonial"
+					>
+						<ChevronRight size={24} />
+					</button>
 				</div>
 			</div>
 		</section>

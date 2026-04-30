@@ -29,26 +29,43 @@ Please include:
 4. Timeline & Milestones
 Keep it concise, professional, and ready to be posted on a freelance marketplace. Format using Markdown.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }]
-        }]
-      })
-    });
+    const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.0-flash"];
+    let generatedText = "";
+    let success = false;
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Gemini API Error:", errorData);
-      return NextResponse.json({ error: 'Failed to generate content from AI' }, { status: 500 });
+    for (const model of models) {
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{ text: prompt }]
+            }]
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          if (generatedText) {
+            success = true;
+            break;
+          }
+        } else {
+          const err = await response.json();
+          console.warn(`Gemini model ${model} failed:`, err);
+        }
+      } catch (e) {
+        console.error(`Error with model ${model}:`, e);
+      }
     }
 
-    const data = await response.json();
-    const generatedText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Failed to parse generated text.";
+    if (!success) {
+      return NextResponse.json({ error: 'Failed to generate content from all available AI models' }, { status: 500 });
+    }
 
     return NextResponse.json({ sop: generatedText });
 

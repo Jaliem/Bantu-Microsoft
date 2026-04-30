@@ -54,7 +54,6 @@ export default function PostProjectPage() {
       
       const data = await response.json();
       setGeneratedSop(data.sop);
-      setStep(2);
       toast.success("SOP generated successfully!");
     } catch (error) {
       console.error(error);
@@ -240,6 +239,61 @@ export default function PostProjectPage() {
                       ))}
                     </div>
                   </div>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="mb-8 space-y-8">
+                  <div className="space-y-4">
+                    <label className="block text-xs font-bold tracking-widest text-gray-900 uppercase mb-3 ml-1">
+                      PROJECT DESCRIPTION & SOP
+                    </label>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs text-gray-400 font-semibold">Markdown supported</span>
+                      <div className="inline-flex rounded-full bg-[#f1f5f9] p-1">
+                        <button
+                          type="button"
+                          onClick={() => setShowSopPreview(false)}
+                          className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all ${
+                            showSopPreview ? 'text-gray-500 hover:text-gray-700' : 'bg-white text-gray-900 shadow-sm'
+                          }`}
+                        >
+                          Write
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowSopPreview(true)}
+                          className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all ${
+                            showSopPreview ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                        >
+                          Preview
+                        </button>
+                      </div>
+                    </div>
+
+                    {showSopPreview ? (
+                      <div className="w-full h-80 bg-white border border-gray-100 rounded-2xl px-6 py-4 overflow-auto" data-lenis-prevent>
+                        <div className="prose prose-brand max-w-none text-gray-700">
+                          <ReactMarkdown>
+                            {generatedSop || 'Nothing to preview yet.'}
+                          </ReactMarkdown>
+                        </div>
+                      </div>
+                    ) : (
+                      <textarea 
+                        data-lenis-prevent
+                        value={generatedSop}
+                        onChange={(e) => setGeneratedSop(e.target.value)}
+                        placeholder="Describe your project, requirements, and deliverables here..."
+                        className="w-full h-80 bg-[#f8f9fe] border-none rounded-2xl px-6 py-4 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-[#008f4c] transition-all outline-none resize-none leading-relaxed"
+                      />
+                    )}
+                    
+                    <div className="flex items-center gap-4 bg-brand-mid/5 text-brand-mid px-6 py-4 rounded-2xl border border-brand-mid/10">
+                      <p className="text-[11px] font-bold uppercase tracking-wider">You can freely edit the generated text before proceeding.</p>
+                    </div>
+                  </div>
 
                   <div className="bg-brand-dark rounded-[2rem] p-10 text-white relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-80 h-80 bg-brand-mid/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-1000" />
@@ -253,64 +307,11 @@ export default function PostProjectPage() {
                       <button 
                         onClick={handleGenerateSop}
                         disabled={isGenerating}
-                        className="bg-brand-mid hover:bg-white hover:text-brand-dark text-white font-display font-bold py-4 px-8 rounded-full text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-brand-mid/20 disabled:opacity-50"
+                        className="bg-brand-mid hover:bg-white hover:text-brand-dark text-white font-display font-bold py-4 px-8 rounded-full text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-brand-mid/20 disabled:opacity-50 cursor-pointer"
                       >
                         {isGenerating ? "Generating..." : "Generate SOP with AI"}
                       </button>
                     </div>
-                  </div>
-                </div>
-              )}
-
-              {step === 2 && (
-                <div className="mb-8">
-                  <label className="block text-xs font-bold tracking-widest text-gray-900 uppercase mb-3">
-                    PROJECT DESCRIPTION & SOP
-                  </label>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs text-gray-400 font-semibold">Markdown supported</span>
-                    <div className="inline-flex rounded-full bg-[#f1f5f9] p-1">
-                      <button
-                        type="button"
-                        onClick={() => setShowSopPreview(false)}
-                        className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all ${
-                          showSopPreview ? 'text-gray-500 hover:text-gray-700' : 'bg-white text-gray-900 shadow-sm'
-                        }`}
-                      >
-                        Write
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowSopPreview(true)}
-                        className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all ${
-                          showSopPreview ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        Preview
-                      </button>
-                    </div>
-                  </div>
-
-                  {showSopPreview ? (
-                    <div className="w-full h-80 bg-white border border-gray-100 rounded-2xl px-6 py-4 overflow-auto" data-lenis-prevent>
-                      <div className="prose prose-brand max-w-none text-gray-700">
-                        <ReactMarkdown>
-                          {generatedSop || 'Nothing to preview yet.'}
-                        </ReactMarkdown>
-                      </div>
-                    </div>
-                  ) : (
-                    <textarea 
-                      data-lenis-prevent
-                      value={generatedSop}
-                      onChange={(e) => setGeneratedSop(e.target.value)}
-                      placeholder="Describe your project, requirements, and deliverables here..."
-                      className="w-full h-80 bg-[#f8f9fe] border-none rounded-2xl px-6 py-4 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-[#008f4c] transition-all outline-none resize-none leading-relaxed"
-                    />
-                  )}
-                  
-                  <div className="flex items-center gap-4 bg-brand-mid/5 text-brand-mid px-6 py-4 rounded-2xl border border-brand-mid/10">
-                    <p className="text-[11px] font-bold uppercase tracking-wider">You can freely edit the generated text before proceeding.</p>
                   </div>
                 </div>
               )}

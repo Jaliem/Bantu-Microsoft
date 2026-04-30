@@ -7,34 +7,34 @@ import { cn } from "@/lib/utils";
 
 const features = [
 	{
-		title: "Pasar Tugas (Bounty)",
-		desc: "Pusat terpadu di mana UMKM memposting tugas mikro dan mahasiswa mencari peluang yang sesuai dengan keahlian dan jadwal mereka.",
+		title: "Pasar Tugas (Bidding)",
+		desc: "Mahasiswa dapat mengajukan penawaran harga (bid) terbaik mereka untuk tugas yang diposting oleh UMKM, menciptakan pasar yang kompetitif dan adil.",
 		label: "Placeholder: Marketplace Screen",
 		image: mockups.marketplace,
 	},
 	{
-		title: "Pembayaran Escrow Pintar",
-		desc: "Dana dikunci di awal dan hanya dicairkan ketika tugas disetujui. Jaminan pembayaran untuk mahasiswa, jaminan hasil kerja untuk UMKM.",
-		label: "Placeholder: Escrow Payment Screen",
-		image: mockups.escrow,
-	},
-	{
-		title: "Sistem Peringkat Terverifikasi",
-		desc: "Mahasiswa membangun reputasi melalui tugas yang berhasil. Peringkat yang lebih tinggi membuka tugas dengan bayaran lebih baik dan peluang eksklusif.",
-		label: "Placeholder: Student Rank Screen",
-		image: mockups.studentRank,
-	},
-	{
-		title: "Pembuat Portofolio Instan",
-		desc: "Setiap tugas yang diselesaikan secara otomatis membuat entri portofolio yang terverifikasi, lengkap dengan ulasan UMKM dan metrik proyek.",
+		title: "Pembuat CV Otomatis",
+		desc: "Setiap riwayat tugas yang berhasil diselesaikan secara otomatis dikonversi menjadi entri CV profesional yang terverifikasi dan siap cetak (ATS-friendly).",
 		label: "Placeholder: Portfolio Builder Screen",
 		image: mockups.portfolioBuilder,
 	},
 	{
-		title: "Buku Besar / Riwayat Tugas Terkini",
-		desc: "Transparansi penuh untuk kedua belah pihak. Lacak progres tugas, riwayat pembayaran, dan penyelesaian sengketa dalam satu catatan terpadu.",
-		label: "Placeholder: Task History Screen",
+		title: "Quality Review via AI",
+		desc: "AI canggih kami meninjau hasil kerja mahasiswa sebelum diserahkan ke UMKM, memastikan standar kualitas terpenuhi melalui analisis visual dan teks.",
+		label: "Placeholder: AI Quality Screen",
+		image: mockups.howItWorks.step5,
+	},
+	{
+		title: "Chat & Diskusi Terpadu",
+		desc: "Komunikasi langsung antara UMKM dan mahasiswa melalui platform untuk koordinasi proyek, revisi, dan negosiasi yang lebih efisien.",
+		label: "Placeholder: Chat Screen",
 		image: mockups.taskHistory,
+	},
+	{
+		title: "Pembayaran Escrow Aman",
+		desc: "Dana dikunci di awal oleh BANTU dan hanya dicairkan ketika UMKM memberikan persetujuan, menjamin keamanan transaksi bagi kedua belah pihak.",
+		label: "Placeholder: Escrow Payment Screen",
+		image: mockups.escrow,
 	},
 ];
 
@@ -89,7 +89,6 @@ export function CoreFeatures() {
 										<LaptopMockup
 											label={feature.label}
 											image={feature.image}
-											tilt={isEven ? "left" : "right"}
 										/>
 									</motion.div>
 								</div>

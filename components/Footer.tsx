@@ -83,6 +83,19 @@ export function Footer() {
               )}
             </div>
           </div>
+          
+          {/* Contact */}
+          <div className="flex flex-col gap-8">
+            <h4 className="font-display font-bold text-white text-[10px] uppercase tracking-[0.25em]">Kontak</h4>
+            <div className="flex flex-col gap-4">
+              <a 
+                href="mailto:bantu.idn@gmail.com" 
+                className="text-brand-light/60 hover:text-white transition-all text-[11px] font-bold uppercase tracking-widest"
+              >
+                bantu.idn@gmail.com
+              </a>
+            </div>
+          </div>
         </div>
 
         {/* Bottom Area */}

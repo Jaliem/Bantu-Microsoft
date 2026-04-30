@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Paperclip, Image as ImageIcon, Smile, Send, Info, Download, AlertCircle, MessageSquare, CheckCircle2, Star, X } from "lucide-react";
+import { Search, Paperclip, Image as ImageIcon, Smile, Send, Info, Download, AlertCircle, MessageSquare, CheckCircle2, Star, X, MapPin, Trophy } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
@@ -27,6 +27,7 @@ interface ParticipantInfo {
   avatarUrl?: string;
   role?: string;
   university?: string;
+  location?: string;
   isOnline?: boolean;
 }
 
@@ -107,6 +108,7 @@ export default function ChatPage() {
           avatarUrl: data.avatarUrl || "",
           role: data.role,
           university: data.university,
+          location: data.location,
           isOnline: data.isOnline
         };
         setOtherParticipant(info);
@@ -861,7 +863,7 @@ export default function ChatPage() {
                     if (otherParticipant.role === "Mahasiswa") {
                       router.push(`/portfolio/${otherParticipant.uid}`);
                     } else {
-                      toast.info("Profil UMKM akan segera hadir");
+                      router.push(`/umkm/${otherParticipant.uid}`);
                     }
                   }}
                   className="mt-5 text-[11px] font-bold uppercase tracking-widest px-5 py-2.5 rounded-xl transition-all cursor-pointer"
@@ -884,58 +886,76 @@ export default function ChatPage() {
               )}
             </div>
 
-            <div className="p-8 flex-1">
-              <p className="text-[10px] font-bold tracking-[0.18em] uppercase mb-5" style={{ color: 'rgba(11,28,20,0.3)' }}>
-                Informasi
-              </p>
-              <div className="space-y-5">
-                <div className="flex items-center gap-3.5">
-                  <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: 'rgba(0,109,56,0.07)', color: '#006d38' }}
-                  >
-                    <AlertCircle size={16} />
+            {/* About Section */}
+            <div className="px-8 py-7" style={{ borderBottom: '1px solid rgba(11,28,20,0.06)' }}>
+              <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase mb-5" style={{ color: 'rgba(11,28,20,0.3)' }}>
+                About
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(11,28,20,0.04)' }}>
+                    <MapPin size={14} style={{ color: 'rgba(11,28,20,0.4)' }} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: 'rgba(11,28,20,0.3)' }}>Status</p>
-                    <p className="text-sm font-bold" style={{ fontFamily: 'var(--font-jakarta), sans-serif', color: '#0b1c14' }}>
-                      Kolaborasi Aktif
-                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: 'rgba(11,28,20,0.25)' }}>Location</p>
+                    <p className="text-xs font-semibold" style={{ color: '#0b1c14' }}>{otherParticipant?.location || "Not specified"}</p>
                   </div>
                 </div>
-
                 {otherParticipant?.university && (
-                  <div className="flex items-center gap-3.5">
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: 'rgba(0,109,56,0.07)', color: '#006d38' }}
-                    >
-                      <Star size={16} />
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(11,28,20,0.04)' }}>
+                      <Trophy size={14} style={{ color: 'rgba(11,28,20,0.4)' }} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: 'rgba(11,28,20,0.3)' }}>Instansi</p>
-                      <p className="text-sm font-bold" style={{ fontFamily: 'var(--font-jakarta), sans-serif', color: '#0b1c14' }}>
-                        {otherParticipant.university}
-                      </p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: 'rgba(11,28,20,0.25)' }}>University</p>
+                      <p className="text-xs font-semibold" style={{ color: '#0b1c14' }}>{otherParticipant.university}</p>
                     </div>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="p-8">
-              <button
-                className="w-full text-[10px] font-bold uppercase tracking-widest py-3.5 rounded-xl transition-all cursor-pointer"
-                style={{
-                  background: 'rgba(239,68,68,0.06)',
-                  color: '#ef4444',
-                  border: '1px solid rgba(239,68,68,0.1)'
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.12)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.06)')}
-              >
-                Report Conversation
-              </button>
+            {/* Shared Media Section */}
+            <div className="px-8 py-7">
+              <div className="flex justify-between items-center mb-5">
+                <h3 className="text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: 'rgba(11,28,20,0.3)' }}>
+                  Shared Media
+                </h3>
+                <span className="text-[10px] font-bold" style={{ color: '#006d38' }}>
+                  {messages.filter(m => m.isFile).length}
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2">
+                {messages.filter(m => m.isFile).slice(-4).reverse().map((msg, i) => (
+                  <a 
+                    key={msg.id || i}
+                    href={msg.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="aspect-square rounded-xl overflow-hidden relative group"
+                    style={{ background: 'rgba(11,28,20,0.04)', border: '1px solid rgba(11,28,20,0.06)' }}
+                  >
+                    {msg.isImage ? (
+                      <img src={msg.fileUrl} alt="shared" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Paperclip size={16} style={{ color: 'rgba(11,28,20,0.2)' }} />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Download size={14} className="text-white" />
+                    </div>
+                  </a>
+                ))}
+              </div>
+              
+              {messages.filter(m => m.isFile).length === 0 && (
+                <div className="py-8 flex flex-col items-center justify-center opacity-20">
+                  <ImageIcon size={24} className="mb-2" />
+                  <p className="text-[9px] font-bold uppercase tracking-widest">No shared media</p>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

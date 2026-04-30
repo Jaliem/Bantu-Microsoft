@@ -12,7 +12,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import {
   ClipboardList, ChevronDown, ChevronUp, CheckCircle2,
-  Loader2, Star, Sparkles, Users, Trophy, ExternalLink, XCircle
+  Loader2, Star, Users, Trophy, ExternalLink, XCircle
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -377,7 +377,7 @@ export default function MyPostsPage() {
                           </span>
                           {pendingSubmissions.length > 0 && (
                             <span className="text-[9px] uppercase font-bold tracking-[0.15em] px-3 py-1.5 rounded-full bg-orange-50 text-orange-600 border border-orange-100 flex items-center gap-2">
-                              <Sparkles size={10} /> {pendingSubmissions.length} Tinjauan Baru
+                              {pendingSubmissions.length} Tinjauan Baru
                             </span>
                           )}
                         </div>
@@ -501,7 +501,7 @@ export default function MyPostsPage() {
                                         <div className="flex flex-wrap items-center gap-3">
                                           {sub.aiGrade && (
                                             <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border ${gradeColor[sub.aiGrade] || "bg-brand-light text-brand-dark/60 border-brand-dark/5"}`}>
-                                              <Sparkles size={12} /> AI Grade: {sub.aiGrade} ({sub.aiScore}/100)
+                                              AI Grade: {sub.aiGrade} ({sub.aiScore}/100)
                                             </div>
                                           )}
                                           {sub.status === "approved" && (
@@ -531,7 +531,7 @@ export default function MyPostsPage() {
                                       {sub.aiFeedback && (
                                         <div className="bg-brand-mid/5 rounded-2xl px-6 py-4 mb-8 border border-brand-mid/10">
                                           <p className="text-[9px] font-bold text-brand-mid uppercase tracking-widest mb-2 flex items-center gap-2">
-                                            <Sparkles size={12} /> AI Quality Gate Feedback
+                                             AI Quality Gate Feedback
                                           </p>
                                           <p className="text-sm text-brand-dark/60 font-sans leading-relaxed">{sub.aiFeedback}</p>
                                         </div>

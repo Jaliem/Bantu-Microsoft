@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, ArrowRight, ChevronRight, ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import useEmblaCarousel from "embla-carousel-react";
 
 const popularServices = [
 	{ title: "Vibe Coding", color: "bg-[#006d38]" },
@@ -13,13 +14,28 @@ const popularServices = [
 	{ title: "Software Development", color: "bg-[#006d38]" },
 	{ title: "Book Publishing", color: "bg-[#006d38]" },
 	{ title: "Architecture & Interior Design", color: "bg-[#006d38]" },
+	{ title: "Social Media Management", color: "bg-[#006d38]" },
+	{ title: "Data Analytics & Research", color: "bg-[#006d38]" },
+	{ title: "Copywriting & Content", color: "bg-[#006d38]" },
+	{ title: "Graphic Design & UI/UX", color: "bg-[#006d38]" },
+	{ title: "Mobile App Development", color: "bg-[#006d38]" },
+	{ title: "SEO & Digital Marketing", color: "bg-[#006d38]" },
 ];
 
 export function Hero() {
-	const carouselRef = useRef<HTMLDivElement>(null);
 	const router = useRouter();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [mode, setMode] = useState<"hire" | "work">("hire");
+
+	const [emblaRef, emblaApi] = useEmblaCarousel({ 
+		loop: false, 
+		align: "start",
+		containScroll: "trimSnaps",
+		dragFree: true
+	});
+
+	const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
+	const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
 
 	const handleSearch = (e?: React.FormEvent) => {
 		if (e) e.preventDefault();
@@ -27,13 +43,6 @@ export function Hero() {
 			router.push(`/marketplace?q=${encodeURIComponent(searchQuery.trim())}`);
 		} else {
 			router.push("/marketplace");
-		}
-	};
-
-	const scroll = (direction: "left" | "right") => {
-		if (carouselRef.current) {
-			const scrollAmount = direction === "left" ? -320 : 320;
-			carouselRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
 		}
 	};
 
@@ -146,15 +155,15 @@ export function Hero() {
 						</h2>
 						<div className="hidden sm:flex gap-2">
 							<button
-								onClick={() => scroll("left")}
-								className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm border border-border hover:bg-muted transition-colors"
+								onClick={scrollPrev}
+								className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm border border-border hover:bg-muted transition-colors cursor-pointer"
 								aria-label="Scroll left"
 							>
 								<ChevronLeft className="w-5 h-5 text-foreground" />
 							</button>
 							<button
-								onClick={() => scroll("right")}
-								className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm border border-border hover:bg-muted transition-colors"
+								onClick={scrollNext}
+								className="w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-sm border border-border hover:bg-muted transition-colors cursor-pointer"
 								aria-label="Scroll right"
 							>
 								<ChevronRight className="w-5 h-5 text-foreground" />
@@ -163,34 +172,32 @@ export function Hero() {
 					</div>
 
 					<div
-						ref={carouselRef}
-						className="flex overflow-x-auto gap-4 sm:gap-6 pb-8 snap-x snap-mandatory hide-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0"
+						className="overflow-hidden"
+						ref={emblaRef}
 					>
-						{popularServices.map((service, index) => (
-							<motion.div
-								key={service.title}
-								initial={{ opacity: 0, x: 20 }}
-								whileInView={{ opacity: 1, x: 0 }}
-								viewport={{ once: true, margin: "-50px" }}
-								transition={{ duration: 0.5, delay: index * 0.1 }}
-								className={`shrink-0 w-60 sm:w-70 h-80 rounded-[2rem] p-1 flex flex-col snap-start cursor-pointer border border-border/50 hover:-translate-y-2 transition-transform duration-300 shadow-lg bg-primary`}
-							>
-								<div className="p-5 flex-1 mt-2">
-									<h3 className="text-xl font-medium tracking-tight text-white font-display leading-tight text-balance">
-										{service.title}
-									</h3>
-								</div>
-								{/* Bottom Image Area (Placeholder) */}
-								<div className="h-48 w-full bg-white rounded-[1.5rem] mt-auto overflow-hidden relative">
-									{/* Decorative Elements replacing actual images */}
-									<div className="w-full h-full flex items-center justify-center opacity-20 bg-brand-light">
-										<span className="font-display font-medium text-xl text-primary">
-											BANTU
-										</span>
+						<div className="flex gap-6 pb-12 pt-4 px-1">
+							{popularServices.map((service, index) => (
+								<motion.div
+									key={service.title}
+									className={`shrink-0 w-[280px] lg:w-[calc((100%-6rem)/5)] h-[300px] lg:h-[320px] rounded-[1.5rem] p-1 flex flex-col cursor-pointer border border-border/50 hover:-translate-y-4 transition-all duration-300 bg-primary shadow-xl`}
+								>
+									<div className="p-5 flex-1 mt-1">
+										<h3 className="text-base lg:text-lg font-medium tracking-tight text-white font-display leading-tight text-balance">
+											{service.title}
+										</h3>
 									</div>
-								</div>
-							</motion.div>
-						))}
+									{/* Bottom Image Area (Placeholder) - Square */}
+									<div className="w-full aspect-square bg-white rounded-[1.25rem] mt-auto overflow-hidden relative">
+										{/* Decorative Elements replacing actual images */}
+										<div className="w-full h-full flex items-center justify-center opacity-20 bg-brand-light">
+											<span className="font-display font-medium text-lg text-primary">
+												BANTU
+											</span>
+										</div>
+									</div>
+								</motion.div>
+							))}
+						</div>
 					</div>
 				</div>
 			</div>

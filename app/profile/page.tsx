@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { sendEmailVerification } from "firebase/auth";
 import { Camera, MapPin, Pencil, X, Plus, CheckCircle2, ShieldAlert } from "lucide-react";
@@ -14,6 +14,7 @@ export default function ProfilePersonalInfoPage() {
   const { user } = useAuth();
   
   const [userData, setUserData] = useState<any>(null);
+  const [projectCount, setProjectCount] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
@@ -48,6 +49,15 @@ export default function ProfilePersonalInfoPage() {
             bio: data.bio || "",
           });
           setSkills(data.skills || ["Business Strategy", "Supply Chain", "E-Commerce", "Mentorship"]);
+
+          if (data.role === 'UMKM') {
+            const qCount = query(
+              collection(db, "projects"),
+              where("umkmId", "==", user.uid)
+            );
+            const countSnap = await getDocs(qCount);
+            setProjectCount(countSnap.size);
+          }
         }
       }
     };
@@ -66,15 +76,18 @@ export default function ProfilePersonalInfoPage() {
     if (!user) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, "users", user.uid), {
+      const updatedData = {
         ...userData,
         name: formData.name,
         phone: formData.phone,
         location: formData.location,
         bio: formData.bio,
-      }, { merge: true });
+        skills: skills,
+      };
       
-      setUserData((prev: any) => ({ ...prev, ...formData }));
+      await setDoc(doc(db, "users", user.uid), updatedData, { merge: true });
+      
+      setUserData(updatedData);
       setIsEditing(false);
       toast.success("Profile updated successfully!");
     } catch (error) {
@@ -87,8 +100,16 @@ export default function ProfilePersonalInfoPage() {
 
   const handleAddSkill = async () => {
     if (!newSkill.trim() || !user) return;
-    const updatedSkills = [...skills, newSkill.trim()];
+    
+    const skillToAdd = newSkill.trim();
+    if (skills.includes(skillToAdd)) {
+      toast.error("Skill sudah ada!");
+      return;
+    }
+
+    const updatedSkills = [...skills, skillToAdd];
     setSkills(updatedSkills);
+    setUserData((prev: any) => ({ ...prev, skills: updatedSkills }));
     setNewSkill("");
     setAddingSkill(false);
 
@@ -104,6 +125,7 @@ export default function ProfilePersonalInfoPage() {
     if (!user) return;
     const updatedSkills = skills.filter(s => s !== skillToRemove);
     setSkills(updatedSkills);
+    setUserData((prev: any) => ({ ...prev, skills: updatedSkills }));
 
     try {
       await setDoc(doc(db, "users", user.uid), { skills: updatedSkills }, { merge: true });
@@ -231,6 +253,18 @@ export default function ProfilePersonalInfoPage() {
               >
                 <CheckCircle2 size={14} />
                 Lihat Portofolio Saya
+              </Link>
+            </div>
+          )}
+
+          {userData?.role === "UMKM" && user?.uid && (
+            <div className="w-full mt-8">
+              <Link 
+                href={`/umkm/${user.uid}`}
+                className="w-full bg-brand-light text-brand-mid font-display font-bold flex items-center justify-center gap-2 hover:bg-brand-mid hover:text-white px-6 py-4 rounded-2xl transition-all cursor-pointer text-[10px] uppercase tracking-widest shadow-sm"
+              >
+                <CheckCircle2 size={14} />
+                Lihat Profil UMKM Saya
               </Link>
             </div>
           )}
@@ -432,7 +466,9 @@ export default function ProfilePersonalInfoPage() {
             
             <div className="flex gap-16">
               <div>
-                <div className="text-5xl font-display font-black tracking-tighter text-brand-dark">{userData?.completedTasks || 0}</div>
+                <div className="text-5xl font-display font-black tracking-tighter text-brand-dark">
+                  {userData?.role === 'UMKM' ? projectCount : (userData?.completedTasks || 0)}
+                </div>
                 <div className="text-[9px] uppercase font-bold text-brand-dark/30 mt-2 tracking-widest">{userData?.role === 'UMKM' ? 'Projects Posted' : 'Tasks Done'}</div>
               </div>
               <div>

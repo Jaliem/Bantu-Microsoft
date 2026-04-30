@@ -72,31 +72,44 @@ Scoring guide:
       }
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts }],
-          generationConfig: { responseMimeType: 'application/json' },
-        }),
-      }
-    );
+    const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.0-flash"];
+    let review;
+    let success = false;
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Gemini API Error:', errorData);
-      return NextResponse.json({ error: 'AI review failed' }, { status: 500 });
+    for (const model of models) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts }],
+              generationConfig: { responseMimeType: 'application/json' },
+            }),
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+          try {
+            review = JSON.parse(rawText);
+            success = true;
+            break;
+          } catch (parseError) {
+            console.warn(`Failed to parse AI response from ${model}:`, rawText);
+          }
+        } else {
+          console.warn(`Gemini model ${model} failed in review submission`);
+        }
+      } catch (e) {
+        console.error(`Error with model ${model} in review submission:`, e);
+      }
     }
 
-    const data = await response.json();
-    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-
-    let review;
-    try {
-      review = JSON.parse(rawText);
-    } catch {
+    if (!success) {
+      // Return a basic fallback review if all models fail
       review = {
         score: 65,
         grade: 'B',

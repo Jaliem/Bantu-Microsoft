@@ -6,20 +6,20 @@ import { cn } from "@/lib/utils";
 
 const faqs = [
 	{
-		question: "Bagaimana kualitas pekerjaan dijamin?",
-		answer: "Setiap tugas mengikuti SOP yang dihasilkan AI. Pengiriman akhir diverifikasi oleh Gerbang Kualitas AI kami sebelum dikirimkan kepada Anda, memastikannya memenuhi semua persyaratan.",
+		question: "Bagaimana cara kerja sistem bidding?",
+		answer: "Mahasiswa dapat mengajukan penawaran harga (bid) untuk tugas yang diposting UMKM. UMKM kemudian meninjau profil, portofolio, dan harga yang ditawarkan sebelum memilih mahasiswa terbaik untuk proyek tersebut.",
 	},
 	{
-		question: "Bagaimana sistem pembayaran escrow bekerja?",
-		answer: "Saat Anda mempekerjakan seorang mahasiswa, dana disimpan secara aman oleh BANTU. Pembayaran hanya diteruskan kepada mahasiswa setelah Anda meninjau dan menyetujui pekerjaannya.",
+		question: "Apakah AI benar-benar meninjau hasil kerja?",
+		answer: "Ya, AI kami menganalisis teks dan gambar hasil pekerjaan mahasiswa berdasarkan SOP yang ada. Fitur ini memberikan feedback instan untuk memastikan kualitas terbaik sebelum diserahkan kepada UMKM.",
 	},
 	{
-		question: "Bisakah saya mempekerjakan mahasiswa untuk pekerjaan jangka panjang?",
-		answer: "Tentu saja! Banyak bisnis menggunakan BANTU untuk menguji bakat melalui tugas mikro sebelum menawarkan posisi paruh waktu atau magang kepada mereka.",
+		question: "Berapa lama proses pencairan dana?",
+		answer: "Setelah UMKM menyetujui pekerjaan, dana dari sistem escrow akan langsung masuk ke wallet mahasiswa. Mahasiswa kemudian dapat menarik saldo tersebut ke rekening bank pribadi mereka.",
 	},
 	{
-		question: "Apakah ada ukuran tugas minimum?",
-		answer: "Tidak. Anda dapat memposting apa saja mulai dari tugas entri data 1 jam hingga proyek manajemen media sosial selama sebulan.",
+		question: "Apakah ada biaya platform untuk mahasiswa?",
+		answer: "BANTU mengenakan biaya platform sebesar 2% untuk setiap transaksi yang berhasil. Biaya ini digunakan untuk memelihara sistem escrow yang aman dan fitur pendukung AI kami.",
 	},
 ];
 
@@ -42,16 +42,17 @@ export function FAQ() {
 						<h2 className="text-4xl md:text-5xl font-medium tracking-tight text-brand-light font-display mb-6">
 							Pertanyaan Umum.
 						</h2>
-						<p className="text-brand-light/70 leading-relaxed mb-8 font-light">
+						<p className="text-brand-light/70 leading-relaxed mb-10 font-light">
 							Semua yang perlu Anda ketahui tentang memulai proyek pertama Anda di
 							BANTU.
 						</p>
-						<button className="text-brand-light font-medium flex items-center group transition-colors hover:text-brand-light/80">
-							Lihat semua dokumentasi
-							<span className="ml-2 group-hover:translate-x-1 transition-transform">
-								&rarr;
-							</span>
-						</button>
+
+						<div className="pt-10 border-t border-brand-light/10">
+							<p className="text-sm font-display font-bold uppercase tracking-widest text-brand-mid brightness-150 mb-4">Punya pertanyaan lain?</p>
+							<p className="text-brand-light/50 text-sm font-sans leading-relaxed">
+								Email kami di <a href="mailto:bantu.idn@gmail.com" className="text-brand-light hover:underline">bantu.idn@gmail.com</a> atau tanyakan langsung pada <strong>chatbot</strong> kami di pojok kanan bawah.
+							</p>
+						</div>
 					</div>
 
 					<div className="lg:col-span-2 space-y-4">

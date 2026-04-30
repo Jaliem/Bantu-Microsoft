@@ -5,51 +5,43 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, getDoc, collection, query, where, getDocs, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { CheckCircle2, Download, ArrowRight, Star, Loader2, Trophy, MessageSquare, MapPin, Phone } from 'lucide-react';
+import { CheckCircle2, Download, ArrowRight, Star, Loader2, Trophy, MessageSquare, MapPin, Phone, Briefcase } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
-interface PortfolioEntry {
+interface ProjectEntry {
   id: string;
-  projectTitle: string;
+  title: string;
   category: string;
   budget: string;
-  clientName?: string;
   description: string;
-  aiScore?: number;
-  aiGrade?: string;
-  rating?: number;
-  review?: string;
-  completedAt: any;
-  verified: boolean;
-  isHidden?: boolean;
+  createdAt: any;
+  status?: string;
 }
 
-interface StudentProfile {
+interface Review {
+  id: string;
+  studentName: string;
+  projectTitle: string;
+  umkmRating: number;
+  umkmReview: string;
+  umkmRatedAt: any;
+}
+
+interface UMKMProfile {
   name: string;
   email: string;
   phone?: string;
   location?: string;
   avatarUrl?: string;
-  university?: string;
   bio?: string;
   skills?: string[];
-  rank?: string;
-  completedTasks?: number;
+  role?: string;
   avgRating?: number;
-  hideAiScores?: boolean;
-  hideRatings?: boolean;
+  createdAt?: any;
 }
-
-const gradeColor: Record<string, string> = {
-  S: "text-yellow-600 bg-yellow-50 border-yellow-200",
-  A: "text-green-600 bg-green-50 border-green-200",
-  B: "text-blue-600 bg-blue-50 border-blue-200",
-  C: "text-orange-600 bg-orange-50 border-orange-200",
-  D: "text-red-600 bg-red-50 border-red-200",
-};
 
 const categoryIcon: Record<string, string> = {
   "Design": "🎨",
@@ -61,38 +53,57 @@ const categoryIcon: Record<string, string> = {
   "Tech": "💻",
 };
 
-export default function PortfolioPage() {
+export default function UMKMProfilePage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const { user, userData } = useAuth();
-  const [profile, setProfile] = useState<StudentProfile | null>(null);
-  const [entries, setEntries] = useState<PortfolioEntry[]>([]);
+  const [profile, setProfile] = useState<UMKMProfile | null>(null);
+  const [projects, setProjects] = useState<ProjectEntry[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [chatLoading, setChatLoading] = useState(false);
 
   useEffect(() => {
-    const fetchPortfolio = async () => {
+    const fetchUMKMData = async () => {
       try {
         // Fetch user profile
         const userDoc = await getDoc(doc(db, "users", id));
         if (userDoc.exists()) {
-          setProfile(userDoc.data() as StudentProfile);
+          setProfile(userDoc.data() as UMKMProfile);
         }
 
-        // Fetch verified portfolio entries (Live Ledger)
+        // Fetch projects posted by this UMKM
         const q = query(
-          collection(db, "portfolioEntries"),
-          where("userId", "==", id),
-          orderBy("completedAt", "desc")
+          collection(db, "projects"),
+          where("umkmId", "==", id),
+          orderBy("createdAt", "desc")
         );
         const snap = await getDocs(q);
-        const entryList: PortfolioEntry[] = snap.docs
-          .map(d => ({
+        const projectList: ProjectEntry[] = snap.docs.map(d => ({
+          id: d.id,
+          ...d.data(),
+        } as ProjectEntry));
+        setProjects(projectList);
+
+        // Fetch reviews for this UMKM
+        const reviewsQ = query(
+          collection(db, "applications"),
+          where("umkmId", "==", id),
+          where("umkmRating", ">", 0)
+        );
+        const reviewsSnap = await getDocs(reviewsQ);
+        const reviewList: Review[] = reviewsSnap.docs.map(d => {
+          const data = d.data();
+          return {
             id: d.id,
-            ...d.data(),
-          } as PortfolioEntry))
-          .filter(e => !e.isHidden); // Filter out hidden entries
-        setEntries(entryList);
+            studentName: data.studentName,
+            projectTitle: data.projectTitle,
+            umkmRating: data.umkmRating,
+            umkmReview: data.umkmReview,
+            umkmRatedAt: data.umkmRatedAt,
+          };
+        });
+        setReviews(reviewList.sort((a, b) => (b.umkmRatedAt?.seconds || 0) - (a.umkmRatedAt?.seconds || 0)));
       } catch (err) {
         console.error(err);
       } finally {
@@ -100,12 +111,12 @@ export default function PortfolioPage() {
       }
     };
 
-    if (id) fetchPortfolio();
+    if (id) fetchUMKMData();
   }, [id]);
 
   const handleChat = async () => {
     if (!user) {
-      toast.error("Silakan login terlebih dahulu untuk menghubungi talent.");
+      toast.error("Silakan login terlebih dahulu untuk menghubungi UMKM.");
       router.push("/login");
       return;
     }
@@ -140,14 +151,14 @@ export default function PortfolioPage() {
           participants: [user.uid, id],
           name: profile?.name || "User",
           avatar: profile?.avatarUrl || "",
-          lastMessage: "Halo, saya tertarik untuk bekerja sama dengan Anda.",
+          lastMessage: "Halo, saya tertarik dengan profil UMKM Anda.",
           lastMessageTime: serverTimestamp(),
           createdAt: serverTimestamp()
         });
 
         // Add initial message
         await addDoc(collection(db, "chats", newChatRef.id, "messages"), {
-          text: "Halo, saya tertarik untuk bekerja sama dengan Anda.",
+          text: "Halo, saya tertarik dengan profil UMKM Anda.",
           senderId: user.uid,
           senderName: userData?.name || user.displayName || "User",
           createdAt: serverTimestamp()
@@ -181,7 +192,7 @@ export default function PortfolioPage() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold text-brand-dark font-display">Portfolio tidak ditemukan</h1>
+        <h1 className="text-2xl font-bold text-brand-dark font-display">Profil UMKM tidak ditemukan</h1>
         <Link href="/marketplace" className="text-brand-mid font-bold">Kembali ke Marketplace</Link>
       </div>
     );
@@ -202,7 +213,7 @@ export default function PortfolioPage() {
           >
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 mb-8">
               <div className="inline-flex items-center gap-1.5 bg-brand-mid/10 text-brand-mid px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] shadow-sm">
-                <CheckCircle2 size={12} /> Verified Student Talent
+                <CheckCircle2 size={12} /> Verified UMKM Partner
               </div>
             </div>
 
@@ -211,12 +222,6 @@ export default function PortfolioPage() {
             </h1>
             
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-y-4 gap-x-8 mb-8">
-              {profile.university && (
-                <div className="flex items-center gap-2.5 text-brand-mid font-display font-medium text-xl md:text-2xl tracking-tight">
-                  <Trophy size={20} className="opacity-50" />
-                  {profile.university}
-                </div>
-              )}
               {profile.location && (
                 <div className="flex items-center gap-2 text-brand-dark/40 font-sans font-medium text-sm uppercase tracking-widest">
                   <MapPin size={16} className="text-brand-mid" />
@@ -232,7 +237,7 @@ export default function PortfolioPage() {
             </div>
 
             <p className="text-brand-dark/70 text-lg md:text-xl leading-relaxed max-w-2xl mb-12 font-light text-balance mx-auto lg:mx-0">
-              {profile.bio || "Talented student ready to help your UMKM grow through high-quality freelance work."}
+              {profile.bio || "Dedicated UMKM partner focused on growth and community impact through collaboration with talented students."}
             </p>
 
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
@@ -240,7 +245,7 @@ export default function PortfolioPage() {
                 onClick={handleDownload}
                 className="h-14 px-8 rounded-full bg-brand-mid text-white font-semibold tracking-wide flex items-center justify-center gap-2 hover:bg-brand-mid/90 transition-all shadow-lg shadow-brand-mid/20 hover:-translate-y-0.5 cursor-pointer"
               >
-                <Download size={18} /> Download Portfolio
+                <Download size={18} /> Download Profile
               </button>
               <button 
                 onClick={handleChat}
@@ -276,11 +281,11 @@ export default function PortfolioPage() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-24">
           {[
-            { label: "Tasks Completed", value: profile.completedTasks || 0, icon: null },
+            { label: "Projects Posted", value: projects.length, icon: <Briefcase className="text-brand-mid" size={24} /> },
             { 
-              label: "Client Rating", 
-              value: (profile.hideRatings) ? "—" : (profile.avgRating ? profile.avgRating.toFixed(1) : "—"), 
-              icon: (!profile.hideRatings) ? <Star className="text-brand-mid" fill="currentColor" size={24} /> : null 
+              label: "Average Rating", 
+              value: profile.avgRating ? profile.avgRating.toFixed(1) : "—", 
+              icon: <Star className="text-brand-mid" fill="currentColor" size={24} /> 
             }
           ].map((stat, i) => (
             <motion.div 
@@ -302,12 +307,12 @@ export default function PortfolioPage() {
           ))}
         </div>
 
-        {/* Skills Section */}
+        {/* Focus Areas / Skills Section */}
         {profile.skills && profile.skills.length > 0 && (
           <div className="mb-24">
             <div className="flex items-center gap-4 mb-10">
               <div className="h-px flex-1 bg-brand-dark/10" />
-              <h3 className="text-xl font-semibold text-brand-dark font-display uppercase tracking-[0.2em]">Core Competencies</h3>
+              <h3 className="text-xl font-semibold text-brand-dark font-display uppercase tracking-[0.2em]">Business Focus Areas</h3>
               <div className="h-px flex-1 bg-brand-dark/10" />
             </div>
             <div className="flex flex-wrap justify-center gap-3">
@@ -320,30 +325,90 @@ export default function PortfolioPage() {
           </div>
         )}
 
-        {/* Live Ledger Section */}
+        {/* Reviews Section */}
+        {reviews.length > 0 && (
+          <div className="mb-32">
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 bg-yellow-400 text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] mb-6">
+                Client Feedback
+              </div>
+              <h2 className="text-4xl md:text-5xl font-semibold tracking-tight text-brand-dark font-display mb-4">Reviews & Testimonials</h2>
+              <p className="text-brand-dark/50 max-w-2xl mx-auto leading-relaxed font-light">
+                Apa kata mahasiswa yang telah bekerja sama dengan {profile.name}.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {reviews.map((rev, index) => (
+                <motion.div 
+                  key={rev.id} 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white rounded-[2.5rem] p-10 shadow-ambient border border-brand-dark/5 flex flex-col h-full"
+                >
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-brand-mid/10 rounded-full flex items-center justify-center text-brand-mid font-bold">
+                        {rev.studentName[0]}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-brand-dark text-sm">{rev.studentName}</div>
+                        <div className="text-[10px] text-brand-dark/30 font-bold uppercase tracking-widest">Student Talent</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star 
+                          key={star} 
+                          size={14} 
+                          className={star <= rev.umkmRating ? "text-yellow-400 fill-yellow-400" : "text-brand-dark/10"} 
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <blockquote className="flex-grow">
+                    <p className="text-brand-dark/70 text-lg leading-relaxed font-light italic mb-8">
+                      "{rev.umkmReview || "Sangat senang bisa berkontribusi dalam proyek ini. Komunikasi lancar dan instruksi sangat jelas."}"
+                    </p>
+                  </blockquote>
+
+                  <div className="pt-8 border-t border-brand-dark/5">
+                    <div className="text-[10px] font-bold text-brand-dark/20 uppercase tracking-widest mb-1">Project</div>
+                    <div className="text-xs font-semibold text-brand-dark/60">{rev.projectTitle}</div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Project History Section */}
         <div className="mb-32">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 bg-brand-dark text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] mb-6">
-              Live Ledger — Proof of Action
+              Published Projects
             </div>
-            <h2 className="text-4xl md:text-5xl font-semibold tracking-tight text-brand-dark font-display mb-4">Verified Work History</h2>
+            <h2 className="text-4xl md:text-5xl font-semibold tracking-tight text-brand-dark font-display mb-4">Project History</h2>
             <p className="text-brand-dark/50 max-w-2xl mx-auto leading-relaxed font-light">
-              Setiap entri dibuat secara otomatis dan diverifikasi oleh BANTU setelah disetujui oleh klien.
+              Daftar proyek yang telah dipublikasikan oleh {profile.name} di platform BANTU.
             </p>
           </div>
 
-          {entries.length === 0 ? (
+          {projects.length === 0 ? (
             <div className="bg-white rounded-[3rem] p-24 text-center border border-brand-dark/5 shadow-ambient">
               <div className="w-20 h-20 bg-brand-dark/5 rounded-full flex items-center justify-center mx-auto mb-6 text-brand-dark/20">
-                <Loader2 size={40} className="animate-spin" />
+                <Briefcase size={40} />
               </div>
-              <p className="text-brand-dark/40 font-medium">Belum ada riwayat kerja yang terverifikasi.</p>
+              <p className="text-brand-dark/40 font-medium">Belum ada proyek yang dipublikasikan.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {entries.map((entry, index) => (
+              {projects.map((project, index) => (
                 <motion.div 
-                  key={entry.id} 
+                  key={project.id} 
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -352,42 +417,19 @@ export default function PortfolioPage() {
                 >
                   <div className="p-8">
                     <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <span className="inline-block bg-brand-mid/10 text-brand-mid text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">
-                          {entry.category}
-                        </span>
-                        {entry.verified && (
-                          <div className="bg-green-50 text-green-600 px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-green-100">
-                            <CheckCircle2 size={12} />
-                            <span className="text-[9px] font-bold uppercase tracking-widest">Verified</span>
-                          </div>
-                        )}
-                      </div>
-                      {entry.aiGrade && !profile.hideAiScores && (
-                        <div className={`w-8 h-8 rounded-full border flex items-center justify-center text-xs font-bold ${gradeColor[entry.aiGrade] || "bg-gray-50 text-gray-500 border-gray-200"}`}>
-                          {entry.aiGrade}
-                        </div>
-                      )}
+                      <span className="inline-block bg-brand-mid/10 text-brand-mid text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">
+                        {project.category}
+                      </span>
+                      <span className="text-[10px] font-bold text-brand-mid uppercase">
+                        {project.budget}
+                      </span>
                     </div>
-                    <h3 className="font-semibold text-brand-dark text-xl mb-3 font-display leading-tight">{entry.projectTitle}</h3>
+                    <h3 className="font-semibold text-brand-dark text-xl mb-3 font-display leading-tight line-clamp-2">{project.title}</h3>
                     
-                    {entry.rating && !profile.hideRatings && (
-                      <div className="flex items-center gap-1 mb-3">
-                        {[1, 2, 3, 4, 5].map((s) => (
-                          <Star 
-                            key={s} 
-                            size={12} 
-                            className={s <= entry.rating! ? "text-yellow-400 fill-yellow-400" : "text-brand-dark/10"} 
-                          />
-                        ))}
-                        {entry.review && <span className="text-[10px] text-brand-dark/40 ml-2 italic">"{entry.review}"</span>}
-                      </div>
-                    )}
-
-                    <p className="text-sm text-brand-dark/60 leading-relaxed line-clamp-2 mb-6 font-light">{entry.description}</p>
+                    <p className="text-sm text-brand-dark/60 leading-relaxed line-clamp-3 mb-6 font-light">{project.description}</p>
                     <div className="flex items-center justify-between text-[10px] font-bold text-brand-dark/30 uppercase tracking-widest pt-6 border-t border-brand-dark/5">
-                      <span className="truncate max-w-[140px]">{entry.clientName ? `for ${entry.clientName}` : 'Private Client'}</span>
-                      <span>{entry.completedAt?.toDate ? formatDistanceToNow(entry.completedAt.toDate(), { addSuffix: true }) : ""}</span>
+                      <span>{project.createdAt?.toDate ? formatDistanceToNow(project.createdAt.toDate(), { addSuffix: true }) : ""}</span>
+                      <Link href={`/marketplace/${project.id}`} className="text-brand-mid hover:underline">Lihat Detail</Link>
                     </div>
                   </div>
                 </motion.div>
@@ -408,20 +450,23 @@ export default function PortfolioPage() {
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
           
           <div className="relative z-10 flex flex-col items-center">
-            <h2 className="text-4xl md:text-6xl font-semibold tracking-tight font-display mb-6 text-balance leading-[1.05]">Siap untuk berkolaborasi?</h2>
+            <h2 className="text-4xl md:text-6xl font-semibold tracking-tight font-display mb-6 text-balance leading-[1.05]">Ingin berkolaborasi?</h2>
             <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed font-light text-balance">
-              Pekerjakan {profile.name.split(" ")[0]} untuk proyek UMKM Anda berikutnya. Semua pengerjaan dilindungi oleh sistem escrow kami.
+              Hubungi {profile.name.split(" ")[0]} untuk mendiskusikan peluang kerja sama atau proyek UMKM lainnya.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-              <Link href="/marketplace" className="h-16 px-10 bg-white text-brand-mid font-semibold rounded-full hover:bg-brand-light transition-all shadow-xl flex items-center gap-2 justify-center text-lg">
-                Jelajahi Talent Lain <ArrowRight size={20} />
-              </Link>
+              <button 
+                onClick={handleChat}
+                className="h-16 px-10 bg-white text-brand-mid font-semibold rounded-full hover:bg-brand-light transition-all shadow-xl flex items-center gap-2 justify-center text-lg"
+              >
+                Kirim Pesan <MessageSquare size={20} />
+              </button>
             </div>
           </div>
         </motion.div>
       </main>
 
-      {/* ATS Friendly Printable Version (Only visible when printing) */}
+      {/* Printable Version */}
       <div className="hidden print:block bg-white text-black font-serif w-full">
         <style dangerouslySetInnerHTML={{ __html: `
           @page { size: auto; margin: 0mm; }
@@ -438,23 +483,22 @@ export default function PortfolioPage() {
         <div className="border-b-2 border-black pb-6 mb-8">
           <div className="text-4xl font-bold mb-2">{profile.name}</div>
           <div className="text-sm font-bold">
-            {profile.university && <span>{profile.university}</span>}
-            {profile.location && <span> • {profile.location}</span>}
+            {profile.location && <span>{profile.location}</span>}
             {profile.phone && <span> • {profile.phone}</span>}
             {profile.email && <span> • {profile.email}</span>}
           </div>
         </div>
 
         <section className="mb-8">
-          <h2 className="text-xl font-bold uppercase border-b border-black mb-4">Professional Summary</h2>
+          <h2 className="text-xl font-bold uppercase border-b border-black mb-4">Business Profile</h2>
           <p className="text-sm leading-relaxed italic">
-            {profile.bio || "Talented student professional with a verified track record of delivering high-quality freelance projects for UMKM. Specialized in bridging technical execution with business needs."}
+            {profile.bio || "Dedicated UMKM partner focused on growth and community impact through collaboration with talented students."}
           </p>
         </section>
 
         {profile.skills && profile.skills.length > 0 && (
           <section className="mb-8">
-            <h2 className="text-xl font-bold uppercase border-b border-black mb-4">Technical Skills</h2>
+            <h2 className="text-xl font-bold uppercase border-b border-black mb-4">Focus Areas</h2>
             <div className="text-sm">
               {profile.skills.join(", ")}
             </div>
@@ -462,37 +506,28 @@ export default function PortfolioPage() {
         )}
 
         <section className="mb-8">
-          <h2 className="text-xl font-bold uppercase border-b border-black mb-4">Verified Work History (Via BANTU Platform)</h2>
+          <h2 className="text-xl font-bold uppercase border-b border-black mb-4">Published Projects (Via BANTU Platform)</h2>
           <div className="space-y-8">
-            {entries.map((entry) => (
-              <div key={entry.id} className="page-break-inside-avoid">
+            {projects.map((project) => (
+              <div key={project.id} className="page-break-inside-avoid">
                 <div className="flex justify-between items-baseline mb-2">
-                  <h3 className="text-lg font-bold underline">{entry.projectTitle}</h3>
+                  <h3 className="text-lg font-bold underline">{project.title}</h3>
                   <span className="text-sm font-bold">
-                    {entry.completedAt?.toDate ? new Date(entry.completedAt.toDate()).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : ""}
+                    {project.createdAt?.toDate ? new Date(project.createdAt.toDate()).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : ""}
                   </span>
                 </div>
                 <div className="flex gap-4 text-xs font-bold uppercase mb-2">
-                  <span>Category: {entry.category}</span>
-                  {entry.rating && !profile.hideRatings && (
-                    <>
-                      <span>•</span>
-                      <span>Client Rating: {entry.rating}/5</span>
-                    </>
-                  )}
+                  <span>Category: {project.category}</span>
+                  <span>•</span>
+                  <span>Budget: {project.budget}</span>
                 </div>
                 <p className="text-sm leading-relaxed mb-2">
-                  {entry.description}
+                  {project.description}
                 </p>
-                {entry.review && !profile.hideRatings && (
-                  <div className="bg-gray-50 border-l-2 border-black p-3 text-xs italic">
-                    " {entry.review} " — Client Feedback
-                  </div>
-                )}
               </div>
             ))}
-            {entries.length === 0 && (
-              <p className="text-sm italic text-gray-500 underline">No verified projects in ledger yet.</p>
+            {projects.length === 0 && (
+              <p className="text-sm italic text-gray-500 underline">No projects published yet.</p>
             )}
           </div>
         </section>

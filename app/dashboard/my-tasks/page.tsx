@@ -5,11 +5,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { collection, query, where, getDocs, doc, getDoc, orderBy, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { ClipboardList, Clock, CheckCircle2, AlertCircle, ExternalLink, Loader2, UploadCloud, Edit3, DollarSign, X } from "lucide-react";
+import { ClipboardList, Clock, CheckCircle2, AlertCircle, ExternalLink, Loader2, UploadCloud, Edit3, DollarSign, X, Star } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { serverTimestamp } from "firebase/firestore";
 
 interface Task {
   id: string;
@@ -18,9 +19,12 @@ interface Task {
   projectCategory: string;
   projectBudget: string;
   bidAmount?: string;
+  umkmId: string;
   umkmName: string;
   status: "applied" | "accepted" | "in_progress" | "completed" | "rejected";
   appliedAt: any;
+  umkmRating?: number;
+  umkmReview?: string;
 }
 
 export default function MyTasksPage() {
@@ -34,6 +38,12 @@ export default function MyTasksPage() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [newBid, setNewBid] = useState("");
   const [updating, setUpdating] = useState(false);
+
+  // Rating State
+  const [ratingTask, setRatingTask] = useState<Task | null>(null);
+  const [rating, setRating] = useState(5);
+  const [review, setReview] = useState("");
+  const [ratingLoading, setRatingLoading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -65,9 +75,12 @@ export default function MyTasksPage() {
             projectCategory: data.projectCategory || "General",
             projectBudget: data.bidAmount || data.projectBudget || "N/A",
             bidAmount: data.bidAmount,
+            umkmId: data.umkmId,
             umkmName: data.umkmName || "Unknown UMKM",
             status: data.status || "applied",
             appliedAt: data.appliedAt,
+            umkmRating: data.umkmRating,
+            umkmReview: data.umkmReview,
           });
         }
 
@@ -105,6 +118,50 @@ export default function MyTasksPage() {
       toast.error("Failed to update bid.");
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleRateUMKM = async () => {
+    if (!ratingTask || !user) return;
+    setRatingLoading(true);
+    try {
+      // 1. Update Application document
+      await updateDoc(doc(db, "applications", ratingTask.id), {
+        umkmRating: rating,
+        umkmReview: review,
+        umkmRatedAt: serverTimestamp()
+      });
+
+      // 2. Update UMKM user document
+      const umkmRef = doc(db, "users", ratingTask.umkmId);
+      const umkmSnap = await getDoc(umkmRef);
+      
+      if (umkmSnap.exists()) {
+        const umkmData = umkmSnap.data();
+        const currentAvgRating = umkmData.avgRating || 0;
+        const currentRatingCount = umkmData.ratingCount || 0;
+        const newRatingCount = currentRatingCount + 1;
+        const newAvgRating = (currentAvgRating * currentRatingCount + rating) / newRatingCount;
+
+        await updateDoc(umkmRef, {
+          avgRating: newAvgRating,
+          ratingCount: newRatingCount
+        });
+      }
+
+      setTasks(prev => prev.map(t => 
+        t.id === ratingTask.id ? { ...t, umkmRating: rating, umkmReview: review } : t
+      ));
+
+      toast.success("Terima kasih atas penilaian Anda!");
+      setRatingTask(null);
+      setRating(5);
+      setReview("");
+    } catch (error) {
+      console.error("Error rating UMKM:", error);
+      toast.error("Gagal mengirim penilaian.");
+    } finally {
+      setRatingLoading(false);
     }
   };
 
@@ -261,6 +318,21 @@ export default function MyTasksPage() {
                               {task.status === "in_progress" ? "View Submission" : "Submit Work"}
                             </Link>
                           )}
+                          {task.status === "completed" && !task.umkmRating && (
+                            <button
+                              onClick={() => setRatingTask(task)}
+                              className="flex items-center gap-3 bg-yellow-400 text-white text-[10px] font-display font-bold uppercase tracking-widest px-6 py-4 rounded-2xl hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-400/20 cursor-pointer"
+                            >
+                              <Star size={14} fill="white" />
+                              Rate UMKM
+                            </button>
+                          )}
+                          {task.status === "completed" && task.umkmRating && (
+                            <div className="flex items-center gap-2 bg-brand-mid/5 text-brand-mid text-[9px] font-bold uppercase tracking-widest px-4 py-3 rounded-2xl border border-brand-mid/10">
+                              <Star size={12} fill="currentColor" />
+                              Rated {task.umkmRating}/5
+                            </div>
+                          )}
                           <Link
                             href={`/marketplace/${task.projectId}`}
                             className="w-14 h-14 bg-brand-light rounded-2xl flex items-center justify-center text-brand-dark/20 hover:bg-brand-dark hover:text-white transition-all shadow-sm"
@@ -347,6 +419,92 @@ export default function MyTasksPage() {
                         Memperbarui...
                       </div>
                     ) : "Update Penawaran"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Rating Modal */}
+      <AnimatePresence>
+        {ratingTask && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setRatingTask(null)}
+              className="absolute inset-0 bg-brand-dark/40 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg bg-white rounded-[2.5rem] p-10 shadow-2xl border border-brand-dark/5"
+            >
+              <button 
+                onClick={() => setRatingTask(null)}
+                className="absolute top-8 right-8 text-brand-dark/20 hover:text-brand-dark transition-colors"
+              >
+                <X size={24} />
+              </button>
+
+              <div className="text-center mb-10">
+                <div className="w-20 h-20 bg-yellow-100 rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-yellow-500">
+                  <Star size={40} fill="currentColor" />
+                </div>
+                <h3 className="text-3xl font-display font-bold text-brand-dark mb-2">Beri Penilaian UMKM</h3>
+                <p className="text-brand-dark/40 font-sans font-light">Bagaimana pengalaman Anda bekerja sama dengan {ratingTask.umkmName}?</p>
+              </div>
+
+              <div className="space-y-8">
+                {/* Star Rating */}
+                <div className="flex justify-center gap-3">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <button 
+                      key={s} 
+                      onClick={() => setRating(s)}
+                      className="p-1 transition-transform hover:scale-110 active:scale-95 cursor-pointer"
+                    >
+                      <Star 
+                        size={44} 
+                        className={s <= rating ? "text-yellow-400 fill-yellow-400" : "text-brand-dark/10"} 
+                      />
+                    </button>
+                  ))}
+                </div>
+
+                {/* Review Textarea */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-brand-dark/30 uppercase tracking-[0.2em] ml-1">Ulasan Singkat (Opsional)</label>
+                  <textarea 
+                    value={review}
+                    onChange={(e) => setReview(e.target.value)}
+                    placeholder="Respon cepat, instruksi sangat jelas, sangat membantu..."
+                    className="w-full bg-brand-light/50 border-none rounded-2xl p-5 text-sm text-brand-dark font-sans min-h-[120px] focus:ring-2 focus:ring-brand-mid/20 transition-all placeholder:text-brand-dark/20 outline-none"
+                  />
+                </div>
+
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => setRatingTask(null)}
+                    className="flex-1 py-4 font-display font-bold text-[10px] uppercase tracking-widest text-brand-dark/40 hover:text-brand-dark transition-all"
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    onClick={handleRateUMKM}
+                    disabled={ratingLoading}
+                    className="flex-[2] bg-brand-mid text-white font-display font-bold py-4 rounded-2xl text-[10px] uppercase tracking-widest shadow-lg shadow-brand-mid/20 hover:bg-brand-dark transition-all disabled:opacity-50"
+                  >
+                    {ratingLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 size={16} className="animate-spin" />
+                        Mengirim...
+                      </div>
+                    ) : "Kirim Penilaian"}
                   </button>
                 </div>
               </div>

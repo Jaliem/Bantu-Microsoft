@@ -10,7 +10,6 @@ import Link from "next/link";
 import {
   ChevronLeft, CheckCircle2, AlertCircle, Loader2,
   UploadCloud, Send, ShieldCheck, Star, TrendingUp, XCircle,
-  Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -361,7 +360,6 @@ export default function SubmitWorkPage() {
                   disabled={reviewing || !submissionText.trim()}
                   className="w-full sm:w-auto flex items-center justify-center gap-3 bg-brand-mid/10 text-brand-mid hover:bg-brand-mid hover:text-white font-display font-bold px-8 py-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-[10px] uppercase tracking-widest border border-brand-mid/20"
                 >
-                  {reviewing ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
                   {reviewing ? "AI sedang meninjau..." : "Jalankan AI Quality Check"}
                 </button>
               </div>
@@ -473,10 +471,6 @@ export default function SubmitWorkPage() {
                   <p className="text-white/50 text-[11px] leading-relaxed font-sans font-light">
                     Skor minimal 60 (Grade B) disarankan untuk memastikan kualitas terbaik bagi UMKM.
                   </p>
-                </div>
-                <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 backdrop-blur-sm shrink-0 text-right">
-                  <p className="text-white/30 text-[8px] font-bold uppercase tracking-widest mb-0.5">Target</p>
-                  <p className="text-xl font-display font-black text-brand-mid">60<span className="text-white/20 text-xs ml-0.5">/100</span></p>
                 </div>
               </div>
             </div>

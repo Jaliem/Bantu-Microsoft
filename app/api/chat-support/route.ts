@@ -34,28 +34,44 @@ Be friendly, concise, professional, and helpful. If the user writes in Indonesia
       parts: [{ text: msg.content }]
     }));
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: {
-            parts: [{ text: systemInstruction }]
-          },
-          contents
-        })
-      }
-    );
+    const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.0-flash"];
+    let reply = "";
+    let success = false;
 
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error('Gemini API error:', errorData);
-      return NextResponse.json({ error: 'Failed to get AI response' }, { status: 500 });
+    for (const model of models) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              system_instruction: {
+                parts: [{ text: systemInstruction }]
+              },
+              contents
+            })
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+          if (reply) {
+            success = true;
+            break;
+          }
+        } else {
+          console.warn(`Gemini model ${model} failed in chat support`);
+        }
+      } catch (e) {
+        console.error(`Error with model ${model} in chat support:`, e);
+      }
     }
 
-    const data = await response.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't generate a response. Please try again.";
+    if (!success) {
+      return NextResponse.json({ error: 'Failed to get AI response from all models' }, { status: 500 });
+    }
 
     return NextResponse.json({ reply });
   } catch (error: any) {

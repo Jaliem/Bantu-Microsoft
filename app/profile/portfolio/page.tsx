@@ -6,7 +6,7 @@ import { collection, query, where, getDocs, doc, updateDoc, orderBy } from "fire
 import { db } from "@/lib/firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Eye, EyeOff, Layout, FileText, CheckCircle2, Star, Sparkles, Loader2 } from "lucide-react";
+import { Eye, EyeOff,  FileText, Loader2 } from "lucide-react";
 
 interface PortfolioEntry {
   id: string;
@@ -96,62 +96,6 @@ export default function CustomizePortfolioPage() {
 
   return (
     <div className="space-y-10">
-      {/* Global Settings */}
-      <div className="bg-white rounded-[2.5rem] p-10 shadow-ambient border border-brand-dark/5">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-12 h-12 bg-brand-mid/10 rounded-2xl flex items-center justify-center text-brand-mid">
-            <Layout size={24} />
-          </div>
-          <div>
-            <h2 className="text-2xl font-display font-bold text-brand-dark tracking-tight">Pengaturan Tampilan</h2>
-            <p className="text-brand-dark/40 text-sm">Pilih informasi apa yang ingin Anda tampilkan di portofolio publik.</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <label className="flex items-center justify-between p-6 bg-brand-light/30 rounded-2xl border border-transparent hover:border-brand-mid/20 transition-all cursor-pointer">
-            <div className="flex items-center gap-4">
-              <div>
-                <p className="text-sm font-bold text-brand-dark">Sembunyikan Skor AI</p>
-                <p className="text-[10px] text-brand-dark/40 uppercase tracking-widest mt-1">Grade S/A/B/C tetap tersembunyi</p>
-              </div>
-            </div>
-            <input 
-              type="checkbox" 
-              checked={hideAiScores} 
-              onChange={e => setHideAiScores(e.target.checked)}
-              className="w-5 h-5 accent-brand-mid"
-            />
-          </label>
-
-          <label className="flex items-center justify-between p-6 bg-brand-light/30 rounded-2xl border border-transparent hover:border-brand-mid/20 transition-all cursor-pointer">
-            <div className="flex items-center gap-4">
-              <div>
-                <p className="text-sm font-bold text-brand-dark">Sembunyikan Rating & Ulasan</p>
-                <p className="text-[10px] text-brand-dark/40 uppercase tracking-widest mt-1">Ulasan klien tidak akan terlihat</p>
-              </div>
-            </div>
-            <input 
-              type="checkbox" 
-              checked={hideRatings} 
-              onChange={e => setHideRatings(e.target.checked)}
-              className="w-5 h-5 accent-brand-mid"
-            />
-          </label>
-        </div>
-
-        <div className="mt-10 flex justify-end">
-          <button
-            onClick={saveSettings}
-            disabled={savingSettings}
-            className="bg-brand-mid text-white font-display font-bold px-10 py-4 rounded-2xl hover:bg-brand-dark transition-all shadow-lg shadow-brand-mid/20 disabled:opacity-70 flex items-center gap-3 text-[10px] uppercase tracking-widest cursor-pointer"
-          >
-            {savingSettings && <Loader2 size={14} className="animate-spin" />}
-            Simpan Pengaturan
-          </button>
-        </div>
-      </div>
-
       {/* Projects List */}
       <div className="bg-white rounded-[2.5rem] p-10 shadow-ambient border border-brand-dark/5">
         <div className="flex items-center gap-4 mb-10">

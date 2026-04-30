@@ -2,8 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { LaptopMockup } from "../ui/LaptopMockup";
-import { mockups } from "@/lib/mockups";
+import Link from "next/link";
 
 export function CTA() {
   return (
@@ -46,28 +45,14 @@ export function CTA() {
             transition={{ delay: 0.2 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-24"
           >
-            <button className="h-14 px-8 rounded-full bg-brand-mid text-white font-semibold tracking-wide flex items-center justify-center gap-2 hover:bg-brand-mid/90 transition-colors w-full sm:w-auto text-lg">
+            <Link 
+              href="/marketplace" 
+              className="h-14 px-8 rounded-full bg-brand-mid text-white font-semibold tracking-wide flex items-center justify-center gap-2 hover:bg-brand-mid/90 transition-colors w-full sm:w-auto text-lg cursor-pointer"
+            >
               Mulai Secara Gratis
               <ArrowRight className="w-5 h-5" />
-            </button>
-            <button className="h-14 px-8 rounded-full bg-transparent border border-brand-dark/70 text-brand-dark font-semibold tracking-wide flex items-center justify-center hover:bg-brand-dark/10 transition-colors w-full sm:w-auto text-lg">
-              Jadwalkan Demo
-            </button>
+            </Link>
           </motion.div>
-
-          {/* <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-          >
-            <LaptopMockup
-              label="Placeholder: Final Product Mockup"
-              image={mockups.finalProduct}
-              tilt="none"
-              className="border-border/60 bg-muted/40 shadow-2xl shadow-black/10"
-            />
-          </motion.div> */}
         </div>
       </div>
     </section>

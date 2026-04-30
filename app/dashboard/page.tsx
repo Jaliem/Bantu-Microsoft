@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any[]>([]);
   const [savedTasks, setSavedTasks] = useState<any[]>([]);
+  const [totalEarnings, setTotalEarnings] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -44,6 +45,21 @@ export default function DashboardPage() {
 
       // 5. Fetch dashboard-specific data
       try {
+        // Fetch Total Earnings from transactions
+        const txQ = query(
+          collection(db, "transactions"),
+          where("userId", "==", user.uid),
+          where("status", "==", "completed")
+        );
+        const txSnap = await getDocs(txQ);
+        let total = 0;
+        txSnap.forEach(doc => {
+          const tx = doc.data();
+          if (tx.type === "credit") total += tx.amount;
+          else if (tx.type === "debit") total -= tx.amount;
+        });
+        setTotalEarnings(total);
+
         if (userData.role === 'UMKM') {
           const q = query(
             collection(db, "projects"),
@@ -132,7 +148,7 @@ export default function DashboardPage() {
 
         <div className="flex flex-col lg:flex-row gap-10">
           
-          {/* Left Column - Stats */}
+          {/* Left Column - Stats & Saved */}
           <div className="w-full lg:w-96 shrink-0 flex flex-col gap-8">
             
             <motion.div 
@@ -144,15 +160,13 @@ export default function DashboardPage() {
               <div className="absolute top-0 right-0 w-64 h-64 bg-brand-mid/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-1000" />
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-10">
-                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">{userData?.role === 'UMKM' ? 'Total Spent' : 'Total Earnings'}</p>
+                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">{userData?.role === 'UMKM' ? 'Escrow Balance' : 'Total Earnings'}</p>
                   <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-brand-mid backdrop-blur-md border border-white/10">
                     <Wallet size={24} />
                   </div>
                 </div>
                 <h2 className="text-4xl font-display font-black tracking-tight mb-4">
-                  {userData?.totalEarnings
-                    ? `Rp ${userData.totalEarnings.toLocaleString("id-ID")}`
-                    : "Rp 0"}
+                  Rp {totalEarnings.toLocaleString("id-ID")}
                 </h2>
                 <div className="flex items-center gap-2 text-[10px] font-bold text-brand-mid uppercase tracking-widest">
                   <TrendingUp size={14} />
@@ -172,25 +186,33 @@ export default function DashboardPage() {
                 transition={{ delay: 0.2 }}
                 className="bg-white rounded-[2.5rem] p-10 shadow-ambient border border-brand-dark/5"
               >
-                <div className="flex justify-between items-center mb-10">
-                  <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark/30">Career Rank</h3>
-                  <RankBadge rank={userData?.rank || 'D'} />
+                <div className="flex justify-between items-center mb-8">
+                  <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-dark/30">Saved Tasks</h3>
+                  <Bookmark size={18} className="text-brand-mid" />
                 </div>
-                <div className="flex items-end gap-2 mb-6">
-                  <span className="text-5xl font-display font-black text-brand-dark tracking-tighter">{userData?.completedTasks || 0}</span>
-                  <span className="text-[10px] font-bold text-brand-dark/30 uppercase tracking-widest mb-2">tasks completed</span>
+                
+                <div className="space-y-4">
+                  {savedTasks.length > 0 ? (
+                    savedTasks.slice(0, 3).map((task) => (
+                      <Link key={`saved-side-${task.id}`} href={`/marketplace/${task.id}`} className="block group">
+                        <div className="p-4 rounded-2xl bg-brand-light/30 border border-transparent group-hover:border-brand-mid/20 transition-all">
+                          <p className="text-[9px] font-bold text-brand-mid uppercase tracking-wider mb-1">{task.category}</p>
+                          <h4 className="text-sm font-display font-bold text-brand-dark line-clamp-1 group-hover:text-brand-mid transition-colors">{task.title}</h4>
+                        </div>
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-[10px] font-bold text-brand-dark/30 uppercase tracking-widest">No saved tasks</p>
+                    </div>
+                  )}
+                  
+                  {savedTasks.length > 3 && (
+                    <p className="text-center text-[9px] font-bold text-brand-dark/20 uppercase tracking-widest pt-2">
+                      + {savedTasks.length - 3} more in marketplace
+                    </p>
+                  )}
                 </div>
-                <div className="w-full h-2.5 bg-brand-light rounded-full overflow-hidden mb-6">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${getRankProgress(userData?.completedTasks || 0, userData?.rank || 'D')}%` }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                    className="h-full bg-brand-mid rounded-full shadow-lg shadow-brand-mid/20"
-                  />
-                </div>
-                <p className="text-[11px] text-brand-dark/50 font-sans leading-relaxed">
-                  {getRankNextStep(userData?.rank || 'D', userData?.completedTasks || 0)}
-                </p>
               </motion.div>
             )}
 
@@ -258,94 +280,9 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {userData?.role !== 'UMKM' && (
-              <div>
-                <div className="flex justify-between items-end mb-8">
-                  <h2 className="text-2xl font-display font-bold text-brand-dark tracking-tight">
-                    Saved Tasks
-                  </h2>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <AnimatePresence>
-                    {savedTasks.length > 0 ? (
-                      savedTasks.map((task, idx) => (
-                        <motion.div 
-                          key={`saved-${task.id}`}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.3 + (idx * 0.1) }}
-                        >
-                          <Link href={`/marketplace/${task.id}`} className="block group h-full">
-                            <div className="bg-white rounded-[2rem] p-8 shadow-ambient border border-brand-dark/5 flex flex-col h-full hover:border-brand-mid/30 hover:shadow-lg transition-all">
-                              <div className="flex items-center gap-2 mb-4">
-                                <span className="bg-brand-mid/10 text-brand-mid text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
-                                  {task.category}
-                                </span>
-                              </div>
-                              <h3 className="font-display font-bold text-brand-dark text-lg mb-4 group-hover:text-brand-mid transition-colors line-clamp-2">
-                                {task.title}
-                              </h3>
-                              <div className="flex items-center justify-between mt-auto pt-6 border-t border-brand-dark/5">
-                                <span className="font-display font-bold text-brand-dark text-sm">{task.budget}</span>
-                                <span className="text-[10px] text-brand-dark/30 font-bold uppercase tracking-widest">
-                                  {task.createdAt?.toDate ? formatDistanceToNow(task.createdAt.toDate(), { addSuffix: true }) : 'Baru saja'}
-                                </span>
-                              </div>
-                            </div>
-                          </Link>
-                        </motion.div>
-                      ))
-                    ) : (
-                      <div className="col-span-2 bg-white rounded-[2.5rem] p-12 text-center border border-brand-dark/5 shadow-ambient">
-                        <div className="w-16 h-16 bg-brand-light flex items-center justify-center rounded-2xl mx-auto mb-5">
-                          <Bookmark className="text-brand-dark/10" size={32} />
-                        </div>
-                        <p className="text-brand-dark/40 font-display font-bold uppercase tracking-widest text-xs">
-                          No saved tasks yet
-                        </p>
-                      </div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-            )}
-
           </div>
         </div>
       </main>
     </div>
   );
-}
-
-function RankBadge({ rank }: { rank: string }) {
-  const config: Record<string, { color: string; bg: string }> = {
-    S: { color: "text-brand-mid", bg: "bg-brand-mid/10" },
-    A: { color: "text-brand-mid/80", bg: "bg-brand-mid/5" },
-    B: { color: "text-brand-dark/60", bg: "bg-brand-light" },
-    C: { color: "text-brand-dark/40", bg: "bg-brand-light" },
-    D: { color: "text-brand-dark/30", bg: "bg-brand-light" },
-  };
-  const { color, bg } = config[rank] || config.D;
-  return (
-    <span className={`font-display font-black text-2xl w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm border border-brand-dark/5 ${color} ${bg}`}>
-      {rank}
-    </span>
-  );
-}
-
-function getRankProgress(completed: number, rank: string): number {
-  if (rank === "S") return 100;
-  if (rank === "A") return Math.min(99, 50 + (completed - 15) * 2);
-  if (rank === "B") return Math.min(49, 20 + (completed - 5) * 3);
-  if (rank === "C") return Math.min(19, completed * 4);
-  return Math.min(5, completed);
-}
-
-function getRankNextStep(rank: string, completed: number): string {
-  if (rank === "S") return "Maximum rank achieved. You are a BANTU legend!";
-  if (rank === "A") return `${30 - completed} more tasks to reach Rank S`;
-  if (rank === "B") return `${15 - completed} more tasks to reach Rank A`;
-  if (rank === "C") return `${5 - completed} more tasks to reach Rank B`;
-  return "Complete your first task to reach Rank C!";
 }

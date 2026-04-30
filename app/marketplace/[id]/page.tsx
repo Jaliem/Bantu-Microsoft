@@ -20,6 +20,7 @@ export default function JobDetailPage() {
   
   const [project, setProject] = useState<any>(null);
   const [umkmData, setUmkmData] = useState<any>(null);
+  const [umkmProjectCount, setUmkmProjectCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [similarProjects, setSimilarProjects] = useState<any[]>([]);
   const [applying, setApplying] = useState(false);
@@ -62,6 +63,14 @@ export default function JobDetailPage() {
             if (umkmSnap.exists()) {
               setUmkmData(umkmSnap.data());
             }
+
+            // Fetch Project Count for this UMKM
+            const qCount = query(
+              collection(db, "projects"),
+              where("umkmId", "==", projectData.umkmId)
+            );
+            const countSnap = await getDocs(qCount);
+            setUmkmProjectCount(countSnap.size);
           }
 
           if (projectData.category) {
@@ -396,7 +405,7 @@ export default function JobDetailPage() {
             {/* UMKM Profile Card */}
             <div className="bg-white rounded-[2.5rem] p-10 shadow-ambient border border-brand-dark/5">
               <div className="flex items-center gap-5 mb-10">
-                <div className="w-20 h-20 rounded-[1.5rem] bg-brand-light flex items-center justify-center text-3xl shadow-sm border border-brand-dark/5 overflow-hidden">
+                <Link href={`/umkm/${project.umkmId}`} className="w-20 h-20 rounded-[1.5rem] bg-brand-light flex items-center justify-center text-3xl shadow-sm border border-brand-dark/5 overflow-hidden hover:opacity-80 transition-opacity">
                   {umkmData?.avatarUrl ? (
                     <img src={umkmData.avatarUrl} className="w-full h-full object-cover" alt="avatar" />
                   ) : (
@@ -404,9 +413,11 @@ export default function JobDetailPage() {
                       {umkmData?.name?.[0] || 'U'}
                     </div>
                   )}
-                </div>
+                </Link>
                 <div>
-                  <h3 className="font-display font-bold text-brand-dark text-xl leading-tight">{umkmData?.name || "BANTU UMKM"}</h3>
+                  <Link href={`/umkm/${project.umkmId}`} className="hover:underline">
+                    <h3 className="font-display font-bold text-brand-dark text-xl leading-tight">{umkmData?.name || "BANTU UMKM"}</h3>
+                  </Link>
                   <div className="inline-flex items-center gap-2 bg-brand-mid/10 text-brand-mid px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest mt-2">
                     <CheckCircle2 size={12} /> Verified UMKM
                   </div>
@@ -424,11 +435,11 @@ export default function JobDetailPage() {
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-brand-dark/40 font-bold uppercase tracking-tighter text-[10px]">Rating</span>
-                  <span className="font-display font-bold text-brand-dark flex items-center gap-1.5">{umkmData?.avgRating?.toFixed(1) || '5.0'} <Star size={14} className="fill-brand-mid text-brand-mid" /></span>
+                  <span className="font-display font-bold text-brand-dark flex items-center gap-1.5">{umkmData?.avgRating ? umkmData.avgRating.toFixed(1) : '—'} <Star size={14} className="fill-brand-mid text-brand-mid" /></span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-brand-dark/40 font-bold uppercase tracking-tighter text-[10px]">Projects Posted</span>
-                  <span className="font-display font-bold text-brand-dark">{umkmData?.completedTasks || '0'}</span>
+                  <span className="font-display font-bold text-brand-dark">{umkmProjectCount}</span>
                 </div>
               </div>
 

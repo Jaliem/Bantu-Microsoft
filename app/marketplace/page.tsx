@@ -9,9 +9,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, SlidersHorizontal, ArrowRight, Star, CheckCircle2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
+import { useSearchParams } from 'next/navigation';
+
 export default function MarketplacePage() {
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get('q') || "";
+  
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
@@ -35,6 +41,15 @@ export default function MarketplacePage() {
 
   const filteredProjects = projects.filter(project => {
     let match = true;
+    
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const titleMatch = project.title?.toLowerCase().includes(searchLower);
+      const descMatch = project.description?.toLowerCase().includes(searchLower);
+      const categoryMatch = project.category?.toLowerCase().includes(searchLower);
+      if (!titleMatch && !descMatch && !categoryMatch) match = false;
+    }
+
     if (selectedCategory && project.category !== selectedCategory) {
       match = false;
     }
@@ -123,7 +138,13 @@ export default function MarketplacePage() {
             <div className="flex items-center gap-4 w-full sm:w-auto">
                <div className="relative flex-1 sm:w-64">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-dark/20 w-4 h-4" />
-                <input type="text" placeholder="Search tasks..." className="w-full bg-white border border-brand-dark/5 rounded-2xl py-3 pl-11 pr-4 text-sm focus:outline-none focus:ring-4 focus:ring-brand-mid/5 transition-all shadow-ambient" />
+                <input 
+                  type="text" 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search tasks..." 
+                  className="w-full bg-white border border-brand-dark/5 rounded-2xl py-3 pl-11 pr-4 text-sm focus:outline-none focus:ring-4 focus:ring-brand-mid/5 transition-all shadow-ambient" 
+                />
                </div>
             </div>
           </div>
