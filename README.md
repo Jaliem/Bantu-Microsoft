@@ -1,6 +1,6 @@
 # BANTU - Jembatan Ekonomi Digital UMKM & Mahasiswa
 
-https://docs.google.com/presentation/d/1DSTnIrQwqySH9hezg-Cgc6AznkOhaa5m/edit?usp=sharing&ouid=103830470616757844015&rtpof=true&sd=true
+Link Proposal: https://docs.google.com/presentation/d/1DSTnIrQwqySH9hezg-Cgc6AznkOhaa5m/edit?usp=sharing&ouid=103830470616757844015&rtpof=true&sd=true
 
 ---
 
