@@ -8,18 +8,16 @@ import { cn } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
 
 const popularServices = [
-	{ title: "Vibe Coding", color: "bg-[#006d38]" },
-	{ title: "Website Development", color: "bg-[#006d38]" },
-	{ title: "Video Editing", color: "bg-[#006d38]" },
-	{ title: "Software Development", color: "bg-[#006d38]" },
-	{ title: "Book Publishing", color: "bg-[#006d38]" },
-	{ title: "Architecture & Interior Design", color: "bg-[#006d38]" },
-	{ title: "Social Media Management", color: "bg-[#006d38]" },
-	{ title: "Data Analytics & Research", color: "bg-[#006d38]" },
-	{ title: "Copywriting & Content", color: "bg-[#006d38]" },
-	{ title: "Graphic Design & UI/UX", color: "bg-[#006d38]" },
-	{ title: "Mobile App Development", color: "bg-[#006d38]" },
-	{ title: "SEO & Digital Marketing", color: "bg-[#006d38]" },
+	{ title: "Vibe Coding", color: "bg-[#006d38]", image: "/images/vibecoding.webp" },
+	{ title: "Website Development", color: "bg-[#006d38]", image: "/images/webdev.webp" },
+	{ title: "Video Editing", color: "bg-[#006d38]", image: "/images/videoediting.png" },
+	{ title: "Software Development", color: "bg-[#006d38]", image: "/images/softwaredevelopment.jpg" },
+	{ title: "Social Media Management", color: "bg-[#006d38]", image: "/images/socialmedia.webp" },
+	{ title: "Data Analytics & Research", color: "bg-[#006d38]", image: "/images/dataanalytics.jpg" },
+	{ title: "Copywriting & Content", color: "bg-[#006d38]", image: "/images/copywriting.jpg" },
+	{ title: "Graphic Design & UI/UX", color: "bg-[#006d38]", image: "/images/graphicdesign.jpg" },
+	{ title: "Mobile App Development", color: "bg-[#006d38]", image: "/images/mobiledev.jpg" },
+	{ title: "SEO & Digital Marketing", color: "bg-[#006d38]", image: "/images/digital-marketing.jpg" },
 ];
 
 export function Hero() {
@@ -60,7 +58,6 @@ export function Hero() {
 					<div
 						className="absolute inset-0 transition-transform duration-[2s] hover:scale-105 pointer-events-none"
 						style={{
-							backgroundImage: "url('/images/hero-background.jpg')",
 							backgroundSize: "cover",
 							backgroundPosition: "center",
 							opacity: 0.4,
@@ -186,14 +183,14 @@ export function Hero() {
 											{service.title}
 										</h3>
 									</div>
-									{/* Bottom Image Area (Placeholder) - Square */}
+									{/* Bottom Image Area - Square */}
 									<div className="w-full aspect-square bg-white rounded-[1.25rem] mt-auto overflow-hidden relative">
-										{/* Decorative Elements replacing actual images */}
-										<div className="w-full h-full flex items-center justify-center opacity-20 bg-brand-light">
-											<span className="font-display font-medium text-lg text-primary">
-												BANTU
-											</span>
-										</div>
+										<img 
+											src={service.image} 
+											alt={service.title} 
+											className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+										/>
+										<div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
 									</div>
 								</motion.div>
 							))}

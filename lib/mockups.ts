@@ -2,7 +2,7 @@ export const mockups = {
   hero: "/placeholder/hero.png",
   problemStudent: "/placeholder/student-empty-cv.png",
   problemUMKM: "/placeholder/umkm-struggle.png",
-  ecosystem: "/images/dashboardimg.png",
+  ecosystem: "/images/dashboardimage.png",
   howItWorks: {
     step1: "/images/langkah1.png",
     step2: "/images/langkah2.png",
